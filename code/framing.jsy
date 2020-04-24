@@ -1,0 +1,61 @@
+import {mqtt_protocol} from './mqtt_base.jsy'
+
+
+export function mqtt_pkt_id_dispatch(disp_parser) ::
+  const {by_type} = mqtt_protocol
+
+  return mqtt_raw_pkt_dispatch @\ pkt ::
+    const {id} = pkt.type_obj = by_type(pkt.cmd)
+    const fn_disp = disp_parser[id]
+    return undefined === fn_disp
+      ? disp_parser[0](pkt)
+      : fn_disp.call(disp_parser, pkt)
+
+
+export function mqtt_pkt_dispatch(disp_parser) ::
+  const {by_type} = mqtt_protocol
+
+  return mqtt_raw_pkt_dispatch @\ pkt ::
+    const {type} = pkt.type_obj = by_type(pkt.cmd)
+
+    const fn_disp = disp_parser[`mqtt ${type}`]
+    return undefined === fn_disp
+      ? disp_parser.mqtt_dnu(pkt)
+      : fn_disp.call(disp_parser, pkt)
+
+
+export function mqtt_raw_pkt_dispatch(dispatch) ::
+  const l = [] // reuse array to prevent garbage collection churn on ephemeral ones
+  return @\ u8_buf ::
+    l.splice(0, l.length, u8_buf)
+
+    const tip = mqtt_next_raw_pkt(l)
+    if undefined !== tip ::
+      l[1] = dispatch(tip)
+      if undefined === l[1] ::
+        l[1] = null
+
+    return l
+
+
+export function mqtt_next_raw_pkt(u8ref) ::
+  const [u8] = u8ref
+
+  let len_vh=1, len_body = (u8[1] & 0x7f) <<  0
+  if 0x80 & u8[1] ::
+    len_body |= (u8[len_vh=2] & 0x7f) <<  7
+    if 0x80 & u8[2] ::
+      len_body |= (u8[len_vh=3] & 0x7f) << 14
+      if 0x80 & u8[3] ::
+        len_body |= (u8[len_vh=4] & 0x7f) << 21
+
+
+  const len_pkt = 1 + len_body + len_vh
+  if u8.byteLength >= len_pkt ::
+    u8ref[0] = u8.subarray(len_pkt)
+    return @{}
+      b0: u8[0], cmd: u8[0] & 0xf0, hdr: u8[0] & 0x0f,
+      len_vh, len_body, len_pkt,
+      body: u8.subarray(1 + len_vh, len_pkt)
+
+

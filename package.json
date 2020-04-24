@@ -1,0 +1,28 @@
+{
+  "private": true,
+  "version": "0.0.0",
+  "files": [
+    "cjs/",
+    "code/",
+    "esm/",
+    "umd/"
+  ],
+  "main": "./cjs/index.cjs",
+  "module": "./esm/index.mjs",
+  "dependencies": {},
+  "devDependencies": {
+    "mqtt-packet": "^6.3.2",
+    "rollup": "^2.7.2",
+    "rollup-plugin-dgnotify": "^0.1.5",
+    "rollup-plugin-jsy": "^1.7.1",
+    "rollup-plugin-terser": "^5.3.0",
+    "u8-utils": "^0.3.7"
+  },
+  "scripts": {
+    "clean": "rm -rf ./cjs/* ./esm/* ./umd/*",
+    "build": "rollup --config",
+    "watch": "npm -s run build -- --watch",
+    "pretest": "npm -s run build",
+    "test": "true"
+  }
+}

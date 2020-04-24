@@ -1,0 +1,12 @@
+import mqtt_decode from './decode_mqtt.jsy'
+import mqtt_encode from './encode_mqtt.jsy'
+
+export const mqtt_codec = @{}
+  mqtt_decode,
+  mqtt_encode,
+
+export @{}
+  mqtt_decode, mqtt_decode as decode,
+  mqtt_encode, mqtt_encode as encode,
+  mqtt_codec as default,
+

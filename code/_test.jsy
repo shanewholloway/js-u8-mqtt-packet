@@ -1,0 +1,30 @@
+import decode_mqtt from './decode_mqtt.jsy'
+
+const mqtt_pkt = require('mqtt-packet')
+
+const many_pkts = new Uint8Array @ Buffer.concat @#
+  mqtt_pkt.generate @: cmd: 'pingreq'
+
+  mqtt_pkt.generate @: cmd: 'pingresp'
+
+  mqtt_pkt.generate @: cmd: 'disconnect'
+  mqtt_pkt.generate @: cmd: 'pingreq'
+
+  mqtt_pkt.generate @: cmd: 'pingresp'
+
+  mqtt_pkt.generate @: cmd: 'pingreq'
+
+  mqtt_pkt.generate @: cmd: 'disconnect'
+  mqtt_pkt.generate @: cmd: 'pingresp'
+
+  mqtt_pkt.generate @: cmd: 'disconnect'
+
+
+::
+  let u8=many_pkts, tip
+  do ::
+    [u8, tip] = decode_mqtt(u8)
+    console.log @ tip
+
+  while undefined !== tip
+

@@ -1,0 +1,47 @@
+import {mqtt_pkt_id_dispatch} from './framing.jsy'
+
+import @{}
+  mqtt_decode_connect
+  mqtt_decode_connack
+  mqtt_decode_publish
+  mqtt_decode_puback
+  mqtt_decode_pubrec
+  mqtt_decode_pubrel
+  mqtt_decode_pubcomp
+  mqtt_decode_subscribe
+  mqtt_decode_suback
+  mqtt_decode_unsubscribe
+  mqtt_decode_unsuback
+  mqtt_decode_pingreq
+  mqtt_decode_pingresp
+  mqtt_decode_disconnect
+  mqtt_decode_auth
+from './_decode_all.jsy'
+
+
+export default decode_mqtt
+export const decode_mqtt =
+  mqtt_pkt_id_dispatch @#
+    _mqtt_dnu_decode
+    mqtt_decode_connect
+    mqtt_decode_connack
+    mqtt_decode_publish
+    mqtt_decode_puback
+    mqtt_decode_pubrec
+    mqtt_decode_pubrel
+    mqtt_decode_pubcomp
+    mqtt_decode_subscribe
+    mqtt_decode_suback
+    mqtt_decode_unsubscribe
+    mqtt_decode_unsuback
+    mqtt_decode_pingreq
+    mqtt_decode_pingresp
+    mqtt_decode_disconnect
+    mqtt_decode_auth
+
+
+function _mqtt_dnu_decode(pkt) ::
+  const err = new Error @ 'MQTT packet not understood'
+  err.pkt = pkt
+  throw err
+

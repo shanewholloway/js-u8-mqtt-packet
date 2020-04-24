@@ -1,0 +1,34 @@
+export const mqtt_protocol = @{}
+  ... _mqtt_init_msg_types()
+
+
+function _mqtt_init_msg_types() ::
+  const type_entries = @[]
+    @[]  0, 'reserved'
+    @[]  1, 'connect'
+    @[]  2, 'connack'
+    @[]  3, 'publish'
+    @[]  4, 'puback'
+    @[]  5, 'pubrec'
+    @[]  6, 'pubrel'
+    @[]  7, 'pubcomp'
+    @[]  8, 'subscribe'
+    @[]  9, 'suback'
+    @[] 10, 'unsubscribe'
+    @[] 11, 'unsuback'
+    @[] 12, 'pingreq'
+    @[] 13, 'pingresp'
+    @[] 14, 'disconnect'
+    @[] 15, 'auth'
+
+  const type_map = new Map()
+  for const [id, type] of type_entries ::
+    const cmd = id << 4
+    const type_obj = { id, cmd, type }
+    type_map.set(id, type_obj)
+    type_map.set(cmd, type_obj)
+    type_map.set(type, type_obj)
+
+  return @{}
+    by_type: type_map.get.bind(type_map)
+
