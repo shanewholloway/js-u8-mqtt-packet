@@ -8,6 +8,7 @@ export function mqtt_decode_pubrec(pkt) ::
 
   pkt.packet_id = rdr.u16()
   pkt.reason = rdr.u8_reason(_pubrec_reason_)
-  pkt.props = rdr.props()
+  if 5 <= pkt.mqtt_level ::
+    pkt.props = rdr.props()
   return pkt
 

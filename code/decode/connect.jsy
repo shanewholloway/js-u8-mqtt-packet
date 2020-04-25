@@ -14,6 +14,7 @@ export function mqtt_decode_connect(pkt) ::
   const rdr = mqtt_reader(pkt.u8_body, 0)
 
   pkt.protocol_name = rdr.utf8()
+
   const mqtt_level = rdr.u8()
   pkt.protocol_level = mqtt_level
   pkt._base_.mqtt_level = mqtt_level
@@ -23,13 +24,16 @@ export function mqtt_decode_connect(pkt) ::
 
   pkt.keep_alive = rdr.u16()
 
-  const props = pkt.props = rdr.props()
+  if 5 <= mqtt_level ::
+    pkt.props = rdr.props()
 
   const payload = pkt.payload = {}
 
   payload.client_id = rdr.utf8()
   if flags.will_flag ::
-    payload.willProperties = rdr.props()
+    if 5 <= mqtt_level ::
+      payload.willProperties = rdr.props()
+
     payload.willTopic = rdr.utf8()
     payload.willPayload = rdr.bin()
 
