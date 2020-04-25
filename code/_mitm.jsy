@@ -75,7 +75,7 @@ createServer()
 
 
 function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
-  if ['publish', 'connect'].includes @ type_obj.type ::
+  if ['connect'].includes @ type_obj.type ::
     console.log @ "IG", type_obj
     return
 

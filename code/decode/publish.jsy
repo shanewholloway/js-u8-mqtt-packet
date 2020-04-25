@@ -14,10 +14,8 @@ export function mqtt_decode_publish(pkt) ::
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
     pkt.payload = rdr.flush()
-    return pkt
-
   else ::
-    // older versions just have a payload
     pkt.payload = rdr.flush()
-    return pkt
+
+  return pkt
 

@@ -16,13 +16,6 @@ export function mqtt_pkt_writer(_pool_) ::
       rope.push(u8)
       n += u8.length
 
-    add(... args) ::
-      #IF DEBUG
-        args = new Uint8Array(args)
-
-      rope.push(args)
-      n += args.length
-
     as_pkt(hdr) ::
       const pkt = _mqtt_pkt_rope(hdr, n, rope)
       n=0; rope=[]
