@@ -1,19 +1,61 @@
-export {mqtt_decode_connect} from './decode/connect.jsy'
-export {mqtt_decode_connack} from './decode/connack.jsy'
-export {mqtt_decode_publish} from './decode/publish.jsy'
-export {mqtt_decode_puback} from './decode/puback.jsy'
-export {mqtt_decode_pubrec} from './decode/pubrec.jsy'
-export {mqtt_decode_pubrel} from './decode/pubrel.jsy'
-export {mqtt_decode_pubcomp} from './decode/pubcomp.jsy'
-export {mqtt_decode_subscribe} from './decode/subscribe.jsy'
-export {mqtt_decode_suback} from './decode/suback.jsy'
-export {mqtt_decode_unsubscribe} from './decode/unsubscribe.jsy'
-export {mqtt_decode_unsuback} from './decode/unsuback.jsy'
-export {mqtt_decode_disconnect} from './decode/disconnect.jsy'
-export {mqtt_decode_auth} from './decode/auth.jsy'
+import {mqtt_decode_connect} from './decode/connect.jsy'
+import {mqtt_decode_connack} from './decode/connack.jsy'
+import {mqtt_decode_publish} from './decode/publish.jsy'
+import {mqtt_decode_puback} from './decode/puback.jsy'
+import {mqtt_decode_pubrec} from './decode/pubrec.jsy'
+import {mqtt_decode_pubrel} from './decode/pubrel.jsy'
+import {mqtt_decode_pubcomp} from './decode/pubcomp.jsy'
+import {mqtt_decode_subscribe} from './decode/subscribe.jsy'
+import {mqtt_decode_suback} from './decode/suback.jsy'
+import {mqtt_decode_unsubscribe} from './decode/unsubscribe.jsy'
+import {mqtt_decode_unsuback} from './decode/unsuback.jsy'
+import {mqtt_decode_disconnect} from './decode/disconnect.jsy'
+import {mqtt_decode_auth} from './decode/auth.jsy'
 
-export const mqtt_decode_noop = pkt => pkt
+export * from './decode/_utils.jsy'
+
+const mqtt_decode_noop = pkt => pkt
+function mqtt_dnu_decode(pkt) ::
+  const err = new Error @ 'MQTT packet not understood'
+  err.pkt = pkt
+  throw err
+
+
+export const mqtt_decode_ops_by_id = @[]
+  mqtt_dnu_decode
+  mqtt_decode_connect
+  mqtt_decode_connack
+  mqtt_decode_publish
+  mqtt_decode_puback
+  mqtt_decode_pubrec
+  mqtt_decode_pubrel
+  mqtt_decode_pubcomp
+  mqtt_decode_subscribe
+  mqtt_decode_suback
+  mqtt_decode_unsubscribe
+  mqtt_decode_unsuback
+  mqtt_decode_noop // mqtt_decode_pingreq
+  mqtt_decode_noop // mqtt_decode_pingresp
+  mqtt_decode_disconnect
+  mqtt_decode_auth
+
+
 export @{}
+  mqtt_decode_noop
+  mqtt_dnu_decode,
+  mqtt_decode_connect,
+  mqtt_decode_connack,
+  mqtt_decode_publish,
+  mqtt_decode_puback,
+  mqtt_decode_pubrec,
+  mqtt_decode_pubrel,
+  mqtt_decode_pubcomp,
+  mqtt_decode_subscribe,
+  mqtt_decode_suback,
+  mqtt_decode_unsubscribe,
+  mqtt_decode_unsuback,
   mqtt_decode_noop as mqtt_decode_pingreq,
   mqtt_decode_noop as mqtt_decode_pingresp,
+  mqtt_decode_disconnect,
+  mqtt_decode_auth,
 

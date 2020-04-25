@@ -1,47 +1,31 @@
-import {mqtt_pkt_id_dispatch} from './framing.jsy'
-
-import @{}
-  mqtt_decode_connect
-  mqtt_decode_connack
-  mqtt_decode_publish
-  mqtt_decode_puback
-  mqtt_decode_pubrec
-  mqtt_decode_pubrel
-  mqtt_decode_pubcomp
-  mqtt_decode_subscribe
-  mqtt_decode_suback
-  mqtt_decode_unsubscribe
-  mqtt_decode_unsuback
-  mqtt_decode_pingreq
-  mqtt_decode_pingresp
-  mqtt_decode_disconnect
-  mqtt_decode_auth
-from './_decode_all.jsy'
+import { mqtt_pkt_id_dispatch } from './framing.jsy'
+import { mqtt_decode_ops_by_id, _u8_join } from './_decode_all.jsy'
 
 
 export default decode_mqtt
 export const decode_mqtt =
-  mqtt_pkt_id_dispatch @#
-    _mqtt_dnu_decode
-    mqtt_decode_connect
-    mqtt_decode_connack
-    mqtt_decode_publish
-    mqtt_decode_puback
-    mqtt_decode_pubrec
-    mqtt_decode_pubrel
-    mqtt_decode_pubcomp
-    mqtt_decode_subscribe
-    mqtt_decode_suback
-    mqtt_decode_unsubscribe
-    mqtt_decode_unsuback
-    mqtt_decode_pingreq
-    mqtt_decode_pingresp
-    mqtt_decode_disconnect
-    mqtt_decode_auth
+  mqtt_pkt_id_dispatch @
+    mqtt_decode_ops_by_id
 
 
-function _mqtt_dnu_decode(pkt) ::
-  const err = new Error @ 'MQTT packet not understood'
-  err.pkt = pkt
-  throw err
+export function mqtt_decode_context() ::
+  return _mqtt_decode_context(decode_mqtt)
+
+export function _mqtt_decode_context(decode_mqtt) ::
+  let u8_prev = null
+
+  return @\ u8, ctx ::
+    if null !== u8_prev ::
+      u8 = _u8_join(u8_prev, u8)
+      u8_prev = null
+
+    let tip, res=[]
+    while 0 !== u8.byteLength ::
+      [u8, tip] = decode_mqtt(u8, ctx)
+      if undefined !== tip ::
+        res.push(tip)
+      else break
+
+    u8_prev = 0 === u8.byteLength ? null : u8
+    return res
 

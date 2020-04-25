@@ -110,3 +110,11 @@ export function bind_flags(obj) ::
   obj.toJSON = obj.valueOf = _self_u8
   return obj
 
+
+export function _u8_join(a, b) ::
+  const alen = a.byteLength
+  const r = new Uint8Array(alen + b.byteLength)
+  r.set(a, 0)
+  r.set(b, alen)
+  return r
+

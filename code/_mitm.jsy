@@ -1,0 +1,68 @@
+import {createWriteStream} from 'fs'
+import {pipeline} from 'stream'
+import {createServer, connect} from 'net'
+
+import {mqtt_aiter_decoder} from 'u8-mqtt-packet/cjs/all.cjs'
+
+const mitm_port = parseInt(process.argv.slice(2).pop() || 1884)
+
+createServer()
+  .on @ 'error', @\ err ::
+    console.warn @ 'Error on server:', err
+
+  .on @ 'listening', @::
+    console.log @ 'Ready'
+
+  .on @ 'connection', @\ sock_src ::
+    console.log @ 'Host Conn', typeof sock_src
+
+    const sock_dst = connect @ 1883, '127.0.0.1', @::
+      console.log @ 'MQTT Conn', typeof sock_dst
+
+      const ts_log = createWriteStream @
+        `logs/mqtt.${Date.now().toString(36)}.log.json`
+
+      const info = @{} mitm_port
+      ts_log.write @ `{"info":${JSON.stringify(info)}, "mqtt_log":[\n`
+
+      const ctx={}
+
+      pipeline @
+        sock_src
+
+        async function *(stream) ::
+          for await const chunk of stream ::
+            ts_log.write @ `  {"cs": "${chunk.toString('hex')}"},\n`
+            yield chunk
+
+        mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
+          for const tip of pkt_lst ::
+            delete tip.u8_body
+            console.log @ '==>', tip
+
+        sock_dst
+
+        async function *(stream) ::
+          for await const chunk of stream ::
+            ts_log.write @ `  {"sc": "${chunk.toString('hex')}"},\n`
+            yield chunk
+
+        mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
+          for const tip of pkt_lst ::
+            delete tip.u8_body
+            console.log @ '<--', tip
+
+        sock_src
+
+        @\ err ::>
+          ts_log.write @ `  null ]}\n`
+          ts_log.end()
+
+          sock_dst.end()
+          sock_src.end()
+
+          if err ::
+            console.warn @ 'Error at end of pipeline:', err
+
+  .listen @ mitm_port
+

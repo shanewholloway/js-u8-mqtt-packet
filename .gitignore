@@ -3,6 +3,7 @@ esm/
 umd/
 dist/
 ref/
+logs/
 node_modules/
 npm-debug.log
 .hggitignore

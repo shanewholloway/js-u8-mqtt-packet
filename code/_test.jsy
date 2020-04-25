@@ -1,5 +1,4 @@
-import decode_mqtt from './decode_mqtt.jsy'
-
+import {decode_mqtt} from 'u8-mqtt-packet'
 const mqtt_pkt = require('mqtt-packet')
 
 const many_pkts = new Uint8Array @ Buffer.concat @#

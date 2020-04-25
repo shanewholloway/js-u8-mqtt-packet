@@ -1,6 +1,7 @@
 import rpi_jsy from 'rollup-plugin-jsy'
 import rpi_dgnotify from 'rollup-plugin-dgnotify'
 import { terser as rpi_terser } from 'rollup-plugin-terser'
+import {builtinModules} from 'module'
 
 
 const _cfg_ = {
@@ -8,7 +9,9 @@ const _cfg_ = {
     rpi_dgnotify(),
     rpi_jsy({defines:{}}),
   ],
-  external: [],
+  external: id =>
+    id.startsWith('u8-mqtt-packet')
+      || builtinModules.includes(id),
 }
 
 const cfg_web_min = null && { ... _cfg_,
@@ -28,7 +31,7 @@ add_jsy('encode_mqtt', {min: true})
 add_jsy('decode_mqtt', {min: true})
 
 add_jsy('_test')
-add_jsy('_mittm')
+add_jsy('_mitm')
 
 
 
