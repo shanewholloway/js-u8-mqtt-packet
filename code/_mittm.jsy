@@ -30,7 +30,8 @@ createServer()
           if err ::
             console.warn @ 'Error at end of pipeline:', err
 
-  .listen @ 1884
+  .listen @
+    parseInt @ process.argv.slice(2).pop() || 1884
 
 
 function bind_mqtt_xform(ctx, label) ::
@@ -43,10 +44,11 @@ function bind_mqtt_xform(ctx, label) ::
 
       while 0 !== u8.byteLength ::
         [u8, tip] = decode_mqtt(u8, ctx)
-        if undefined !== tip ::
-          console.log @ label, tip
-        else ::
+        if undefined === tip ::
           prev = u8
           break
+
+        delete tip.u8_body
+        console.log @ label, tip
 
       yield chunk

@@ -53,8 +53,12 @@ export const type_reader_proto = @{}
     const buf_props = buf.subarray(vi, end_part)
     step(end_part)
 
+    if 0 === buf_props.byteLength ::
+      return null
+
     // TODO: decode props here
-    return 0 === buf_props.byteLength ? null : buf_props
+    console.log @ "TODO: decode MQTT props:", buf_props
+    return buf_props
 
   u8_flags(proto) ::
     const {buf, step} = this
