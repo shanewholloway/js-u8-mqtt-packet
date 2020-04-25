@@ -41,7 +41,9 @@ export class mqtt_type_writer ::
   u8_flags(v, enc_flags) ::
     if undefined !== v && isNaN(+v) ::
       v = enc_flags(v, 0)
-    this.push @# v | 0
+    v |= 0
+    this.push @# v
+    return v
 
   u8_reason(v) :: this.push @# v | 0
 

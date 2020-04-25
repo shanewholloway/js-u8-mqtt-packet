@@ -23,7 +23,7 @@ export function mqtt_encode_subscribe(pkt) ::
   return wrt.as_pkt(0x82)
 
 const _enc_subscribe_flags = opts => 0
-  | @ opts.qos & 0x3
-  | @ opts.retain ? 0x4 : 0
-  | @ (opts.retain_handling & 0x3) << 2  
+    | @ opts.qos & 0x3
+    | @ opts.retain ? 0x4 : 0
+    | @ (opts.retain_handling & 0x3) << 2  
 

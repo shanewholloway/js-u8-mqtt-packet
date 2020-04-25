@@ -75,10 +75,6 @@ createServer()
 
 
 function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
-  if ['connect'].includes @ type_obj.type ::
-    console.log @ "IG", type_obj
-    return
-
   const fn_encode = mqtt_encode_by_name[type_obj.type]
   const rt_pkt = fn_encode(tip)
   if undefined === rt_pkt ::

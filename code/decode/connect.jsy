@@ -4,7 +4,7 @@ const _connect_flags_ = bind_flags @:
   get reserved() :: return this & 0x01 !== 0
   get clean_start() :: return this & 0x02 !== 0
   get will_flag() :: return this & 0x04 !== 0
-  get will_qos() :: return (this >> 3) & 0x3
+  get will_qos() :: return (this >>> 3) & 0x3
   get will_retain() :: return this & 0x20 !== 0
   get password() :: return this & 0x40 !== 0
   get username() :: return this & 0x80 !== 0
@@ -25,8 +25,9 @@ export function mqtt_decode_connect(pkt) ::
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
 
-  const payload = pkt.payload = {}
 
+
+  const payload = pkt.payload = {}
   payload.client_id = rdr.utf8()
   if flags.will_flag ::
     if 5 <= pkt.mqtt_level ::
