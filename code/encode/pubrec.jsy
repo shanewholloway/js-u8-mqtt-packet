@@ -1,6 +1,9 @@
 import {mqtt_type_writer} from './_utils.jsy'
 
 export function mqtt_encode_pubrec(pkt) ::
+  return _mqtt_encode_pubxxx @ 0x50, pkt
+
+export function _mqtt_encode_pubxxx(hdr, pkt) ::
   const wrt = new mqtt_type_writer()
 
   wrt.u16(pkt.packet_id)
@@ -11,5 +14,5 @@ export function mqtt_encode_pubrec(pkt) ::
   else ::
     wrt.u8_reason @ pkt.return_code || pkt.reason
 
-  return wrt.as_pkt(0x50)
+  return wrt.as_pkt(hdr)
 

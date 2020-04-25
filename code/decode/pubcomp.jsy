@@ -1,16 +1,1 @@
-import {mqtt_type_reader} from './_utils.jsy'
-import {_pubrel_reason_} from './pubrel.jsy'
-
-export const _pubcomp_reason_ = _pubrel_reason_
-
-
-export function mqtt_decode_pubcomp(pkt) ::
-  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
-
-  pkt.packet_id = rdr.u16()
-  pkt.reason = rdr.u8_reason(_pubcomp_reason_)
-  if 5 <= pkt.mqtt_level ::
-    pkt.props = rdr.props()
-
-  return pkt
-
+export {_mqtt_decode_pubxxx as mqtt_decode_pubcomp} from './pubrec.jsy'

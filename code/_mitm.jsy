@@ -84,7 +84,8 @@ function rt_pkt(type_obj, tip, u8_raw_pkt) ::
     && u8_raw_pkt.every @\ v,i => v === rt_pkt[i]
 
   console.group @ 'RT', eq, type_obj
-  console.log @ 'rt_pkt', rt_pkt
-  console.log @ 'or_pkt', u8_raw_pkt
+  if ! eq ::
+    console.log @ 'rt_pkt', rt_pkt
+    console.log @ 'or_pkt', u8_raw_pkt
   console.groupEnd()
 

@@ -1,13 +1,17 @@
-import {mqtt_type_reader} from './_utils.jsy'
-import {_puback_reason_} from './puback.jsy'
+import {mqtt_type_reader, bind_reason_lookup} from './_utils.jsy'
 
-export const _pubrec_reason_ = _puback_reason_
+export const _pubxxx_reason_ = bind_reason_lookup @#
+  @[] 0x00, 'Success'
+  @[] 0x92, 'Packet Identifier not found'
 
-export function mqtt_decode_pubrec(pkt) ::
+
+export {_mqtt_decode_pubxxx as mqtt_decode_pubrec}
+
+export function _mqtt_decode_pubxxx(pkt) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
   pkt.packet_id = rdr.u16()
-  pkt.reason = rdr.u8_reason(_pubrec_reason_)
+  pkt.reason = rdr.u8_reason(_pubxxx_reason_)
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
   return pkt

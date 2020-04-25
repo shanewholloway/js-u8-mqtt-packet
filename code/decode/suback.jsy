@@ -19,16 +19,21 @@ export const _suback_reason_ = bind_reason_lookup @#
 
 
 export function mqtt_decode_suback(pkt) ::
+  return _mqtt_decode_suback @
+    pkt, _suback_reason_, 'sub_answers'
+
+
+export function _mqtt_decode_suback(pkt, _ack_reason_, key_answers) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
   pkt.packet_id = rdr.u16()
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
 
-  const answers = pkt.sub_answers = []
+  const answers = pkt[key_answers] = []
   while rdr.has_more() ::
     answers.push @
-      rdr.u8_reason(_suback_reason_)
+      rdr.u8_reason(_ack_reason_)
 
   return pkt
 
