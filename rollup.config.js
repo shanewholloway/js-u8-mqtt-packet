@@ -26,7 +26,9 @@ add_jsy('index')
 add_jsy('codec', {min: true})
 add_jsy('encode_mqtt', {min: true})
 add_jsy('decode_mqtt', {min: true})
+
 add_jsy('_test')
+add_jsy('_mittm')
 
 
 

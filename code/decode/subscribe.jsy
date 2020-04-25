@@ -1,3 +1,21 @@
+import {mqtt_reader, bind_flags} from './_utils.jsy'
+
+const _subscription_options_ = bind_flags @:
+  get qos() :: return this & 0x3
+  get retain() :: return this & 0x4 !== 0
+  get retain_handling() :: return (this >> 2) & 0x3
+
 export function mqtt_decode_subscribe(pkt) ::
+  const rdr = mqtt_reader(pkt.u8_body, 0)
+  pkt.packet_id = rdr.u16()
+
+  if 5 <= pkt.mqtt_level ::
+    pkt.props = rdr.props()
+
+  const topic_list = pkt.sub_topics = []
+  while rdr.has_more() ::
+    topic_list.push @:
+      topic: rdr.utf8()
+      opts: rdr.u8_flags(_subscription_options_)
   return pkt
 

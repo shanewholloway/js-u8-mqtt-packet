@@ -1,3 +1,18 @@
+import {mqtt_reader, bind_reason_lookup} from './_utils.jsy'
+
+export const _pubrel_reason_ = bind_reason_lookup @#
+  @[] 0x00, 'Success'
+
+  // MQTT 5.0
+  @[] 0x92, 'Packet Identifier not found'
+
+
 export function mqtt_decode_pubrel(pkt) ::
+  const rdr = mqtt_reader(pkt.u8_body, 0)
+
+  pkt.packet_id = rdr.u16()
+  pkt.reason = rdr.u8_reason(_pubrel_reason_)
+  pkt.props = rdr.props()
   return pkt
+
 

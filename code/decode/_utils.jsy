@@ -1,0 +1,100 @@
+import {decode_varint} from '../mqtt_varint.jsy'
+
+
+export const mqtt_reader = (buf, idx=0) => @:
+  __proto__: type_reader_proto
+  buf, step: step_from(idx)
+
+
+export const step_from = idx =>
+  (width, res) => @
+    res = idx
+    idx += width
+    res
+
+export const type_reader_proto = @{}
+  step_from
+
+  u8() ::
+    const {buf, step} = this
+    return buf[step(1)]
+
+  u16() ::
+    const {buf, step} = this
+    const i = step(2)
+    return (buf[i]<<8) | buf[i+1]
+
+  u32() ::
+    const {buf, step} = this
+    const i = step(4)
+    return (buf[i]<<24) | (buf[i+1]<<16) | (buf[i+2]<<8) | buf[i+3]
+
+  vint() ::
+    const {buf, step} = this
+    const [n, vi] = decode_varint(buf, step(0))
+    step(vi)
+    return n
+
+  bin() ::
+    const {buf, step} = this
+    const i = step(2)
+    const len = (buf[i]<<8) | buf[i+1]
+    const i0 = step(len)
+    return buf.subarray(i0, i0+len)
+
+  utf8() :: return new TextDecoder('utf-8').decode @ this.bin()
+  pair() :: return @[] this.utf8(), this.utf8()
+
+  props() ::
+    const {buf, step} = this
+
+    const [len, vi] = decode_varint(buf, step(0))
+    const end_part = vi + len
+    const buf_props = buf.subarray(vi, end_part)
+    step(end_part)
+
+    // TODO: decode props here
+    return 0 === buf_props.byteLength ? null : buf_props
+
+  u8_flags(proto) ::
+    const {buf, step} = this
+    return @{} __proto__: proto, u8: buf[step(1)]
+
+  u8_reason(fn_reason) ::
+    const {buf, step} = this
+    return fn_reason @ buf[step(1)]
+
+  flush() ::
+    const {buf, step} = this
+    this.step = this.buf = null
+    return buf.subarray(step(0))
+
+  has_more() ::
+    const {buf, step} = this
+    return buf.byteLength > step(0)
+
+
+
+function _self_u8() :: return this.u8
+
+const _reason_proto_ = @{}
+  valueOf: _self_u8
+  toJSON: _self_u8
+  toString() :: return this.reason
+  toError(Error_=Error) ::
+    return new Error_ @ `MQTT Decode: ${this.reason}`
+
+export function bind_reason_lookup(reason_entries) ::
+  const reason_map = new Map()
+  for const [u8, reason] of reason_entries ::
+    reason_map.set @ u8,
+      @{} __proto__: _reason_proto_, reason, u8
+
+  return reason_map.get.bind(reason_map)
+
+
+
+export function bind_flags(obj) ::
+  obj.toJSON = obj.valueOf = _self_u8
+  return obj
+

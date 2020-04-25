@@ -1,3 +1,13 @@
+import {mqtt_reader} from './_utils.jsy'
+import {_puback_reason_} from './puback.jsy'
+
+export const _pubrec_reason_ = _puback_reason_
+
 export function mqtt_decode_pubrec(pkt) ::
+  const rdr = mqtt_reader(pkt.u8_body, 0)
+
+  pkt.packet_id = rdr.u16()
+  pkt.reason = rdr.u8_reason(_pubrec_reason_)
+  pkt.props = rdr.props()
   return pkt
 

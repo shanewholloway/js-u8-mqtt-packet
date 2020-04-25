@@ -3,6 +3,19 @@ import decode_mqtt from './decode_mqtt.jsy'
 const mqtt_pkt = require('mqtt-packet')
 
 const many_pkts = new Uint8Array @ Buffer.concat @#
+
+  mqtt_pkt.generate @:
+    cmd: 'connack'
+
+/*
+  mqtt_pkt.generate @:
+    cmd: 'publish'
+    retain: false
+    qos: 0
+    dup: false
+    topic: 'test-topic'
+    payload: 'test-paylod'
+
   mqtt_pkt.generate @: cmd: 'pingreq'
 
   mqtt_pkt.generate @: cmd: 'pingresp'
@@ -18,6 +31,9 @@ const many_pkts = new Uint8Array @ Buffer.concat @#
   mqtt_pkt.generate @: cmd: 'pingresp'
 
   mqtt_pkt.generate @: cmd: 'disconnect'
+
+/*
+*/
 
 
 ::

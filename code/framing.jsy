@@ -1,61 +1,93 @@
+import {encode_varint, decode_varint} from './mqtt_varint.jsy'
 import {mqtt_protocol} from './mqtt_base.jsy'
 
 
 export function mqtt_pkt_id_dispatch(disp_parser) ::
-  const {by_type} = mqtt_protocol
+  return mqtt_raw_pkt_dispatch @
+    mqtt_decode_raw_pkt @
+      mqtt_protocol.by_type
+      new WeakMap
 
-  return mqtt_raw_pkt_dispatch @\ pkt ::
-    const {id} = pkt.type_obj = by_type(pkt.cmd)
-    const fn_disp = disp_parser[id]
-    return undefined === fn_disp
-      ? disp_parser[0](pkt)
-      : fn_disp.call(disp_parser, pkt)
+    @\ pkt, ctx ::
+      const fn_disp = disp_parser[pkt.type_obj.id]
+      return undefined === fn_disp
+        ? disp_parser[0](pkt, ctx)
+        : fn_disp.call(disp_parser, pkt, ctx)
 
 
 export function mqtt_pkt_dispatch(disp_parser) ::
-  const {by_type} = mqtt_protocol
+  return mqtt_raw_pkt_dispatch @
+    mqtt_decode_raw_pkt @
+      mqtt_protocol.by_type
+      new WeakMap
 
-  return mqtt_raw_pkt_dispatch @\ pkt ::
-    const {type} = pkt.type_obj = by_type(pkt.cmd)
-
-    const fn_disp = disp_parser[`mqtt ${type}`]
-    return undefined === fn_disp
-      ? disp_parser.mqtt_dnu(pkt)
-      : fn_disp.call(disp_parser, pkt)
+    @\ pkt, ctx ::
+      const fn_disp = disp_parser[`mqtt ${pkt.type_obj.type}`]
+      return undefined === fn_disp
+        ? disp_parser.mqtt_dnu(pkt, ctx)
+        : fn_disp.call(disp_parser, pkt, ctx)
 
 
-export function mqtt_raw_pkt_dispatch(dispatch) ::
+export function mqtt_raw_pkt_dispatch(decode_raw_pkt, dispatch) ::
   const l = [] // reuse array to prevent garbage collection churn on ephemeral ones
-  return @\ u8_buf ::
+  return @\ u8_buf, ctx ::
     l.splice(0, l.length, u8_buf)
 
-    const tip = mqtt_next_raw_pkt(l)
+    const tip = decode_raw_pkt(l, ctx)
+
     if undefined !== tip ::
-      l[1] = dispatch(tip)
+      _check_roundtrip_(tip, u8_buf)
+
+      l[1] = dispatch(tip, ctx)
       if undefined === l[1] ::
         l[1] = null
 
     return l
 
 
-export function mqtt_next_raw_pkt(u8ref) ::
-  const [u8] = u8ref
+export function mqtt_decode_raw_pkt(by_type, wm_bases) ::
+  return @\ u8ref, ctx ::
+    const [u8] = u8ref
+    const [len_body, len_vh] = decode_varint(u8, 1)
 
-  let len_vh=1, len_body = (u8[1] & 0x7f) <<  0
-  if 0x80 & u8[1] ::
-    len_body |= (u8[len_vh=2] & 0x7f) <<  7
-    if 0x80 & u8[2] ::
-      len_body |= (u8[len_vh=3] & 0x7f) << 14
-      if 0x80 & u8[3] ::
-        len_body |= (u8[len_vh=4] & 0x7f) << 21
+    const len_pkt = len_body + len_vh
+    if u8.byteLength < len_pkt ::
+      return
+
+    // _base
+    let _base_ = wm_bases.get(ctx)
+    if undefined === _base_ ::
+      _base_ = ctx._base_ || {ctx}
+      _base_._base_ = _base_
+      wm_bases.set(ctx, _base_)
 
 
-  const len_pkt = 1 + len_body + len_vh
-  if u8.byteLength >= len_pkt ::
+    const b0 = u8[0], cmd = b0 & 0xf0, hdr = b0 & 0x0f
     u8ref[0] = u8.subarray(len_pkt)
-    return @{}
-      b0: u8[0], cmd: u8[0] & 0xf0, hdr: u8[0] & 0x0f,
-      len_vh, len_body, len_pkt,
-      body: u8.subarray(1 + len_vh, len_pkt)
+    return @{} __proto__: _base_,
+      type_obj: by_type && by_type(cmd), b0, cmd, hdr
+      u8_body: 0 === len_body ? null
+        : u8.subarray(len_vh, len_pkt)
 
+
+export function mqtt_encode_raw_pkt({b0, u8_body}) ::
+  if null === u8_body || undefined === u8_body ::
+    return Uint8Array.from @# b0, 0
+
+  const len = u8_body.byteLength
+  const u8_head = encode_varint(len, [b0])
+  const u8 = new Uint8Array(u8_head.length + len)
+  u8.set @ u8_head, u8_head
+  u8.set @ u8_body, u8_head.length
+  return u8
+
+
+function _check_roundtrip_(tip, u8_buf) ::
+  const raw_pkt = mqtt_encode_raw_pkt(tip)
+  if raw_pkt.some @\ v,i => v !== u8_buf[i] ::
+    console.log @ 'src:', u8_buf.slice(0, raw_pkt.byteLength)
+    console.log @ 'raw:', raw_pkt
+    console.log @ 'tip:', tip
+    throw new Error @
+      'MQTT packet codec should round-trip'
 

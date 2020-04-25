@@ -4,31 +4,60 @@ export const mqtt_protocol = @{}
 
 function _mqtt_init_msg_types() ::
   const type_entries = @[]
-    @[]  0, 'reserved'
-    @[]  1, 'connect'
-    @[]  2, 'connack'
-    @[]  3, 'publish'
-    @[]  4, 'puback'
-    @[]  5, 'pubrec'
-    @[]  6, 'pubrel'
-    @[]  7, 'pubcomp'
-    @[]  8, 'subscribe'
-    @[]  9, 'suback'
-    @[] 10, 'unsubscribe'
-    @[] 11, 'unsuback'
-    @[] 12, 'pingreq'
-    @[] 13, 'pingresp'
-    @[] 14, 'disconnect'
-    @[] 15, 'auth'
+    @{} id:  0, type: 'reserved'
+    @{} id:  1, type: 'connect'
+    @{} id:  2, type: 'connack'
+    @{} id:  3, type: 'publish'
+    @{} id:  4, type: 'puback'
+    @{} id:  5, type: 'pubrec'
+    @{} id:  6, type: 'pubrel'
+    @{} id:  7, type: 'pubcomp'
+    @{} id:  8, type: 'subscribe'
+    @{} id:  9, type: 'suback'
+    @{} id: 10, type: 'unsubscribe'
+    @{} id: 11, type: 'unsuback'
+    @{} id: 12, type: 'pingreq'
+    @{} id: 13, type: 'pingresp'
+    @{} id: 14, type: 'disconnect'
+    @{} id: 15, type: 'auth'
 
   const type_map = new Map()
-  for const [id, type] of type_entries ::
-    const cmd = id << 4
-    const type_obj = { id, cmd, type }
-    type_map.set(id, type_obj)
-    type_map.set(cmd, type_obj)
-    type_map.set(type, type_obj)
+  for const type_obj of type_entries ::
+    type_obj.cmd = type_obj.id << 4
+    type_map.set(type_obj.cmd, type_obj)
 
   return @{}
+    type_entries
     by_type: type_map.get.bind(type_map)
+
+
+function _mqtt_init_properties() ::
+  const prop_entries = @[]
+    @{} id: 0x01, type: 'u8',   name: 'payloadFormatIndicator'
+    @{} id: 0x02, type: 'u32',  name: 'messageExpiryInterval', 
+    @{} id: 0x03, type: 'utf8', name: 'contentType', 
+    @{} id: 0x08, type: 'utf8', name: 'responseTopic', 
+    @{} id: 0x09, type: 'bin',  name: 'correlationData', 
+    @{} id: 0x0B, type: 'vint', name: 'subscriptionIdentifier', 
+    @{} id: 0x11, type: 'u32',  name: 'sessionExpiryInterval', 
+    @{} id: 0x12, type: 'utf8', name: 'assignedClientIdentifier', 
+    @{} id: 0x13, type: 'u16',  name: 'serverKeepAlive', 
+    @{} id: 0x15, type: 'utf8', name: 'authenticationMethod', 
+    @{} id: 0x16, type: 'bin',  name: 'authenticationData', 
+    @{} id: 0x17, type: 'u8',   name: 'requestProblemInformation', 
+    @{} id: 0x18, type: 'u32',  name: 'willDelayInterval', 
+    @{} id: 0x19, type: 'u8',   name: 'requestResponseInformation', 
+    @{} id: 0x1A, type: 'utf8', name: 'responseInformation', 
+    @{} id: 0x1C, type: 'utf8', name: 'serverReference', 
+    @{} id: 0x1F, type: 'utf8', name: 'reasonString', 
+    @{} id: 0x21, type: 'u16',  name: 'receiveMaximum', 
+    @{} id: 0x22, type: 'u16',  name: 'topicAliasMaximum', 
+    @{} id: 0x23, type: 'u16',  name: 'topicAlias', 
+    @{} id: 0x24, type: 'u8',   name: 'maximumQoS', 
+    @{} id: 0x25, type: 'u8',   name: 'retainAvailable', 
+    @{} id: 0x26, type: 'pair', name: 'userProperties', plural: true
+    @{} id: 0x27, type: 'u32',  name: 'maximumPacketSize', 
+    @{} id: 0x28, type: 'u8',   name: 'wildcardSubscriptionAvailable', 
+    @{} id: 0x29, type: 'u8',   name: 'subscriptionIdentifiersAvailable', plural: true
+    @{} id: 0x2A, type: 'u8',   name: 'sharedSubscriptionAvailable', 
 

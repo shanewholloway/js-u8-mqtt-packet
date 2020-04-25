@@ -1,3 +1,42 @@
+import {mqtt_reader, bind_flags} from './_utils.jsy'
+
+const _connect_flags_ = bind_flags @:
+  get reserved() :: return this & 0x01 !== 0
+  get clean_start() :: return this & 0x02 !== 0
+  get will_flag() :: return this & 0x04 !== 0
+  get will_qos() :: return (this >> 3) & 0x3
+  get will_retain() :: return this & 0x20 !== 0
+  get password() :: return this & 0x40 !== 0
+  get username() :: return this & 0x80 !== 0
+
+
 export function mqtt_decode_connect(pkt) ::
+  const rdr = mqtt_reader(pkt.u8_body, 0)
+
+  pkt.protocol_name = rdr.utf8()
+  const mqtt_level = rdr.u8()
+  pkt.protocol_level = mqtt_level
+  pkt._base_.mqtt_level = mqtt_level
+
+  const flags = pkt.connect_flags =
+    rdr.u8_flags(_connect_flags_)
+
+  pkt.keep_alive = rdr.u16()
+
+  const props = pkt.props = rdr.props()
+
+  const payload = pkt.payload = {}
+
+  payload.client_id = rdr.utf8()
+  if flags.will_flag ::
+    payload.willProperties = rdr.props()
+    payload.willTopic = rdr.utf8()
+    payload.willPayload = rdr.bin()
+
+  if flags.username ::
+    payload.username = rdr.utf8()
+
+  if flags.password ::
+    payload.password = rdr.bin()
   return pkt
 

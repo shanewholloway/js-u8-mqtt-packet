@@ -1,3 +1,15 @@
+import {mqtt_reader} from './_utils.jsy'
+
 export function mqtt_decode_unsubscribe(pkt) ::
+  const rdr = mqtt_reader(pkt.u8_body, 0)
+
+  pkt.packet_id = rdr.u16()
+  if 5 <= pkt.mqtt_level ::
+    pkt.props = rdr.props()
+
+  const topic_list = pkt.unsub_topics = []
+  while rdr.has_more() ::
+    topic_list.push @ rdr.utf8()
+
   return pkt
 

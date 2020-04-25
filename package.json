@@ -11,6 +11,7 @@
   "module": "./esm/index.mjs",
   "dependencies": {},
   "devDependencies": {
+    "mqtt": "^3.0.0",
     "mqtt-packet": "^6.3.2",
     "rollup": "^2.7.2",
     "rollup-plugin-dgnotify": "^0.1.5",
