@@ -1,3 +1,15 @@
-export function mqtt_encode_pubrec() ::
+import {mqtt_type_writer} from './_utils.jsy'
 
+export function mqtt_encode_pubrec(pkt) ::
+  const wrt = new mqtt_type_writer()
+
+  wrt.u16(pkt.packet_id)
+  if 5 <= pkt.mqtt_level ::
+    wrt.props(pkt.props)
+    wrt.u8_reason @ pkt.reason
+
+  else ::
+    wrt.u8_reason @ pkt.return_code || pkt.reason
+
+  return wrt.as_pkt(0x50)
 
