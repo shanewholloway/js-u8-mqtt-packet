@@ -1,3 +1,0 @@
-export function mqtt_decode_pingreq(pkt) ::
-  return pkt
-
