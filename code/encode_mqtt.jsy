@@ -1,6 +1,5 @@
 import {mqtt_encode_by_type, _mqtt_encode} from './_encode_all.jsy'
 
-export const mqtt_encode_v3 = _mqtt_encode @ 3, mqtt_encode_by_type
 export const mqtt_encode_v4 = _mqtt_encode @ 4, mqtt_encode_by_type
 export const mqtt_encode_v5 = _mqtt_encode @ 5, mqtt_encode_by_type
 

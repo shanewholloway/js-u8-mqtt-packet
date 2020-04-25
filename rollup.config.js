@@ -3,7 +3,7 @@ import rpi_dgnotify from 'rollup-plugin-dgnotify'
 import { terser as rpi_terser } from 'rollup-plugin-terser'
 import {builtinModules} from 'module'
 
-const DEBUG = ! true
+const DEBUG = false
 
 const _cfg_ = {
   plugins: [
