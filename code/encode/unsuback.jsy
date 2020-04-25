@@ -1,6 +1,6 @@
 import {_mqtt_encode_suback} from './suback.jsy'
 
-export function mqtt_encode_unsuback(pkt) ::
+export function mqtt_encode_unsuback(mqtt_level, pkt) ::
   return _mqtt_encode_suback @
-    0xb0, pkt, 'unsub_answers'
+    0xb0, mqtt_level, pkt, 'unsub_answers'
 

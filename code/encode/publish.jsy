@@ -1,6 +1,6 @@
 import {mqtt_type_writer} from './_utils.jsy'
 
-export function mqtt_encode_publish(pkt) ::
+export function mqtt_encode_publish(mqtt_level, pkt) ::
   const qos = (pkt.qos & 0x3) << 1
   const wrt = new mqtt_type_writer()
 
@@ -8,7 +8,7 @@ export function mqtt_encode_publish(pkt) ::
   if 0 !== qos ::
     wrt.u16(pkt.packet_id)
 
-  if 5 <= pkt.mqtt_level ::
+  if 5 <= mqtt_level ::
     wrt.props(pkt.props)
     wrt.flush(pkt.payload)
   else ::

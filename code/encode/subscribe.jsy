@@ -1,6 +1,6 @@
 import {mqtt_type_writer} from './_utils.jsy'
 
-export function mqtt_encode_subscribe(pkt) ::
+export function mqtt_encode_subscribe(mqtt_level, pkt) ::
   const wrt = new mqtt_type_writer()
 
   wrt.u16(pkt.packet_id)

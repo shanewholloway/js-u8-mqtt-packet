@@ -3,7 +3,7 @@ import {pipeline} from 'stream'
 import {createServer, connect} from 'net'
 const mqtt_pkt = require('mqtt-packet')
 
-import {mqtt_aiter_decoder, mqtt_encode_by_name} from 'u8-mqtt-packet'
+import {mqtt_aiter_decoder, mqtt_encode} from 'u8-mqtt-packet'
 
 const mitm_port = parseInt(process.argv.slice(2).pop() || 1884)
 
@@ -75,8 +75,7 @@ createServer()
 
 
 function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
-  const fn_encode = mqtt_encode_by_name[type_obj.type]
-  const rt_pkt = fn_encode(tip)
+  const rt_pkt = mqtt_encode(type_obj.type, tip)
   if undefined === rt_pkt ::
     console.log @ 'No RT', type_obj
     return

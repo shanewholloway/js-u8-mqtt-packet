@@ -1,5 +1,11 @@
 import {mqtt_encode_by_name} from './_encode_all.jsy'
 
-export function mqtt_encode(type_name, pkt) ::
-  return mqtt_encode_by_name[type_name] @ pkt
+export const mqtt_encode_v3 = _mqtt_encode.bind(null, 3)
+export const mqtt_encode_v4 = _mqtt_encode.bind(null, 4)
+export const mqtt_encode_v5 = _mqtt_encode.bind(null, 5)
+export const mqtt_encode = (type_name, pkt, mqtt_version=4) =>
+  _mqtt_encode(mqtt_version, type_name, pkt)
+
+export function _mqtt_encode(mqtt_version, type_name, pkt) ::
+  return mqtt_encode_by_name[type_name] @ mqtt_version, pkt
 

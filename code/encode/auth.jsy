@@ -1,7 +1,7 @@
 import {mqtt_type_writer} from './_utils.jsy'
 
-export function mqtt_encode_auth() ::
-  if 5 > pkt.mqtt_level ::
+export function mqtt_encode_auth(mqtt_level, pkt) ::
+  if 5 > mqtt_level ::
     throw new Error @ 'Auth packets are only available after MQTT 5.x'
 
   const wrt = new mqtt_type_writer()

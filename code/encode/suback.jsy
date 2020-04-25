@@ -1,11 +1,11 @@
 import {mqtt_type_writer} from './_utils.jsy'
 
-export function mqtt_encode_suback(pkt) ::
+export function mqtt_encode_suback(mqtt_level, pkt) ::
   return _mqtt_encode_suback @
-    0x90, pkt, 'sub_answers'
+    0x90, mqtt_level, pkt, 'sub_answers'
 
 
-export function _mqtt_encode_suback(hdr, pkt, key_answers) ::
+export function _mqtt_encode_suback(hdr, mqtt_level, pkt, key_answers) ::
   const wrt = new mqtt_type_writer()
 
   wrt.u16 @ pkt.packet_id
