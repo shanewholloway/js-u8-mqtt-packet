@@ -12,26 +12,24 @@ const _connect_flags_ = bind_flags @:
 
 export function mqtt_decode_connect(pkt) ::
   const rdr = mqtt_reader(pkt.u8_body, 0)
+  if 'MQTT' !== rdr.utf8() ::
+    throw new Error @ 'Invalid mqtt_connect packet'
 
-  pkt.protocol_name = rdr.utf8()
-
-  const mqtt_level = rdr.u8()
-  pkt.protocol_level = mqtt_level
-  pkt._base_.mqtt_level = mqtt_level
+  pkt._base_.mqtt_level = pkt.mqtt_level = rdr.u8()
 
   const flags = pkt.connect_flags =
     rdr.u8_flags(_connect_flags_)
 
   pkt.keep_alive = rdr.u16()
 
-  if 5 <= mqtt_level ::
+  if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
 
   const payload = pkt.payload = {}
 
   payload.client_id = rdr.utf8()
   if flags.will_flag ::
-    if 5 <= mqtt_level ::
+    if 5 <= pkt.mqtt_level ::
       payload.willProperties = rdr.props()
 
     payload.willTopic = rdr.utf8()
