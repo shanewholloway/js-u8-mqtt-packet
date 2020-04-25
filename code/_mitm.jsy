@@ -2,7 +2,7 @@ import {createWriteStream} from 'fs'
 import {pipeline} from 'stream'
 import {createServer, connect} from 'net'
 
-import {mqtt_aiter_decoder, mqtt_encode_by_name} from 'u8-mqtt-packet/cjs/all.cjs'
+import {mqtt_aiter_decoder, mqtt_encode_by_name} from 'u8-mqtt-packet'
 
 const mitm_port = parseInt(process.argv.slice(2).pop() || 1884)
 

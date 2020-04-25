@@ -1,1 +1,5 @@
-export default null
+import {mqtt_encode_by_name} from './_encode_all.jsy'
+
+export function mqtt_encode(type_name, pkt) ::
+  return mqtt_encode_by_name[type_name] @ pkt
+

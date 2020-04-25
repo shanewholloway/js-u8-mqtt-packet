@@ -2,16 +2,15 @@ import { mqtt_pkt_id_dispatch } from './framing.jsy'
 import { mqtt_decode_ops_by_id, _u8_join } from './_decode_all.jsy'
 
 
-export default decode_mqtt
-export const decode_mqtt =
+export const mqtt_decode =
   mqtt_pkt_id_dispatch @
     mqtt_decode_ops_by_id
 
 
 export function mqtt_decode_context() ::
-  return _mqtt_decode_context(decode_mqtt)
+  return _mqtt_decode_context(mqtt_decode)
 
-export function _mqtt_decode_context(decode_mqtt) ::
+export function _mqtt_decode_context(mqtt_decode) ::
   let u8_prev = null
 
   return @\ u8, ctx ::
@@ -21,7 +20,7 @@ export function _mqtt_decode_context(decode_mqtt) ::
 
     let tip, res=[]
     while 0 !== u8.byteLength ::
-      [u8, tip] = decode_mqtt(u8, ctx)
+      [u8, tip] = mqtt_decode(u8, ctx)
       if undefined !== tip ::
         res.push(tip)
       else break
