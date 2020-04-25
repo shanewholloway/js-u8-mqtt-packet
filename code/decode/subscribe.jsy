@@ -1,4 +1,4 @@
-import {mqtt_reader, bind_flags} from './_utils.jsy'
+import {mqtt_type_reader, bind_flags} from './_utils.jsy'
 
 const _subscription_options_ = bind_flags @:
   get qos() :: return this & 0x3
@@ -6,7 +6,7 @@ const _subscription_options_ = bind_flags @:
   get retain_handling() :: return (this >> 2) & 0x3
 
 export function mqtt_decode_subscribe(pkt) ::
-  const rdr = mqtt_reader(pkt.u8_body, 0)
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
   pkt.packet_id = rdr.u16()
 
   if 5 <= pkt.mqtt_level ::

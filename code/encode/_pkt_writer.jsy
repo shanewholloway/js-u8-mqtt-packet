@@ -1,0 +1,43 @@
+import {encode_varint} from '../mqtt_varint.jsy'
+
+export function mqtt_pkt_writer_pool() ::
+  const _pool_ = []
+  return @=> 0 === _pool_.length
+      ? mqtt_pkt_writer(_pool_)
+      : _pool_.pop()
+
+export function mqtt_pkt_writer(_pool_) ::
+  let self, n=0, rope=[]
+  return self = @{}
+    push(u8) ::
+      #IF DEBUG
+        u8 = new Uint8Array(u8)
+
+      rope.push(u8)
+      n += u8.length
+
+    add(... args) ::
+      #IF DEBUG
+        args = new Uint8Array(args)
+
+      rope.push(args)
+      n += args.length
+
+    as_pkt(hdr) ::
+      const pkt = _mqtt_pkt_rope(hdr, n, rope)
+      n=0; rope=[]
+      if undefined !== _pool_ ::
+        _pool_.push(self)
+      return pkt
+
+export function _mqtt_pkt_rope(hdr, n, rope) ::
+  const header = encode_varint(n, [hdr])
+  let i = header.length
+
+  const pkt = new Uint8Array(n + i)
+  pkt.set(header, 0)
+  for const vec of rope ::
+    pkt.set(vec, i)
+    i += vec.length
+  return pkt
+

@@ -1,0 +1,37 @@
+import {encode_varint} from '../mqtt_varint.jsy'
+import {mqtt_pkt_writer_pool} from './_pkt_writer.jsy'
+export * from './_pkt_writer.jsy'
+
+export const u8from = a => Uint8Array.from(a)
+export const u8lit = (...args) => u8from(args)
+
+export class mqtt_type_writer ::
+  constructor() ::
+    Object.assign @ this, this._pkt_writer()
+
+  u8(v) :: return this.add @ v & 0xff
+  u16(v) :: return this.add @ (v>>>8) & 0xff, v & 0xff
+  u32(v) :: return this.add @ (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 0xff
+  vint(v) :: return this.push @ encode_varint(v)
+
+  _vi_bin(u8_buf) ::
+    this.vint(u8_buf.byteLength)
+    return this.push(u8_buf)
+
+  bin(u8_buf) :: return this._vi_bin @
+    u8_buf.length === u8_buf.byteLength
+      ? u8_buf
+      : new Uint8Array(u8_buf)
+
+  utf8(v) :: return this._vi_bin @
+    new TextEncoder('utf-8').encode(v)
+
+  pair(k,v) :: return this.utf8(k).utf8(v)
+
+  u8_flags(v) :: return this.add @ v | 0
+  u8_reason(v) :: return this.add @ v | 0
+
+  props() :: throw "TODO"
+
+mqtt_type_writer.prototype._pkt_writer = 
+  mqtt_pkt_writer_pool()

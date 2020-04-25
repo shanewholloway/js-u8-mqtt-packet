@@ -1,7 +1,7 @@
-import {mqtt_reader, bind_flags, bind_reason_lookup} from './_utils.jsy'
+import {mqtt_type_reader, bind_flags, bind_reason_lookup} from './_utils.jsy'
 
 const _connack_flags_ = bind_flags @:
-  get sessionPresent() :: return this & 0x01 !== 0
+  get session_present() :: return this & 0x01 !== 0
 
 export const _connack_reason_ = bind_reason_lookup @#
   // MQTT 3.1.1
@@ -36,7 +36,7 @@ export const _connack_reason_ = bind_reason_lookup @#
 
 
 export function mqtt_decode_connack(pkt) ::
-  const rdr = mqtt_reader(pkt.u8_body, 0)
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
   const flags = pkt.connect_flags =
     rdr.u8_flags(_connack_flags_)

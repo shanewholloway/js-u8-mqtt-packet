@@ -1,3 +1,2 @@
-export function mqtt_encode_pingresp() ::
-
-
+import {u8lit} from './_utils.jsy'
+export const mqtt_encode_pingresp = @=> u8lit(13, 0)

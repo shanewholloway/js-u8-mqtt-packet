@@ -7,7 +7,7 @@ import {builtinModules} from 'module'
 const _cfg_ = {
   plugins: [
     rpi_dgnotify(),
-    rpi_jsy({defines:{}}),
+    rpi_jsy({defines:{DEBUG: true}}),
   ],
   external: id =>
     id.startsWith('u8-mqtt-packet')

@@ -2,19 +2,10 @@ import {decode_varint} from '../mqtt_varint.jsy'
 import {mqtt_protocol} from '../mqtt_base.jsy'
 
 
-export const mqtt_reader = (buf, idx=0) => @:
-  __proto__: type_reader_proto
-  buf, step: step_from(idx)
-
-
-export const step_from = idx =>
-  (width, res) => @
-    res = idx
-    idx += width
-    res
-
-export const type_reader_proto = @{}
-  step_from
+export class mqtt_type_reader ::
+  constructor(buf, idx=0) ::
+    this.buf = buf
+    this.step = (width, r) => @ r = idx, idx += width, r
 
   has_more() ::
     const {buf, step} = this

@@ -14,11 +14,12 @@ import {mqtt_decode_auth} from './decode/auth.jsy'
 
 export * from './decode/_utils.jsy'
 
-const mqtt_decode_noop = pkt => pkt
 function mqtt_dnu_decode(pkt) ::
   const err = new Error @ 'MQTT packet not understood'
   err.pkt = pkt
   throw err
+
+const mqtt_decode_noop = pkt => pkt
 
 
 export const mqtt_decode_ops_by_id = @[]
@@ -41,7 +42,6 @@ export const mqtt_decode_ops_by_id = @[]
 
 
 export @{}
-  mqtt_decode_noop
   mqtt_dnu_decode,
   mqtt_decode_connect,
   mqtt_decode_connack,
@@ -58,4 +58,5 @@ export @{}
   mqtt_decode_noop as mqtt_decode_pingresp,
   mqtt_decode_disconnect,
   mqtt_decode_auth,
+  mqtt_decode_noop
 

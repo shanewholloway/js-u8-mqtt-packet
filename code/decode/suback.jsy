@@ -1,4 +1,4 @@
-import {mqtt_reader, bind_reason_lookup} from './_utils.jsy'
+import {mqtt_type_reader, bind_reason_lookup} from './_utils.jsy'
 
 export const _suback_reason_ = bind_reason_lookup @#
   // MQTT 3.1.1
@@ -19,7 +19,7 @@ export const _suback_reason_ = bind_reason_lookup @#
 
 
 export function mqtt_decode_suback(pkt) ::
-  const rdr = mqtt_reader(pkt.u8_body, 0)
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
   pkt.packet_id = rdr.u16()
   if 5 <= pkt.mqtt_level ::

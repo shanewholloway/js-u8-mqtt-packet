@@ -5,26 +5,26 @@ export const mqtt_protocol = @{}
 
 function _mqtt_init_msg_types() ::
   const type_entries = @[]
-    @{} id:  0, type: 'reserved'
-    @{} id:  1, type: 'connect'
-    @{} id:  2, type: 'connack'
-    @{} id:  3, type: 'publish'
-    @{} id:  4, type: 'puback'
-    @{} id:  5, type: 'pubrec'
-    @{} id:  6, type: 'pubrel'
-    @{} id:  7, type: 'pubcomp'
-    @{} id:  8, type: 'subscribe'
-    @{} id:  9, type: 'suback'
-    @{} id: 10, type: 'unsubscribe'
-    @{} id: 11, type: 'unsuback'
-    @{} id: 12, type: 'pingreq'
-    @{} id: 13, type: 'pingresp'
-    @{} id: 14, type: 'disconnect'
-    @{} id: 15, type: 'auth'
+    @{} cmd: 0x00, type: 'reserved'
+    @{} cmd: 0x10, type: 'connect'
+    @{} cmd: 0x20, type: 'connack'
+    @{} cmd: 0x30, type: 'publish'
+    @{} cmd: 0x40, type: 'puback'
+    @{} cmd: 0x50, type: 'pubrec'
+    @{} cmd: 0x60, type: 'pubrel'
+    @{} cmd: 0x70, type: 'pubcomp'
+    @{} cmd: 0x80, type: 'subscribe'
+    @{} cmd: 0x90, type: 'suback'
+    @{} cmd: 0xa0, type: 'unsubscribe'
+    @{} cmd: 0xb0, type: 'unsuback'
+    @{} cmd: 0xc0, type: 'pingreq'
+    @{} cmd: 0xd0, type: 'pingresp'
+    @{} cmd: 0xe0, type: 'disconnect'
+    @{} cmd: 0xf0, type: 'auth'
 
   const type_map = new Map()
   for const type_obj of type_entries ::
-    type_obj.cmd = type_obj.id << 4
+    type_obj.id = type_obj.cmd >>> 4 
     type_map.set(type_obj.cmd, type_obj)
 
   return @{}

@@ -1,4 +1,4 @@
-import {mqtt_reader, bind_reason_lookup} from './_utils.jsy'
+import {mqtt_type_reader, bind_reason_lookup} from './_utils.jsy'
 
 export const _unsuback_reason_ = bind_reason_lookup @#
   @[] 0x00, 'Success'
@@ -10,7 +10,7 @@ export const _unsuback_reason_ = bind_reason_lookup @#
   @[] 0x91, 'Packet Identifier in use'
 
 export function mqtt_decode_unsuback(pkt) ::
-  const rdr = mqtt_reader(pkt.u8_body, 0)
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
   pkt.packet_id = rdr.u16()
   if 5 <= pkt.mqtt_level ::

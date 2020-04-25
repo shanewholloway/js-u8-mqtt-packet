@@ -1,4 +1,4 @@
-import {mqtt_reader} from './_utils.jsy'
+import {mqtt_type_reader} from './_utils.jsy'
 
 export function mqtt_decode_publish(pkt) ::
   const {hdr} = pkt
@@ -6,7 +6,7 @@ export function mqtt_decode_publish(pkt) ::
   pkt.retain = Boolean(hdr & 0x1)
   const qos = pkt.qos = (hdr>>1) & 0x3
 
-  const rdr = mqtt_reader(pkt.u8_body, 0)
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
   pkt.topic = rdr.utf8()
   if 0 !== qos ::
     pkt.packet_id = rdr.u16()

@@ -1,4 +1,4 @@
-import {mqtt_reader, bind_reason_lookup} from './_utils.jsy'
+import {mqtt_type_reader, bind_reason_lookup} from './_utils.jsy'
 
 export const _disconnect_reason_ = bind_reason_lookup @#
   // MQTT 5.0
@@ -35,7 +35,7 @@ export const _disconnect_reason_ = bind_reason_lookup @#
 
 export function mqtt_decode_disconnect(pkt) ::
   if 5 <= pkt.mqtt_level ::
-    const rdr = mqtt_reader(pkt.u8_body, 0)
+    const rdr = new mqtt_type_reader(pkt.u8_body, 0)
     pkt.reason = rdr.u8_reason(_disconnect_reason_)
     pkt.props = rdr.props()
   return pkt

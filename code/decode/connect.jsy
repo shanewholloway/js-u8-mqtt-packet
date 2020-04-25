@@ -1,4 +1,4 @@
-import {mqtt_reader, bind_flags} from './_utils.jsy'
+import {mqtt_type_reader, bind_flags} from './_utils.jsy'
 
 const _connect_flags_ = bind_flags @:
   get reserved() :: return this & 0x01 !== 0
@@ -11,7 +11,7 @@ const _connect_flags_ = bind_flags @:
 
 
 export function mqtt_decode_connect(pkt) ::
-  const rdr = mqtt_reader(pkt.u8_body, 0)
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0)
   if 'MQTT' !== rdr.utf8() ::
     throw new Error @ 'Invalid mqtt_connect packet'
 

@@ -36,7 +36,8 @@ export function mqtt_raw_pkt_dispatch(decode_raw_pkt, dispatch) ::
     const tip = decode_raw_pkt(l, ctx)
 
     if undefined !== tip ::
-      _check_roundtrip_(tip, u8_buf)
+      #IF DEBUG
+        _check_roundtrip_(tip, u8_buf)
 
       l[1] = dispatch(tip, ctx)
       if undefined === l[1] ::
@@ -66,28 +67,30 @@ export function mqtt_decode_raw_pkt(by_type, wm_bases) ::
     u8ref[0] = u8.subarray(len_pkt)
     return @{} __proto__: _base_,
       type_obj: by_type && by_type(cmd), b0, cmd, hdr
+      u8_raw_pkt: u8.subarray(0, len_pkt)
       u8_body: 0 === len_body ? null
         : u8.subarray(len_vh, len_pkt)
 
 
-export function mqtt_encode_raw_pkt({b0, u8_body}) ::
-  if null === u8_body || undefined === u8_body ::
-    return Uint8Array.from @# b0, 0
+#IF DEBUG
+  function _encode_raw_pkt_({b0, u8_body}) ::
+    if null === u8_body || undefined === u8_body ::
+      return Uint8Array.from @# b0, 0
 
-  const len = u8_body.byteLength
-  const u8_head = encode_varint(len, [b0])
-  const u8 = new Uint8Array(u8_head.length + len)
-  u8.set @ u8_head, u8_head
-  u8.set @ u8_body, u8_head.length
-  return u8
+    const len = u8_body.byteLength
+    const u8_head = encode_varint(len, [b0])
+    const u8 = new Uint8Array(u8_head.length + len)
+    u8.set @ u8_head, u8_head
+    u8.set @ u8_body, u8_head.length
+    return u8
 
 
-function _check_roundtrip_(tip, u8_buf) ::
-  const raw_pkt = mqtt_encode_raw_pkt(tip)
-  if raw_pkt.some @\ v,i => v !== u8_buf[i] ::
-    console.log @ 'src:', u8_buf.slice(0, raw_pkt.byteLength)
-    console.log @ 'raw:', raw_pkt
-    console.log @ 'tip:', tip
-    throw new Error @
-      'MQTT packet codec should round-trip'
+  function _check_roundtrip_(tip, u8_buf) ::
+    const raw_pkt = _encode_raw_pkt_(tip)
+    if raw_pkt.some @\ v,i => v !== u8_buf[i] ::
+      console.log @ 'src:', u8_buf.slice(0, raw_pkt.byteLength)
+      console.log @ 'raw:', raw_pkt
+      console.log @ 'tip:', tip
+      throw new Error @
+        'MQTT packet codec should round-trip'
 
