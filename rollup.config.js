@@ -27,6 +27,7 @@ export default configs
 
 add_jsy('index')
 add_jsy('codec', {min: true})
+add_jsy('codec_tiny', {min: true})
 
 add_jsy('_test')
 add_jsy('_mitm')

@@ -16,7 +16,7 @@ import {mqtt_encode_auth} from './encode/auth.jsy'
 
 export * from './encode/_utils.jsy'
 
-export const mqtt_encode_by_name = @{}
+export const mqtt_encode_by_type = @{}
   connect: mqtt_encode_connect
   connack: mqtt_encode_connack
   publish: mqtt_encode_publish
@@ -32,6 +32,13 @@ export const mqtt_encode_by_name = @{}
   pingresp: mqtt_encode_pingresp
   disconnect: mqtt_encode_disconnect
   auth: mqtt_encode_auth
+
+
+export function _mqtt_encode(mqtt_version, enc_by_type) ::
+  return @\ type, pkt =>
+    enc_by_type[type] @
+      mqtt_version, pkt
+
 
 export @{}
   mqtt_encode_connect,
@@ -49,3 +56,4 @@ export @{}
   mqtt_encode_pingresp,
   mqtt_encode_disconnect,
   mqtt_encode_auth,
+

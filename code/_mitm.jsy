@@ -39,6 +39,7 @@ createServer()
         mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
           for const pkt of pkt_lst ::
             const {mqtt_level, type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
+            ts_log.write @ `  {"cst": "${type_obj.type}"},\n`
             if 0 ::
               console.log @ '==>', tip
             else ::
@@ -54,6 +55,7 @@ createServer()
         mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
           for const pkt of pkt_lst ::
             const {mqtt_level, type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
+            ts_log.write @ `  {"sct": "${type_obj.type}"},\n`
             if 0 ::
               console.log @ '<--', tip
             else ::

@@ -1,0 +1,32 @@
+import { mqtt_pkt_id_dispatch } from './framing.jsy'
+
+// Server to Client Types: connack, publish, suback
+import @{}
+  mqtt_decode_noop as noop,
+  mqtt_decode_connack,
+  mqtt_decode_suback,
+  mqtt_decode_publish,
+from './_decode_all.jsy'
+
+// Client to Server Types: connect, disconnect, publish, subscribe
+import @{}
+  _mqtt_encode,
+  mqtt_encode_connect as connect,
+  mqtt_encode_disconnect as disconnect,
+  mqtt_encode_publish as publish,
+  mqtt_encode_subscribe as subscribe,
+from './_encode_all.jsy'
+
+const ops_by_id = Array(17).fill(noop)
+ops_by_id[0x2] = mqtt_decode_connack
+ops_by_id[0x3] = mqtt_decode_publish
+ops_by_id[0x9] = mqtt_decode_suback
+
+const mqtt_decode = mqtt_pkt_id_dispatch(ops_by_id)
+
+const mqtt_encode = _mqtt_encode @ 4, @{}
+  connect, disconnect, publish, subscribe
+
+const mqtt_codec = @{} mqtt_decode, mqtt_encode
+export @{} mqtt_decode, mqtt_encode,
+  mqtt_codec, mqtt_codec as default
