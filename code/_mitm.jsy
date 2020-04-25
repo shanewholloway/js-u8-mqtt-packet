@@ -1,6 +1,7 @@
 import {createWriteStream} from 'fs'
 import {pipeline} from 'stream'
 import {createServer, connect} from 'net'
+const mqtt_pkt = require('mqtt-packet')
 
 import {mqtt_aiter_decoder, mqtt_encode_by_name} from 'u8-mqtt-packet'
 
@@ -37,11 +38,11 @@ createServer()
 
         mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
           for const pkt of pkt_lst ::
-            const {type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
+            const {mqtt_level, type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
             if 0 ::
               console.log @ '==>', tip
             else ::
-              rt_pkt(type_obj, tip, u8_raw_pkt)
+              rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level)
 
         sock_dst
 
@@ -52,11 +53,11 @@ createServer()
 
         mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
           for const pkt of pkt_lst ::
-            const {type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
+            const {mqtt_level, type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
             if 0 ::
               console.log @ '<--', tip
             else ::
-              rt_pkt(type_obj, tip, u8_raw_pkt)
+              rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level)
 
         sock_src
 
@@ -73,19 +74,32 @@ createServer()
   .listen @ mitm_port
 
 
-function rt_pkt(type_obj, tip, u8_raw_pkt) ::
+function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
+  if ['publish', 'connect'].includes @ type_obj.type ::
+    console.log @ "IG", type_obj
+    return
+
   const fn_encode = mqtt_encode_by_name[type_obj.type]
   const rt_pkt = fn_encode(tip)
   if undefined === rt_pkt ::
     console.log @ 'No RT', type_obj
     return
 
-  const eq = u8_raw_pkt.byteLength === rt_pkt.byteLength
-    && u8_raw_pkt.every @\ v,i => v === rt_pkt[i]
+  const diff = rt_pkt.map @\ v,i => v === u8_raw_pkt[i] ? 0 : 1
+  const eq = u8_raw_pkt.byteLength === rt_pkt.byteLength 
+    && ! diff.some(Boolean)
 
-  console.group @ 'RT', eq, type_obj
+  console.group @ 'RT', eq, mqtt_level, type_obj
   if ! eq ::
+    console.log @ 'tip', tip
     console.log @ 'rt_pkt', rt_pkt
     console.log @ 'or_pkt', u8_raw_pkt
+    console.log @ 'diff', diff
+
+    mqtt_pkt.parser()
+    .on @ 'packet', pkt_o =>
+      console.log @ '3p', pkt_o
+    .parse @ Buffer.from(u8_raw_pkt)
+
   console.groupEnd()
 

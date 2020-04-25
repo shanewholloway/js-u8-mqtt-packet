@@ -7,8 +7,8 @@ const _subscription_options_ = bind_flags @:
 
 export function mqtt_decode_subscribe(pkt) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
-  pkt.packet_id = rdr.u16()
 
+  pkt.packet_id = rdr.u16()
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
 
@@ -17,5 +17,6 @@ export function mqtt_decode_subscribe(pkt) ::
     topic_list.push @:
       topic: rdr.utf8()
       opts: rdr.u8_flags(_subscription_options_)
+
   return pkt
 

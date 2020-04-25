@@ -9,27 +9,33 @@ export class mqtt_type_writer ::
   constructor() ::
     Object.assign @ this, this._pkt_writer()
 
-  u8(v) :: return this.add @ v & 0xff
-  u16(v) :: return this.add @ (v>>>8) & 0xff, v & 0xff
-  u32(v) :: return this.add @ (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 0xff
-  vint(v) :: return this.push @ encode_varint(v)
+  u8(v) :: this.add @ v & 0xff
+  u16(v) :: this.add @ (v>>>8) & 0xff, v & 0xff
+  u32(v) :: this.add @ (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 0xff
+  vint(v) :: this.push @ encode_varint(v)
 
   _vi_bin(u8_buf) ::
-    this.vint(u8_buf.byteLength)
-    return this.push(u8_buf)
+    this.u16(u8_buf.byteLength)
+    this.push(u8_buf)
 
-  bin(u8_buf) :: return this._vi_bin @
+  bin(u8_buf) :: this._vi_bin @
     u8_buf.length === u8_buf.byteLength
       ? u8_buf
       : new Uint8Array(u8_buf)
 
-  utf8(v) :: return this._vi_bin @
+  utf8(v) :: this._vi_bin @
     new TextEncoder('utf-8').encode(v)
 
-  pair(k,v) :: return this.utf8(k).utf8(v)
+  pair(k,v) ::
+    this.utf8(k)
+    this.utf8(v)
 
-  u8_flags(v) :: return this.add @ v | 0
-  u8_reason(v) :: return this.add @ v | 0
+  u8_flags(v, enc_flags) ::
+    if undefined !== v && isNaN(+v) ::
+      v = enc_flags(v, 0)
+    this.add @ v | 0
+
+  u8_reason(v) :: this.add @ v | 0
 
   props() :: throw "TODO"
 

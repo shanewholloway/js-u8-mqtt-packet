@@ -4,11 +4,7 @@ export function mqtt_encode_connack(pkt) ::
   const wrt = new mqtt_type_writer()
 
   const {connect_flags} = pkt
-  let flags = 0
-  if undefined !== connect_flags ::
-    if isNaN @ flags = +connect_flags ::
-      flags = connect_flags.session_present ? 1 : 0
-  wrt.u8_flags @ flags
+  wrt.u8_flags @ pkt.connect_flags, _enc_flags_connack
 
   if 5 <= pkt.mqtt_level ::
     wrt.u8_reason @ pkt.reason
@@ -18,4 +14,7 @@ export function mqtt_encode_connack(pkt) ::
     wrt.u8_reason @ pkt.return_code || pkt.reason
 
   return wrt.as_pkt(0x20)
+
+const _enc_flags_connack = connect_flags =>
+  connect_flags.session_present ? 1 : 0
 

@@ -1,4 +1,4 @@
 import {_mqtt_encode_pubxxx} from './pubrec.jsy'
 
 export function mqtt_encode_pubrel(pkt) ::
-  return _mqtt_encode_pubxxx @ 0x60, pkt
+  return _mqtt_encode_pubxxx @ 0x62, pkt

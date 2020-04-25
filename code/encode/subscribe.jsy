@@ -3,5 +3,27 @@ import {mqtt_type_writer} from './_utils.jsy'
 export function mqtt_encode_subscribe(pkt) ::
   const wrt = new mqtt_type_writer()
 
-  return wrt.as_pkt(0x80)
+  wrt.u16(pkt.packet_id)
+  if 5 <= pkt.mqtt_level ::
+    wrt.props(pkt.props)
+
+  for const each of pkt.sub_topics ::
+    if 'string' === typeof each ::
+      wrt.utf8(each)
+      wrt.u8(0)
+
+    else if Array.isArray(each) ::
+      wrt.utf8(each[0])
+      wrt.u8_flags(each[1], _enc_subscribe_flags)
+
+    else ::
+      wrt.utf8(each.topic)
+      wrt.u8_flags(each.opts, _enc_subscribe_flags)
+
+  return wrt.as_pkt(0x82)
+
+const _enc_subscribe_flags = opts => 0
+  | @ opts.qos & 0x3
+  | @ opts.retain ? 0x4 : 0
+  | @ (opts.retain_handling & 0x3) << 2  
 

@@ -3,5 +3,12 @@ import {mqtt_type_writer} from './_utils.jsy'
 export function mqtt_encode_unsubscribe(pkt) ::
   const wrt = new mqtt_type_writer()
 
-  return wrt.as_pkt(0xa0)
+  wrt.u16(pkt.packet_id)
+  if 5 <= pkt.mqtt_level ::
+    wrt.props(pkt.props)
+
+  for const topic of pkt.unsub_topics ::
+    wrt.utf8(topic)
+
+  return wrt.as_pkt(0xa2)
 
