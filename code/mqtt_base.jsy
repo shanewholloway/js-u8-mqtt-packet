@@ -1,5 +1,6 @@
 export const mqtt_protocol = @{}
   ... _mqtt_init_msg_types()
+  ... _mqtt_init_properties()
 
 
 function _mqtt_init_msg_types() ::
@@ -33,31 +34,41 @@ function _mqtt_init_msg_types() ::
 
 function _mqtt_init_properties() ::
   const prop_entries = @[]
-    @{} id: 0x01, type: 'u8',   name: 'payloadFormatIndicator'
-    @{} id: 0x02, type: 'u32',  name: 'messageExpiryInterval', 
-    @{} id: 0x03, type: 'utf8', name: 'contentType', 
-    @{} id: 0x08, type: 'utf8', name: 'responseTopic', 
-    @{} id: 0x09, type: 'bin',  name: 'correlationData', 
-    @{} id: 0x0B, type: 'vint', name: 'subscriptionIdentifier', 
-    @{} id: 0x11, type: 'u32',  name: 'sessionExpiryInterval', 
-    @{} id: 0x12, type: 'utf8', name: 'assignedClientIdentifier', 
-    @{} id: 0x13, type: 'u16',  name: 'serverKeepAlive', 
-    @{} id: 0x15, type: 'utf8', name: 'authenticationMethod', 
-    @{} id: 0x16, type: 'bin',  name: 'authenticationData', 
-    @{} id: 0x17, type: 'u8',   name: 'requestProblemInformation', 
-    @{} id: 0x18, type: 'u32',  name: 'willDelayInterval', 
-    @{} id: 0x19, type: 'u8',   name: 'requestResponseInformation', 
-    @{} id: 0x1A, type: 'utf8', name: 'responseInformation', 
-    @{} id: 0x1C, type: 'utf8', name: 'serverReference', 
-    @{} id: 0x1F, type: 'utf8', name: 'reasonString', 
-    @{} id: 0x21, type: 'u16',  name: 'receiveMaximum', 
-    @{} id: 0x22, type: 'u16',  name: 'topicAliasMaximum', 
-    @{} id: 0x23, type: 'u16',  name: 'topicAlias', 
-    @{} id: 0x24, type: 'u8',   name: 'maximumQoS', 
-    @{} id: 0x25, type: 'u8',   name: 'retainAvailable', 
-    @{} id: 0x26, type: 'pair', name: 'userProperties', plural: true
-    @{} id: 0x27, type: 'u32',  name: 'maximumPacketSize', 
-    @{} id: 0x28, type: 'u8',   name: 'wildcardSubscriptionAvailable', 
-    @{} id: 0x29, type: 'u8',   name: 'subscriptionIdentifiersAvailable', plural: true
-    @{} id: 0x2A, type: 'u8',   name: 'sharedSubscriptionAvailable', 
+    @{} id: 0x01, type: 'u8',   name: 'payload_format_indicator'
+    @{} id: 0x02, type: 'u32',  name: 'message_expiry_interval', 
+    @{} id: 0x03, type: 'utf8', name: 'content_type', 
+    @{} id: 0x08, type: 'utf8', name: 'response_topic', 
+    @{} id: 0x09, type: 'bin',  name: 'correlation_data', 
+    @{} id: 0x0B, type: 'vint', name: 'subscription_identifier', 
+    @{} id: 0x11, type: 'u32',  name: 'session_expiry_interval', 
+    @{} id: 0x12, type: 'utf8', name: 'assigned_client_identifier', 
+    @{} id: 0x13, type: 'u16',  name: 'server_keep_alive', 
+    @{} id: 0x15, type: 'utf8', name: 'authentication_method', 
+    @{} id: 0x16, type: 'bin',  name: 'authentication_data', 
+    @{} id: 0x17, type: 'u8',   name: 'request_problem_information', 
+    @{} id: 0x18, type: 'u32',  name: 'will_delay_interval', 
+    @{} id: 0x19, type: 'u8',   name: 'request_response_information', 
+    @{} id: 0x1A, type: 'utf8', name: 'response_information', 
+    @{} id: 0x1C, type: 'utf8', name: 'server_reference', 
+    @{} id: 0x1F, type: 'utf8', name: 'reason_string', 
+    @{} id: 0x21, type: 'u16',  name: 'receive_maximum', 
+    @{} id: 0x22, type: 'u16',  name: 'topic_alias_maximum', 
+    @{} id: 0x23, type: 'u16',  name: 'topic_alias', 
+    @{} id: 0x24, type: 'u8',   name: 'maximum_qo_s', 
+    @{} id: 0x25, type: 'u8',   name: 'retain_available', 
+    @{} id: 0x26, type: 'pair', name: 'user_properties', plural: true
+    @{} id: 0x27, type: 'u32',  name: 'maximum_packet_size', 
+    @{} id: 0x28, type: 'u8',   name: 'wildcard_subscription_available', 
+    @{} id: 0x29, type: 'u8',   name: 'subscription_identifiers_available', plural: true
+    @{} id: 0x2A, type: 'u8',   name: 'shared_subscription_available', 
+
+
+  const prop_map = new Map()
+  for const prop_obj of prop_entries ::
+    prop_map.set(prop_obj.id, prop_obj)
+    prop_map.set(prop_obj.name, prop_obj)
+
+  return @{}
+    prop_entries
+    by_prop_id: prop_map.get.bind(prop_map)
 

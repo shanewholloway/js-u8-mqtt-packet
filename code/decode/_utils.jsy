@@ -1,4 +1,5 @@
 import {decode_varint} from '../mqtt_varint.jsy'
+import {mqtt_protocol} from '../mqtt_base.jsy'
 
 
 export const mqtt_reader = (buf, idx=0) => @:
@@ -14,6 +15,10 @@ export const step_from = idx =>
 
 export const type_reader_proto = @{}
   step_from
+
+  has_more() ::
+    const {buf, step} = this
+    return buf.byteLength > step(0)
 
   u8() ::
     const {buf, step} = this
@@ -45,21 +50,6 @@ export const type_reader_proto = @{}
   utf8() :: return new TextDecoder('utf-8').decode @ this.bin()
   pair() :: return @[] this.utf8(), this.utf8()
 
-  props() ::
-    const {buf, step} = this
-
-    const [len, vi] = decode_varint(buf, step(0))
-    const end_part = vi + len
-    const buf_props = buf.subarray(vi, end_part)
-    step(end_part)
-
-    if 0 === buf_props.byteLength ::
-      return null
-
-    // TODO: decode props here
-    console.log @ "TODO: decode MQTT props:", buf_props
-    return buf_props
-
   u8_flags(proto) ::
     const {buf, step} = this
     return @{} __proto__: proto, u8: buf[step(1)]
@@ -73,9 +63,26 @@ export const type_reader_proto = @{}
     this.step = this.buf = null
     return buf.subarray(step(0))
 
-  has_more() ::
+  props() ::
     const {buf, step} = this
-    return buf.byteLength > step(0)
+
+    const [len, vi] = decode_varint(buf, step(0))
+    const end_part = vi + len
+    step(end_part)
+    if 0 === len ::
+      return null
+
+    const prop_entries = @[]
+    const {by_prop_id} = mqtt_protocol
+    const rdr = mqtt_reader @
+      buf.subarray(vi, end_part)
+
+    while rdr.has_more() ::
+      const {name, type} = by_prop_id @ rdr.u8()
+      const value = rdr[type]()
+      prop_entries.push @# name, value
+
+    return prop_entries
 
 
 
@@ -87,6 +94,7 @@ const _reason_proto_ = @{}
   toString() :: return this.reason
   toError(Error_=Error) ::
     return new Error_ @ `MQTT Decode: ${this.reason}`
+
 
 export function bind_reason_lookup(reason_entries) ::
   const reason_map = new Map()
