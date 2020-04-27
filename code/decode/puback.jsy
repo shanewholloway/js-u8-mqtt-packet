@@ -17,7 +17,7 @@ export const _puback_reason_ = bind_reason_lookup @#
 export function mqtt_decode_puback(pkt) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
-  pkt.packet_id = rdr.u16()
+  pkt.pkt_id = rdr.u16()
   if 5 <= pkt.mqtt_level ::
     pkt.reason = rdr.u8_reason(_puback_reason_)
     pkt.props = rdr.props()

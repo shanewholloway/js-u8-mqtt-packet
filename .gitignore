@@ -4,6 +4,7 @@ umd/
 dist/
 ref/
 logs/
+test/__unittest*
 node_modules/
 npm-debug.log
 .hggitignore

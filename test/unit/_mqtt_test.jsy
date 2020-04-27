@@ -1,0 +1,14 @@
+import {hex_to_u8} from 'u8-utils'
+import {mqtt_decode} from 'u8-mqtt-packet'
+
+const { assert, expect } = require('chai')
+export {assert, expect}
+
+export function mqtt_decode_hex(hex_pkt, ctx) ::
+  const [rest, pkt] = mqtt_decode @ hex_to_u8(hex_pkt), ctx
+  expect(rest).to.have.lengthOf(0)
+  return pkt
+
+export function mqtt_decode_one_hex(hex_pkt) ::
+  return mqtt_decode_hex @ hex_pkt, {}
+

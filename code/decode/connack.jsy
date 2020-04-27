@@ -1,6 +1,6 @@
-import {mqtt_type_reader, bind_flags, bind_reason_lookup} from './_utils.jsy'
+import {mqtt_type_reader, bind_reason_lookup} from './_utils.jsy'
 
-const _connack_flags_ = bind_flags @:
+class _connack_flags_ extends Number ::
   get session_present() :: return this & 0x01 !== 0
 
 export const _connack_reason_ = bind_reason_lookup @#

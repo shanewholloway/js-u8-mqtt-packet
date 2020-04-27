@@ -59,17 +59,25 @@ export function mqtt_decode_raw_pkt(by_type, wm_bases) ::
     let _base_ = wm_bases.get(ctx)
     if undefined === _base_ ::
       _base_ = ctx._base_ || {ctx}
-      _base_._base_ = _base_
+      if _base_._base_ !== _base_ ::
+        _base_ = @{} __proto__: _base_, _base_
       wm_bases.set(ctx, _base_)
 
 
     const b0 = u8[0], cmd = b0 & 0xf0, hdr = b0 & 0x0f
     u8ref[0] = u8.subarray(len_pkt)
-    return @{} __proto__: _base_,
-      type_obj: by_type && by_type(cmd), b0, cmd, hdr
-      u8_raw_pkt: u8.subarray(0, len_pkt)
-      u8_body: 0 === len_body ? null
-        : u8.subarray(len_vh, len_pkt)
+    #IF DEBUG
+      return @{} __proto__: _base_,
+        type_obj: by_type && by_type(cmd), b0, cmd, hdr
+        u8_raw_pkt: u8.subarray(0, len_pkt)
+        u8_body: 0 === len_body ? null
+          : u8.subarray(len_vh, len_pkt)
+
+    #ELSE
+      return @{} __proto__: _base_,
+        type_obj: by_type && by_type(cmd), b0, cmd, hdr
+        u8_body: 0 === len_body ? null
+          : u8.subarray(len_vh, len_pkt)
 
 
 #IF DEBUG

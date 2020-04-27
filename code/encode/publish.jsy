@@ -6,7 +6,7 @@ export function mqtt_encode_publish(mqtt_level, pkt) ::
 
   wrt.utf8(pkt.topic)
   if 0 !== qos ::
-    wrt.u16(pkt.packet_id)
+    wrt.u16(pkt.pkt_id)
 
   if 5 <= mqtt_level ::
     wrt.props(pkt.props)

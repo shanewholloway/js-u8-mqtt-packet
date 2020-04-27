@@ -3,7 +3,7 @@ import {mqtt_type_reader} from './_utils.jsy'
 export function mqtt_decode_unsubscribe(pkt) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
-  pkt.packet_id = rdr.u16()
+  pkt.pkt_id = rdr.u16()
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
 

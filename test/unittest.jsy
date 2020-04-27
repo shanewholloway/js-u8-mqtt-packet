@@ -1,0 +1,4 @@
+require('source-map-support/register')
+
+import './unit/smoke.jsy'
+import './unit/test_tiny.jsy'

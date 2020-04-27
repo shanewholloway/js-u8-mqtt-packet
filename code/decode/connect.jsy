@@ -1,6 +1,6 @@
-import {mqtt_type_reader, bind_flags} from './_utils.jsy'
+import {mqtt_type_reader} from './_utils.jsy'
 
-const _connect_flags_ = bind_flags @:
+class _connect_flags_ extends Number ::
   get reserved() :: return this & 0x01 !== 0
   get clean_start() :: return this & 0x02 !== 0
   get will_flag() :: return this & 0x04 !== 0

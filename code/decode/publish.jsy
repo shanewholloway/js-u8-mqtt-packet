@@ -9,7 +9,7 @@ export function mqtt_decode_publish(pkt) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
   pkt.topic = rdr.utf8()
   if 0 !== qos ::
-    pkt.packet_id = rdr.u16()
+    pkt.pkt_id = rdr.u16()
 
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()

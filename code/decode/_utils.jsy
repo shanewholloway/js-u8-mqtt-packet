@@ -41,9 +41,9 @@ export class mqtt_type_reader ::
   utf8() :: return new TextDecoder('utf-8').decode @ this.bin()
   pair() :: return @[] this.utf8(), this.utf8()
 
-  u8_flags(proto) ::
+  u8_flags(FlagsType) ::
     const {buf, step} = this
-    return @{} __proto__: proto, u8: buf[step(1)]
+    return new FlagsType(buf[step(1)])
 
   u8_reason(fn_reason) ::
     const {buf, step} = this
@@ -77,29 +77,17 @@ export class mqtt_type_reader ::
 
 
 
-function _self_u8() :: return this.u8
-
-const _reason_proto_ = @{}
-  valueOf: _self_u8
-  toJSON: _self_u8
-  toString() :: return this.reason
-  toError(Error_=Error) ::
-    return new Error_ @ `MQTT Decode: ${this.reason}`
-
+class U8_Reason extends Number ::
+  constructor(u8, reason) ::
+    super(u8)
+    this.reason = reason
 
 export function bind_reason_lookup(reason_entries) ::
   const reason_map = new Map()
   for const [u8, reason] of reason_entries ::
-    reason_map.set @ u8,
-      @{} __proto__: _reason_proto_, reason, u8
+    reason_map.set @ u8, new U8_Reason(u8, reason)
 
   return reason_map.get.bind(reason_map)
-
-
-
-export function bind_flags(obj) ::
-  obj.toJSON = obj.valueOf = _self_u8
-  return obj
 
 
 export function _u8_join(a, b) ::

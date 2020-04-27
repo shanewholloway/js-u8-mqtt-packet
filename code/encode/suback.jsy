@@ -8,7 +8,7 @@ export function mqtt_encode_suback(mqtt_level, pkt) ::
 export function _mqtt_encode_suback(hdr, mqtt_level, pkt, key_answers) ::
   const wrt = new mqtt_type_writer()
 
-  wrt.u16 @ pkt.packet_id
+  wrt.u16 @ pkt.pkt_id
   if 5 <= pkt.mqtt_level ::
     wrt.props @ pkt.props
 
