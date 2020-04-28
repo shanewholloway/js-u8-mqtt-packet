@@ -3,9 +3,12 @@ import MQTTClient from 'u8-mqtt-packet/esm/client/node.mjs'
 //import MQTTClient from 'u8-mqtt-packet/esm/tiny/node.mjs'
 
 ::!>
-  const mqtt_port = parseInt @ process.argv.slice(2).pop() || 1883
+  const c = new MQTTClient @\ pkt_list ::
+    for const pkt of pkt_list ::
+      const {type_obj, u8_body, b0, cmd, ... tip} = pkt
+      console.log @ `%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip
 
-  const c = new MQTTClient()
+  const mqtt_port = parseInt @ process.argv.slice(2).pop() || 1883
   await c.with_stream @ connect(mqtt_port, '127.0.0.1')
 
   c.connect @:

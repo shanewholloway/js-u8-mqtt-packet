@@ -1,5 +1,7 @@
 import {mqtt_session} from '../tiny/session.jsy'
-import {MQTTClient, _mqtt_node_api} from '../client/core.jsy'
+import {MQTTClient} from '../client/core.jsy'
+import {_mqtt_node_api} from '../client/node.jsy'
+
 export default MQTTClient.with_api @
   _mqtt_node_api(mqtt_session)
 

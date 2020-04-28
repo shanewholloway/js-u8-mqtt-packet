@@ -1,5 +1,35 @@
 import {mqtt_session} from '../session.jsy'
-import {MQTTClient, _mqtt_node_api} from '../client/core.jsy'
+import {MQTTClient} from './core.jsy'
+
 export default MQTTClient.with_api @
   _mqtt_node_api(mqtt_session)
+
+
+export function _mqtt_node_api(mqtt_session) ::
+  return @{}
+    async with_stream(duplex_stream, passthrough) ::
+      const [mqtt_decode, mqtt_encode] =
+        mqtt_session()
+
+      this._send = @\ type, pkt ::
+        duplex_stream.write @
+          mqtt_encode(type, pkt)
+
+      this._msg_loop = passthrough
+        ? _aiter_msg_loop(duplex_stream, mqtt_decode, this)
+        : _async_msg_loop(duplex_stream, mqtt_decode, this)
+
+      return this
+
+
+async function _async_msg_loop(duplex_stream, mqtt_decode, client) ::
+  for await const chunk of duplex_stream ::
+    client._on_mqtt @
+      mqtt_decode(chunk)
+
+async function * _aiter_msg_loop(duplex_stream, mqtt_decode, client) ::
+  for await const chunk of duplex_stream ::
+    client._on_mqtt @
+      mqtt_decode(chunk)
+    yield chunk
 

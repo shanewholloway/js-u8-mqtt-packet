@@ -1,5 +1,11 @@
 
 export class MQTTClient ::
+  constructor(on_mqtt) ::
+    if 'function' === typeof on_mqtt ::
+      this._on_mqtt = on_mqtt
+
+  _on_mqtt(pkt_list) ::
+
   auth(pkt) :: this._send('auth', pkt)
   connect(pkt) :: this._send('connect', pkt)
   disconnect(pkt) :: this._send('disconnect', pkt)
@@ -8,74 +14,7 @@ export class MQTTClient ::
   unsubscribe(pkt) :: this._send('unsubscribe', pkt)
 
   static with_api(api) ::
-    const klass = class extends this ::
-
-    Object.assign @ klass.prototype, api
-    return klass
-
-  _on_pkt_list(pkt_list) ::
-    for const pkt of pkt_list ::
-      this._on_pkt(pkt.type_obj.type, pkt)
-
-  _on_pkt(type, pkt) ::
-    const {type_obj, u8_body, b0, cmd, ... tip} = pkt
-    console.log @ `%c[mqtt ${type}]: %o`, 'color: blue', tip
-
-
-
-export const _mqtt_web_api = mqtt_session => @:
-  async with_websock(websock) ::
-    if 'string' === typeof websock ::
-      websock = new WebSocket(websock, ['mqtt'])
-
-    if 1 !== websock.readyState ::
-      if 0 !== websock.readyState ::
-        throw new Error @ 'Invalid WebSocket readyState'
-
-      await new Promise @ y =>
-        websock.addEventListener @ 'open', y, {once: true}
-
-
-    const [mqtt_decode, mqtt_encode] =
-      mqtt_session()
-
-    this._send = @\ type, pkt ::>
-      websock.send @
-        mqtt_encode(type, pkt)
-      return true
-
-    websock.onmessage = @\: data ::>
-      const u8_buf = new Uint8Array @
-        data instanceof ArrayBuffer ? data
-          : await data.arrayBuffer()
-
-      this._on_pkt_list @
-        mqtt_decode(u8_buf)
-
-
-
-export const _mqtt_node_api = mqtt_session => @:
-  async with_stream(duplex_stream, passthrough) ::
-    const [mqtt_decode, mqtt_encode] =
-      mqtt_session()
-
-    this._send = @\ type, pkt ::
-      duplex_stream.write @
-        mqtt_encode(type, pkt)
-
-    this._msg_loop = passthrough
-      ? _aiter_msg_loop(duplex_stream, mqtt_decode, this)
-      : _async_msg_loop(duplex_stream, mqtt_decode, this)
-
-
-async function _async_msg_loop(duplex_stream, mqtt_decode, client) ::
-  for await const chunk of duplex_stream ::
-    client._on_pkt_list @
-      mqtt_decode(chunk)
-
-async function * _aiter_msg_loop(duplex_stream, mqtt_decode, client) ::
-  for await const chunk of duplex_stream ::
-    client._on_pkt_list @
-      mqtt_decode(chunk)
-    yield chunk
+    class MQTTClient extends this ::
+    Object.assign @ MQTTClient.prototype, api
+    return MQTTClient
 

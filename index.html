@@ -6,9 +6,45 @@
   <title>Mini MQTT over websocket</title>
 
   <link rel='icon' href='data:image/png;base64,' />
+  <link rel='stylesheet' crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/shoelace-css@1.0.0-beta24/dist/shoelace.css' />
+  <style>main { max-width: 40em; margin: 2em auto; }</style>
 
-  <script type=module src='./esm/demo/web_tiny.mjs'></script>
 </head>
 
 <body>
-<main></main>
+<main>
+  <h1>u8-mqtt-packet</h1>
+
+  <a href='./demo_web.html'><h3>Demo MQTT Web Client</h3></a>
+  <a href='./demo_web_tiny.html'><h3>Demo Tiny MQTT Web Client</h3></a>
+
+  <p><i>Look in the developer console</i></p>
+
+  <script type=module>
+    import MQTTClient from './esm/client/web.mjs'
+
+    const my_mqtt = window.my_mqtt =
+      new MQTTClient( pkt_list => {
+        for (const pkt of pkt_list) {
+          const {type_obj, u8_body, b0, cmd, ... tip} = pkt
+          console.log(`%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip)
+        }})
+
+    my_mqtt.with_websock('ws://127.0.0.1:9001')
+    .then(async () => {
+      my_mqtt.connect({
+        keep_alive: 60,
+        connect_flags: { will_flag: 1, will_qos: 0, },
+        payload: {
+          client_id: 'swh_demo',
+          will_topic: 'swh/aaa/awesome',
+          will_payload: 'will is awesome',
+        } })
+
+      my_mqtt.publish({
+        topic: 'swh/test-topic',
+        payload: 'awesome from web', })
+    })
+  </script>
+</main>
+
