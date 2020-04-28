@@ -1,0 +1,34 @@
+export {MQTTClient} from './core.jsy'
+
+export function _mqtt_web_api(mqtt_session) ::
+  return @{}
+    async with_websock(websock) ::
+      if 'string' === typeof websock ::
+        websock = new WebSocket(websock, ['mqtt'])
+
+      if 1 !== websock.readyState ::
+        if 0 !== websock.readyState ::
+          throw new Error @ 'Invalid WebSocket readyState'
+
+        await new Promise @ y =>
+          websock.addEventListener @ 'open', y, {once: true}
+
+
+      const [mqtt_decode, mqtt_encode] =
+        mqtt_session()
+
+      this._send = @\ type, pkt ::>
+        websock.send @
+          mqtt_encode(type, pkt)
+        return true
+
+      websock.onmessage = @\: data ::>
+        const u8_buf = new Uint8Array @
+          data instanceof ArrayBuffer ? data
+            : await data.arrayBuffer()
+
+        this._on_mqtt @
+          mqtt_decode(u8_buf)
+
+      return this
+
