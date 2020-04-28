@@ -14,10 +14,17 @@ export const mqtt_encode_session =
   _mqtt_bind_encode @
     mqtt_encode_by_type
 
-export const mqtt_session =
+export const mqtt_session_v4 =
   _bind_mqtt_session @ 4,
     mqtt_decode_session,
     mqtt_encode_session,
 
-export default mqtt_session
+export const mqtt_session_v5 =
+  _bind_mqtt_session @ 5,
+    mqtt_decode_session,
+    mqtt_encode_session,
+
+export @{}
+  mqtt_session_v4 as mqtt_session,
+  mqtt_session_v4 as default,
 

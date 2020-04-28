@@ -6,8 +6,9 @@ export function _mqtt_web_api(mqtt_session) ::
       if 'string' === typeof websock ::
         websock = new WebSocket(websock, ['mqtt'])
 
-      if 1 !== websock.readyState ::
-        if 0 !== websock.readyState ::
+      const {readyState} = websock
+      if 1 !== readyState ::
+        if 0 !== readyState ::
           throw new Error @ 'Invalid WebSocket readyState'
 
         await new Promise @ y =>

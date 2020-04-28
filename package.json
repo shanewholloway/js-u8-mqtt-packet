@@ -15,13 +15,11 @@
   "files": [
     "cjs/",
     "code/",
-    "esm/",
-    "umd/"
+    "esm/"
   ],
   "type": "module",
   "main": "./cjs/index.cjs",
   "module": "./esm/index.mjs",
-  "browser": "./umd/index.min.js",
   "exports": {
     "./": "./",
     ".": {
@@ -41,7 +39,7 @@
   },
   "scripts": {
     "start": "qsrv -- *.html esm/",
-    "clean": "rm -rf ./cjs/* ./esm/* ./umd/*",
+    "clean": "rm -rf ./cjs/* ./esm/*",
     "build": "rollup --config",
     "watch": "npm -s run build -- --watch",
     "pretest": "npm -s run build",
