@@ -1,5 +1,0 @@
-import {mqtt_session} from './session.jsy'
-import {MQTTClient, _mqtt_web_api} from './_client.jsy'
-export default MQTTClient.with_api @
-  _mqtt_web_api(mqtt_session)
-

@@ -1,6 +1,8 @@
-import { _bind_mqtt_session } from './session.jsy'
-import { _mqtt_pkt_id_dispatch } from './decode_mqtt.jsy'
-import { _mqtt_bind_encode } from './encode_mqtt.jsy'
+import @{}
+  _mqtt_pkt_id_dispatch,
+  _mqtt_bind_encode,
+  _bind_mqtt_session,
+from '../_session_all.jsy'
 
 // Server to Client Types: connack, publish, suback
 import @{}
@@ -8,7 +10,7 @@ import @{}
   mqtt_decode_connack,
   mqtt_decode_suback,
   mqtt_decode_publish,
-from './_decode_all.jsy'
+from '../_decode_all.jsy'
 
 // Client to Server Types: connect, disconnect, publish, subscribe
 import @{}
@@ -16,7 +18,7 @@ import @{}
   mqtt_encode_disconnect as disconnect,
   mqtt_encode_publish as publish,
   mqtt_encode_subscribe as subscribe,
-from './_encode_all.jsy'
+from '../_encode_all.jsy'
 
 const ops_by_id = Array(17).fill(noop)
 ops_by_id[0x2] = mqtt_decode_connack

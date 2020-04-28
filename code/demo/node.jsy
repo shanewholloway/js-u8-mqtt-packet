@@ -1,9 +1,12 @@
 import {connect} from 'net'
-import MQTTClient from './tiny_client_node.jsy'
+import MQTTClient from 'u8-mqtt-packet/esm/client/node.mjs'
+//import MQTTClient from 'u8-mqtt-packet/esm/tiny/node.mjs'
 
 ::!>
+  const mqtt_port = parseInt @ process.argv.slice(2).pop() || 1883
+
   const c = new MQTTClient()
-  await c.with_stream @ connect(1883, '127.0.0.1')
+  await c.with_stream @ connect(mqtt_port, '127.0.0.1')
 
   c.connect @:
     connect_flags: @{}
@@ -25,7 +28,7 @@ import MQTTClient from './tiny_client_node.jsy'
 
   await delay(10)
 
-  //c.disconnect()
+  c.disconnect()
 
 function delay(ms) ::
   return @{} then(y) :: setTimeout(y,ms)

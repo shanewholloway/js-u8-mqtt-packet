@@ -1,5 +1,6 @@
 import rpi_jsy from 'rollup-plugin-jsy'
 import rpi_dgnotify from 'rollup-plugin-dgnotify'
+import rpi_resolve from '@rollup/plugin-node-resolve'
 import { terser as rpi_terser } from 'rollup-plugin-terser'
 import {builtinModules} from 'module'
 
@@ -9,10 +10,9 @@ const _cfg_ = {
   plugins: [
     rpi_dgnotify(),
     rpi_jsy({defines:{DEBUG}}),
+    rpi_resolve(),
   ],
-  external: id =>
-    id.startsWith('u8-mqtt-packet')
-      || builtinModules.includes(id),
+  external: id => builtinModules.includes(id),
 }
 
 const cfg_web_min = DEBUG ? null : { ... _cfg_,
@@ -28,20 +28,22 @@ export default configs
 add_jsy('index')
 add_jsy('session', {min: true})
 
-add_jsy('client_node')
-add_jsy('client_web', {min: true})
+add_jsy('client/node')
+add_jsy('client/web', {min: true})
 
 if (1) {
-  add_jsy('tiny_session', {min: true})
-  add_jsy('tiny_client_node')
-  add_jsy('tiny_client_web', {min: true})
+  add_jsy('tiny/session', {min: true})
+  add_jsy('tiny/node')
+  add_jsy('tiny/web', {min: true})
 }
 
 if (1) {
-  add_jsy('_test', {min: true})
-  add_jsy('_test_web', {min: true})
+  add_jsy('demo/node')
+  add_jsy('demo/web', {min: true})
+  add_jsy('demo/node_tiny')
+  add_jsy('demo/web_tiny', {min: true})
 
-  add_jsy('_mitm')
+  add_jsy('demo/_mitm')
 }
 
 

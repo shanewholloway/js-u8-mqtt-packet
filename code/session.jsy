@@ -1,14 +1,23 @@
-import {mqtt_decode_session} from './decode_mqtt.jsy'
-import {mqtt_encode_session} from './encode_mqtt.jsy'
+import { mqtt_decode_ops_by_id } from './_decode_all.jsy'
+import { mqtt_encode_by_type } from './_encode_all.jsy'
+import @{}
+  _mqtt_pkt_id_dispatch,
+  _mqtt_bind_encode,
+  _bind_mqtt_session,
+from './_session_all.jsy'
 
-export function _bind_mqtt_session(mqtt_level, mqtt_decode_session, mqtt_encode_session) ::
-  mqtt_level = mqtt_level || 4
-  return @\ _pkt_ctx_={mqtt_level} => @[]
-    mqtt_decode_session(_pkt_ctx_)
-    mqtt_encode_session(_pkt_ctx_)
+export const mqtt_decode_session =
+  _mqtt_pkt_id_dispatch @
+    mqtt_decode_ops_by_id
 
-export const mqtt_session = _bind_mqtt_session @ 4,
-  mqtt_decode_session, mqtt_encode_session
+export const mqtt_encode_session =
+  _mqtt_bind_encode @
+    mqtt_encode_by_type
+
+export const mqtt_session =
+  _bind_mqtt_session @ 4,
+    mqtt_decode_session,
+    mqtt_encode_session,
 
 export default mqtt_session
 

@@ -1,4 +1,5 @@
-import MQTTClient from './tiny_client_web.jsy'
+//import MQTTClient from 'u8-mqtt-packet/esm/client/web.mjs'
+import MQTTClient from 'u8-mqtt-packet/esm/tiny/web.mjs'
 
 ::!>
   const c = new MQTTClient()
@@ -24,7 +25,7 @@ import MQTTClient from './tiny_client_web.jsy'
 
   await delay(10)
 
-  //c.disconnect()
+  c.disconnect()
 
 function delay(ms) ::
   return @{} then(y) :: setTimeout(y,ms)
