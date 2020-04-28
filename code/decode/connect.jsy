@@ -31,10 +31,10 @@ export function mqtt_decode_connect(pkt) ::
   payload.client_id = rdr.utf8()
   if flags.will_flag ::
     if 5 <= pkt.mqtt_level ::
-      payload.willProperties = rdr.props()
+      payload.will_properties = rdr.props()
 
-    payload.willTopic = rdr.utf8()
-    payload.willPayload = rdr.bin()
+    payload.will_topic = rdr.utf8()
+    payload.will_payload = rdr.bin()
 
   if flags.username ::
     payload.username = rdr.utf8()

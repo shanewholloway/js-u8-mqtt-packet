@@ -1,5 +1,5 @@
 import {decode_varint} from '../mqtt_varint.jsy'
-import {mqtt_protocol} from '../mqtt_base.jsy'
+import {mqtt_props_by_id} from '../mqtt_props.jsy'
 
 
 export class mqtt_type_reader ::
@@ -64,12 +64,11 @@ export class mqtt_type_reader ::
       return null
 
     const prop_entries = @[]
-    const {by_prop_id} = mqtt_protocol
     const rdr = mqtt_reader @
       buf.subarray(vi, end_part)
 
     while rdr.has_more() ::
-      const {name, type} = by_prop_id @ rdr.u8()
+      const {name, type} = mqtt_props_by_id @ rdr.u8()
       const value = rdr[type]()
       prop_entries.push @# name, value
 
@@ -88,12 +87,4 @@ export function bind_reason_lookup(reason_entries) ::
     reason_map.set @ u8, new U8_Reason(u8, reason)
 
   return reason_map.get.bind(reason_map)
-
-
-export function _u8_join(a, b) ::
-  const alen = a.byteLength
-  const r = new Uint8Array(alen + b.byteLength)
-  r.set(a, 0)
-  r.set(b, alen)
-  return r
 

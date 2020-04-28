@@ -34,12 +34,6 @@ export const mqtt_encode_by_type = @{}
   auth: mqtt_encode_auth
 
 
-export function _mqtt_encode(mqtt_version, enc_by_type) ::
-  return @\ type, pkt =>
-    enc_by_type[type] @
-      mqtt_version, pkt
-
-
 export @{}
   mqtt_encode_connect,
   mqtt_encode_connack,

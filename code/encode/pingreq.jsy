@@ -1,2 +1,2 @@
-import {u8lit} from './_utils.jsy'
-export const mqtt_encode_pingreq = @=> u8lit(0xc0, 0)
+export const mqtt_encode_pingreq = @=>
+  new Uint8Array @# 0xc0, 0

@@ -26,11 +26,23 @@ export default configs
 
 
 add_jsy('index')
-add_jsy('codec', {min: true})
-add_jsy('codec_tiny', {min: true})
+add_jsy('session', {min: true})
 
-add_jsy('_test')
-add_jsy('_mitm')
+add_jsy('client_node')
+add_jsy('client_web', {min: true})
+
+if (1) {
+  add_jsy('tiny_session', {min: true})
+  add_jsy('tiny_client_node')
+  add_jsy('tiny_client_web', {min: true})
+}
+
+if (1) {
+  add_jsy('_test', {min: true})
+  add_jsy('_test_web', {min: true})
+
+  add_jsy('_mitm')
+}
 
 
 

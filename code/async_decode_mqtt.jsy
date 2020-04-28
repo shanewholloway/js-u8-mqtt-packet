@@ -1,21 +1,24 @@
-import {mqtt_decode_context} from './decode_mqtt.jsy'
+import {mqtt_decode_ctx, _mqtt_dipatcher} from './decode_mqtt.jsy'
 
-export function mqtt_async_decoder(ctx, fn_packets) ::
+export const mqtt_async_decoder =
+  _mqtt_async_decoder.bind @
+    null, mqtt_decode_ctx
+
+export const mqtt_aiter_decoder =
+  _mqtt_aiter_decoder.bind @
+    null, mqtt_decode_ctx
+
+
+export function _mqtt_async_decoder(mqtt_dispatcher) ::
   return async function (stream) ::
-    const decoder = mqtt_decode_context(ctx)
+    const decode_ctx = mqtt_decode_ctx()
     for await const u8_chunk of stream ::
-      const lst = decoder(u8_chunk, ctx)
-      if 0 !== lst.length ::
-        fn_packets(lst)
+      mqtt_dispatcher(u8_chunk)
 
 
-export function mqtt_aiter_decoder(ctx, fn_packets) ::
+export function _mqtt_aiter_decoder(mqtt_dispatcher) ::
   return async function * (stream) ::
-    const decoder = mqtt_decode_context(ctx)
     for await const u8_chunk of stream ::
-      const lst = decoder(u8_chunk, ctx)
-      if 0 !== lst.length ::
-        fn_packets(lst)
-
+      mqtt_dispatcher(u8_chunk)
       yield u8_chunk
 

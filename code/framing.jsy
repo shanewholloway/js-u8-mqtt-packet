@@ -1,104 +1,43 @@
-import {encode_varint, decode_varint} from './mqtt_varint.jsy'
-import {mqtt_protocol} from './mqtt_base.jsy'
+import {decode_varint} from './mqtt_varint.jsy'
+import {mqtt_cmd_by_type} from './mqtt_cmds.jsy'
 
 
-export function mqtt_pkt_id_dispatch(disp_parser) ::
-  return mqtt_raw_pkt_dispatch @
-    mqtt_decode_raw_pkt @
-      mqtt_protocol.by_type
-      new WeakMap
+export function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) ::
+  const [u8] = u8_ref
+  const [len_body, len_vh] = decode_varint(u8, 1)
 
-    @\ pkt, ctx ::
-      const fn_disp = disp_parser[pkt.type_obj.id]
-      return undefined === fn_disp
-        ? disp_parser[0](pkt, ctx)
-        : fn_disp.call(disp_parser, pkt, ctx)
-
-
-export function mqtt_pkt_dispatch(disp_parser) ::
-  return mqtt_raw_pkt_dispatch @
-    mqtt_decode_raw_pkt @
-      mqtt_protocol.by_type
-      new WeakMap
-
-    @\ pkt, ctx ::
-      const fn_disp = disp_parser[`mqtt ${pkt.type_obj.type}`]
-      return undefined === fn_disp
-        ? disp_parser.mqtt_dnu(pkt, ctx)
-        : fn_disp.call(disp_parser, pkt, ctx)
-
-
-export function mqtt_raw_pkt_dispatch(decode_raw_pkt, dispatch) ::
-  const l = [] // reuse array to prevent garbage collection churn on ephemeral ones
-  return @\ u8_buf, ctx ::
-    l.splice(0, l.length, u8_buf)
-
-    const tip = decode_raw_pkt(l, ctx)
-
-    if undefined !== tip ::
-      #IF DEBUG
-        _check_roundtrip_(tip, u8_buf)
-
-      l[1] = dispatch(tip, ctx)
-      if undefined === l[1] ::
-        l[1] = null
-
-    return l
-
-
-export function mqtt_decode_raw_pkt(by_type, wm_bases) ::
-  return @\ u8ref, ctx ::
-    const [u8] = u8ref
-    const [len_body, len_vh] = decode_varint(u8, 1)
-
-    const len_pkt = len_body + len_vh
-    if u8.byteLength < len_pkt ::
-      return
-
-    // _base
-    let _base_ = wm_bases.get(ctx)
-    if undefined === _base_ ::
-      _base_ = ctx._base_ || {ctx}
-      if _base_._base_ !== _base_ ::
-        _base_ = @{} __proto__: _base_, _base_
-      wm_bases.set(ctx, _base_)
-
-
+  const len_pkt = len_body + len_vh
+  if u8.byteLength >= len_pkt ::
     const b0 = u8[0], cmd = b0 & 0xf0, hdr = b0 & 0x0f
-    u8ref[0] = u8.subarray(len_pkt)
-    #IF DEBUG
-      return @{} __proto__: _base_,
-        type_obj: by_type && by_type(cmd), b0, cmd, hdr
-        u8_raw_pkt: u8.subarray(0, len_pkt)
-        u8_body: 0 === len_body ? null
-          : u8.subarray(len_vh, len_pkt)
-
-    #ELSE
-      return @{} __proto__: _base_,
-        type_obj: by_type && by_type(cmd), b0, cmd, hdr
-        u8_body: 0 === len_body ? null
-          : u8.subarray(len_vh, len_pkt)
+    u8_ref[0] = u8.subarray(len_pkt)
+    return @{} __proto__: _pkt_ctx_
+      b0, cmd, hdr
+      type_obj: mqtt_cmd_by_type(cmd)
+      u8_body: 0 === len_body ? null
+        : u8.subarray(len_vh, len_pkt)
 
 
-#IF DEBUG
-  function _encode_raw_pkt_({b0, u8_body}) ::
-    if null === u8_body || undefined === u8_body ::
-      return Uint8Array.from @# b0, 0
+export function _mqtt_raw_pkt_dispatch(u8_pkt_dispatch) ::
+  return @\ _pkt_ctx_={} ::
+    const l = [new Uint8Array(0)] // reuse array to prevent garbage collection churn on ephemeral ones
+    _pkt_ctx_._base_ = _pkt_ctx_
 
-    const len = u8_body.byteLength
-    const u8_head = encode_varint(len, [b0])
-    const u8 = new Uint8Array(u8_head.length + len)
-    u8.set @ u8_head, u8_head
-    u8.set @ u8_body, u8_head.length
-    return u8
+    return @\ u8_buf ::
+      l[0] = 0 === l[0].byteLength
+        ? u8_buf : _u8_join(l[0], u8_buf)
+
+      const res = []
+      while true ::
+        const u8_pkt = _mqtt_raw_pkt_decode_v(l, _pkt_ctx_)
+        if undefined !== u8_pkt ::
+          res.push @ u8_pkt_dispatch(u8_pkt)
+        else return res
 
 
-  function _check_roundtrip_(tip, u8_buf) ::
-    const raw_pkt = _encode_raw_pkt_(tip)
-    if raw_pkt.some @\ v,i => v !== u8_buf[i] ::
-      console.log @ 'src:', u8_buf.slice(0, raw_pkt.byteLength)
-      console.log @ 'raw:', raw_pkt
-      console.log @ 'tip:', tip
-      throw new Error @
-        'MQTT packet codec should round-trip'
+function _u8_join(a, b) ::
+  const alen = a.byteLength
+  const r = new Uint8Array(alen + b.byteLength)
+  r.set(a, 0)
+  r.set(b, alen)
+  return r
 

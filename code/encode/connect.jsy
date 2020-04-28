@@ -1,6 +1,7 @@
-import {mqtt_type_writer, u8lit} from './_utils.jsy'
+import {mqtt_type_writer} from './_utils.jsy'
 
-const _c_mqtt_proto = u8lit(0, 4, 0x4d, 0x51, 0x54, 0x54)
+const _c_mqtt_proto = new Uint8Array @#
+  0, 4, 0x4d, 0x51, 0x54, 0x54
 
 export function mqtt_encode_connect(mqtt_level, pkt) ::
   const wrt = new mqtt_type_writer()
@@ -8,7 +9,7 @@ export function mqtt_encode_connect(mqtt_level, pkt) ::
   wrt.push(_c_mqtt_proto)
   wrt.u8 @ mqtt_level
   const flags = wrt.u8_flags @
-    pkt.connect_flags,
+    pkt.connect_flags
     _enc_connect_flags
 
   wrt.u16(pkt.keep_alive)
@@ -21,10 +22,10 @@ export function mqtt_encode_connect(mqtt_level, pkt) ::
   wrt.utf8 @ payload.client_id
   if flags & 0x04 :: // .will_flag
     if 5 <= mqtt_level ::
-      wrt.props @ payload.willProperties
+      wrt.props @ payload.will_properties
 
-    wrt.utf8 @ payload.willTopic
-    wrt.bin @ payload.willPayload
+    wrt.utf8 @ payload.will_topic
+    wrt.bin @ payload.will_payload
 
   if flags & 0x80 :: // .username
     wrt.utf8 @ payload.username

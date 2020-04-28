@@ -3,7 +3,7 @@ import {pipeline} from 'stream'
 import {createServer, connect} from 'net'
 const mqtt_pkt = require('mqtt-packet')
 
-import {mqtt_aiter_decoder, mqtt_encode} from 'u8-mqtt-packet'
+import {mqtt_session} from 'u8-mqtt-packet'
 
 const mitm_port = parseInt(process.argv.slice(2).pop() || 1884)
 
@@ -26,40 +26,44 @@ createServer()
       const info = @{} mitm_port
       ts_log.write @ `{"info":${JSON.stringify(info)}, "mqtt_log":[\n`
 
-      const ctx={}
 
       pipeline @
         sock_src
 
         async function *(stream) ::
-          for await const chunk of stream ::
+          const [mqtt_decode, mqtt_encode] = mqtt_session()
+          for await let chunk of stream ::
             ts_log.write @ `  {"cs": "${chunk.toString('hex')}"},\n`
-            yield new Uint8Array @ chunk
+            // so we don't see Buffer instances
+            chunk = new Uint8Array(chunk)
 
-        mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
-          for const pkt of pkt_lst ::
-            const {mqtt_level, type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
-            ts_log.write @ `  {"cst": "${type_obj.type}"},\n`
-            if 0 ::
-              console.log @ '==>', tip
-            else ::
-              rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level)
+            for const pkt of mqtt_decode(chunk) ::
+              const {type_obj, u8_body, ...tip} = pkt
+              ts_log.write @ `  {"cst": "${type_obj.type}"},\n`
+              if 1 ::
+                console.log @ '==>', type_obj.type, tip
+              //else rt_pkt(type_obj, tip)
+
+              yield chunk
 
         sock_dst
 
         async function *(stream) ::
-          for await const chunk of stream ::
+          const [mqtt_decode, mqtt_encode] = mqtt_session()
+          for await let chunk of stream ::
             ts_log.write @ `  {"sc": "${chunk.toString('hex')}"},\n`
-            yield new Uint8Array @ chunk
+             // so we don't see Buffer instances
+            chunk = new Uint8Array(chunk)
 
-        mqtt_aiter_decoder @ ctx, @\ pkt_lst ::
-          for const pkt of pkt_lst ::
-            const {mqtt_level, type_obj, u8_body, u8_raw_pkt, ...tip} = pkt
-            ts_log.write @ `  {"sct": "${type_obj.type}"},\n`
-            if 0 ::
-              console.log @ '<--', tip
-            else ::
-              rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level)
+
+            for const pkt of mqtt_decode(chunk) ::
+              const {type_obj, u8_body, ...tip} = pkt
+              ts_log.write @ `  {"sct": "${type_obj.type}"},\n`
+              if 1 ::
+                console.log @ '<--', type_obj.type, tip
+              //else rt_pkt(type_obj, tip)
+
+              yield chunk
 
         sock_src
 
@@ -76,7 +80,8 @@ createServer()
   .listen @ mitm_port
 
 
-function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
+/*
+function rt_pkt(type_obj, tip) ::
   const rt_pkt = mqtt_encode(type_obj.type, tip)
   if undefined === rt_pkt ::
     console.log @ 'No RT', type_obj
@@ -86,7 +91,7 @@ function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
   const eq = u8_raw_pkt.byteLength === rt_pkt.byteLength 
     && ! diff.some(Boolean)
 
-  console.group @ 'RT', eq, mqtt_level, type_obj
+  console.group @ 'RT', eq, type_obj
   if ! eq ::
     console.log @ 'tip', tip
     console.log @ 'rt_pkt', rt_pkt
@@ -99,4 +104,4 @@ function rt_pkt(type_obj, tip, u8_raw_pkt, mqtt_level) ::
     .parse @ Buffer.from(u8_raw_pkt)
 
   console.groupEnd()
-
+*/

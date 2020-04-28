@@ -1,5 +1,5 @@
 import {u8_to_utf8} from 'u8-utils'
-import {assert, expect, mqtt_decode_hex, mqtt_decode_one_hex} from './_mqtt_test.jsy'
+import {assert, expect, mqtt_decode_one_hex} from './_mqtt_test.jsy'
 
 describe @ 'tiny client packets', @::
   it @ 'pingreq', @::
@@ -71,13 +71,15 @@ describe @ 'tiny client packets', @::
 
     const payload_list = []
     for const each of log ::
-      const ctx = @{} _base_: {}
-      const {type_obj, u8_body, payload, connect_flags, ...tip} = mqtt_decode_hex @ each, ctx
+      const _pkt_ctx_ = {}
+      const {type_obj, u8_body, payload, connect_flags, ...tip} =
+        mqtt_decode_one_hex @ each, _pkt_ctx_
 
       expect(type_obj).to.deep.equal @:
         type: 'connect', cmd: 0x10, id: 0x1
 
-      expect(ctx).to.deep.equal @: _base_: @{} mqtt_level: 4
+      expect(_pkt_ctx_.mqtt_level).to.equal @ 4
+      expect(_pkt_ctx_._base_).to.equal @ _pkt_ctx_
       expect(u8_body).not.null
 
       expect(tip).to.deep.equal @:

@@ -1,9 +1,8 @@
-import {connect} from 'net'
-import MQTTClient from './tiny_client_node.jsy'
+import MQTTClient from './tiny_client_web.jsy'
 
 ::!>
   const c = new MQTTClient()
-  await c.with_stream @ connect(1883, '127.0.0.1')
+  await c.with_websock('ws://127.0.0.1:9001')
 
   c.connect @:
     connect_flags: @{}
@@ -15,13 +14,13 @@ import MQTTClient from './tiny_client_node.jsy'
     payload: @{}
       client_id: 'swh_demo'
       will_topic: 'swh/aaa/awesome'
-      will_payload: 'last will is awesome'
+      will_payload: 'will is awesome'
 
   await delay(10)
 
   c.publish @:
     topic: 'swh/test-topic'
-    payload: 'awesome from node'
+    payload: 'awesome from web'
 
   await delay(10)
 
@@ -29,3 +28,4 @@ import MQTTClient from './tiny_client_node.jsy'
 
 function delay(ms) ::
   return @{} then(y) :: setTimeout(y,ms)
+

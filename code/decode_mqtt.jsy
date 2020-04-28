@@ -1,30 +1,16 @@
-import { mqtt_pkt_id_dispatch } from './framing.jsy'
-import { mqtt_decode_ops_by_id, _u8_join } from './_decode_all.jsy'
+import { _mqtt_raw_pkt_dispatch } from './framing.jsy'
+import { mqtt_decode_ops_by_id } from './_decode_all.jsy'
 
 
-export const mqtt_decode =
-  mqtt_pkt_id_dispatch @
+export const _mqtt_pkt_id_dispatch = disp_parser =>
+  _mqtt_raw_pkt_dispatch @\ pkt ::
+    const fn_disp = disp_parser[pkt.type_obj.id]
+    return undefined !== fn_disp
+      ? fn_disp.call(disp_parser, pkt)
+      : disp_parser[0](pkt)
+
+
+export const mqtt_decode_session =
+  _mqtt_pkt_id_dispatch @
     mqtt_decode_ops_by_id
-
-
-export function mqtt_decode_context() ::
-  return _mqtt_decode_context(mqtt_decode)
-
-export function _mqtt_decode_context(mqtt_decode) ::
-  let u8_prev = null
-
-  return @\ u8, ctx ::
-    if null !== u8_prev ::
-      u8 = _u8_join(u8_prev, u8)
-      u8_prev = null
-
-    let tip, res=[]
-    while 0 !== u8.byteLength ::
-      [u8, tip] = mqtt_decode(u8, ctx)
-      if undefined !== tip ::
-        res.push(tip)
-      else break
-
-    u8_prev = 0 === u8.byteLength ? null : u8
-    return res
 

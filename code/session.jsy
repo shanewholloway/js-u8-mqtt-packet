@@ -1,0 +1,14 @@
+import {mqtt_decode_session} from './decode_mqtt.jsy'
+import {mqtt_encode_session} from './encode_mqtt.jsy'
+
+export function _bind_mqtt_session(mqtt_level, mqtt_decode_session, mqtt_encode_session) ::
+  mqtt_level = mqtt_level || 4
+  return @\ _pkt_ctx_={mqtt_level} => @[]
+    mqtt_decode_session(_pkt_ctx_)
+    mqtt_encode_session(_pkt_ctx_)
+
+export const mqtt_session = _bind_mqtt_session @ 4,
+  mqtt_decode_session, mqtt_encode_session
+
+export default mqtt_session
+
