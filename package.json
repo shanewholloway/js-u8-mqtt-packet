@@ -1,6 +1,6 @@
 {
   "name": "u8-mqtt-packet",
-  "description": "MQTT packet codec using Uint8Array -- suitable for use in the browser, nodejs, and deno.",
+  "description": "MQTT packet codec using Uint8Array -- suitable for use in the Browser, NodeJS, and Deno.land.",
   "version": "0.0.5",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
