@@ -285,6 +285,7 @@ const _pubxxx_reason_ = bind_reason_lookup([
   [0x00, 'Success']
 , [0x92, 'Packet Identifier not found'] ]);
 
+
 function _mqtt_decode_pubxxx(pkt) {
   const rdr = new mqtt_type_reader(pkt.u8_body, 0);
 
@@ -306,11 +307,25 @@ function mqtt_decode_subscribe(pkt) {
   if (5 <= pkt.mqtt_level) {
     pkt.props = rdr.props();}
 
-  const topic_list = pkt.sub_topics = [];
+  const topic_list = pkt.topics = [];
   while (rdr.has_more()) {
     topic_list.push({
       topic: rdr.utf8()
     , opts: rdr.u8_flags(_subscription_options_)}); }
+
+  return pkt}
+
+function _mqtt_decode_suback(pkt, _ack_reason_) {
+  const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+
+  pkt.pkt_id = rdr.u16();
+  if (5 <= pkt.mqtt_level) {
+    pkt.props = rdr.props();}
+
+  const answers = pkt.answers = [];
+  while (rdr.has_more()) {
+    answers.push(
+      rdr.u8_reason(_ack_reason_)); }
 
   return pkt}
 
@@ -334,22 +349,7 @@ const _suback_reason_ = bind_reason_lookup([
 
 function mqtt_decode_suback(pkt) {
   return _mqtt_decode_suback(
-    pkt, _suback_reason_, 'sub_answers') }
-
-
-function _mqtt_decode_suback(pkt, _ack_reason_, key_answers) {
-  const rdr = new mqtt_type_reader(pkt.u8_body, 0);
-
-  pkt.pkt_id = rdr.u16();
-  if (5 <= pkt.mqtt_level) {
-    pkt.props = rdr.props();}
-
-  const answers = pkt[key_answers] = [];
-  while (rdr.has_more()) {
-    answers.push(
-      rdr.u8_reason(_ack_reason_)); }
-
-  return pkt}
+    pkt, _suback_reason_) }
 
 function mqtt_decode_unsubscribe(pkt) {
   const rdr = new mqtt_type_reader(pkt.u8_body, 0);
@@ -358,7 +358,7 @@ function mqtt_decode_unsubscribe(pkt) {
   if (5 <= pkt.mqtt_level) {
     pkt.props = rdr.props();}
 
-  const topic_list = pkt.unsub_topics = [];
+  const topic_list = pkt.topics = [];
   while (rdr.has_more()) {
     topic_list.push(rdr.utf8()); }
 
@@ -375,7 +375,7 @@ const _unsuback_reason_ = bind_reason_lookup([
 
 function mqtt_decode_unsuback(pkt) {
   return _mqtt_decode_suback(
-    pkt, _unsuback_reason_, 'unsub_answers') }
+    pkt, _unsuback_reason_) }
 
 const _disconnect_reason_ = bind_reason_lookup([
   // MQTT 5.0
@@ -631,9 +631,6 @@ function mqtt_encode_puback(mqtt_level, pkt) {
 
   return wrt.as_pkt(0x40)}
 
-function mqtt_encode_pubrec(mqtt_level, pkt) {
-  return _mqtt_encode_pubxxx(0x50, mqtt_level, pkt) }
-
 function _mqtt_encode_pubxxx(hdr, mqtt_level, pkt) {
   const wrt = new mqtt_type_writer();
 
@@ -646,6 +643,9 @@ function _mqtt_encode_pubxxx(hdr, mqtt_level, pkt) {
     wrt.u8_reason(pkt.return_code || pkt.reason); }
 
   return wrt.as_pkt(hdr)}
+
+function mqtt_encode_pubrec(mqtt_level, pkt) {
+  return _mqtt_encode_pubxxx(0x50, mqtt_level, pkt) }
 
 function mqtt_encode_pubrel(mqtt_level, pkt) {
   return _mqtt_encode_pubxxx(0x62, mqtt_level, pkt) }
@@ -660,7 +660,7 @@ function mqtt_encode_subscribe(mqtt_level, pkt) {
   if (5 <= pkt.mqtt_level) {
     wrt.props(pkt.props);}
 
-  for (const each of pkt.sub_topics) {
+  for (const each of pkt.topics) {
     if ('string' === typeof each) {
       wrt.utf8(each);
       wrt.u8(0);}
@@ -680,11 +680,6 @@ const _enc_subscribe_flags = opts => 0
     |(opts.retain ? 0x4 : 0)
     |((opts.retain_handling & 0x3) << 2  );
 
-function mqtt_encode_suback(mqtt_level, pkt) {
-  return _mqtt_encode_suback(
-    0x90, mqtt_level, pkt, 'sub_answers') }
-
-
 function _mqtt_encode_suback(hdr, mqtt_level, pkt, key_answers) {
   const wrt = new mqtt_type_writer();
 
@@ -697,6 +692,10 @@ function _mqtt_encode_suback(hdr, mqtt_level, pkt, key_answers) {
 
   return wrt.as_pkt(hdr)}
 
+function mqtt_encode_suback(mqtt_level, pkt) {
+  return _mqtt_encode_suback(
+    0x90, mqtt_level, pkt) }
+
 function mqtt_encode_unsubscribe(mqtt_level, pkt) {
   const wrt = new mqtt_type_writer();
 
@@ -704,14 +703,14 @@ function mqtt_encode_unsubscribe(mqtt_level, pkt) {
   if (5 <= pkt.mqtt_level) {
     wrt.props(pkt.props);}
 
-  for (const topic of pkt.unsub_topics) {
+  for (const topic of pkt.topics) {
     wrt.utf8(topic);}
 
   return wrt.as_pkt(0xa2)}
 
 function mqtt_encode_unsuback(mqtt_level, pkt) {
   return _mqtt_encode_suback(
-    0xb0, mqtt_level, pkt, 'unsub_answers') }
+    0xb0, mqtt_level, pkt) }
 
 const mqtt_encode_pingreq = (() =>
   new Uint8Array([0xc0, 0]) );
@@ -791,10 +790,10 @@ function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) {
 
   const len_pkt = len_body + len_vh;
   if (u8.byteLength >= len_pkt) {
-    const b0 = u8[0], cmd = b0 & 0xf0, hdr = b0 & 0x0f;
+    const b0 = u8[0], cmd = b0 & 0xf0;
     u8_ref[0] = u8.subarray(len_pkt);
     return {__proto__: _pkt_ctx_
-    , b0, cmd, hdr
+    , b0, cmd, id: b0>>>4, hdr: b0 & 0x0f
     , type_obj: mqtt_cmd_by_type(cmd)
     , u8_body: 0 === len_body ? null
         : u8.subarray(len_vh, len_pkt)} } }
@@ -864,20 +863,29 @@ const mqtt_session_v5 =
     mqtt_encode_session,);
 
 class MQTTClient {
-  constructor(on_mqtt) {
+  constructor(target) {
     this._conn_ = this._transport(this);
-    if ('function' === typeof on_mqtt) {
-      this._on_mqtt = on_mqtt;} }
+    this._disp_ = this._dispatch(this, target);}
 
-  _on_mqtt(/*pkt_list, self*/) {}
-  /* async _send(type, pkt) -- provided by concete client */
+  /* async _send(type, pkt) -- provided by _transport */
+  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
 
-  auth(pkt) {return this._send('auth', pkt)}
-  connect(pkt) {return this._send('connect', pkt)}
+  auth(pkt) {return this._disp_send('auth', pkt, 'auth')}
+  connect(pkt) {return this._disp_send('connect', pkt, 'connack')}
+
   disconnect(pkt) {return this._send('disconnect', pkt)}
-  publish(pkt) {return this._send('publish', pkt)}
-  subscribe(pkt) {return this._send('subscribe', pkt)}
-  unsubscribe(pkt) {return this._send('unsubscribe', pkt)}
+  publish(pkt) {
+    return pkt.qos > 0 
+      ? this._disp_send('publish', pkt, pkt)
+      : this._send('publish', pkt)}
+
+  subscribe(pkt) {return this._disp_send('subscribe', pkt, pkt)}
+  unsubscribe(pkt) {return this._disp_send('unsubscribe', pkt, pkt)}
+
+  async _disp_send(type, pkt, key) {
+    const res = this._disp_.future(key);
+    await this._send(type, pkt);
+    return res}
 
   static with_api(api) {
     class MQTTClient extends this {}
@@ -885,15 +893,18 @@ class MQTTClient {
     return MQTTClient} }
 
 
-MQTTClient.prototype._transport = mqtt_client_transport;
+Object.assign(MQTTClient.prototype,{
+  _transport: _mqtt_client_transport
+, _dispatch: _mqtt_client_dispatch} );
 
-function mqtt_client_transport(client) {
+
+function _mqtt_client_transport(client) {
   const q = []; // tiny version of deferred
   q.then = y => void q.push(y);
   q.notify = v => {for (const fn of q.splice(0,q.length)) {fn(v);} };
 
-  const send0 = async (type, pkt) =>(
-    (await q)(type, pkt));
+  const send0 = (async ( type, pkt ) => {
+    (await q)(type, pkt);});
 
   client._send = send0;
   return {
@@ -909,18 +920,117 @@ function mqtt_client_transport(client) {
           mqtt_decode(u8_buf)
         , client);
 
-      const send_pkt = async (type, pkt) =>(
+      const send_pkt = (async ( type, pkt ) => {
         send_u8_pkt(
-          mqtt_encode(type, pkt)) );
+          mqtt_encode(type, pkt)); });
 
 
       client._send = send_pkt;
       q.notify(send_pkt);
       return on_mqtt_chunk} } }
 
+
+
+const _mqtt_client_cmdid_dispatch ={
+  get on_mqtt() {
+    const {cmdids, rotate:{td,n} } = this;
+    let ts = td + Date.now();
+    return (( pkt_list ) => {
+      for (const pkt of pkt_list) {
+        cmdids[pkt.id](this, pkt); }
+
+      if (Date.now() > ts) {
+        this.rotate_belt(n);
+        ts = td + Date.now();} }) }
+
+
+, resolve(key, pkt) {
+    for (const map of this.hashbelt) {
+      const entry = map.get(key);
+      if (undefined !== entry) {
+        map.delete(key);
+        entry[0](pkt);
+        return true} }
+    return false}
+
+, rotate:{n: 3, td: 1000 }// 3 * 1s buckets
+, rotate_belt(n) {
+    const {hashbelt} = this;
+    hashbelt.unshift(new Map());
+    for (const old of hashbelt.splice(n)) {
+      for (const entry of old.values()) {
+        entry[1]('expired');} } }
+
+, cmdids: ((() => {
+    return [
+      by_evt   // 0x0 reserved
+    , by_evt   // 0x1 connect
+    , by_type  // 0x2 connack
+    , by_evt   // 0x3 publish
+    , by_id    // 0x4 puback
+    , by_id    // 0x5 pubrec
+    , by_id    // 0x6 pubrel
+    , by_id    // 0x7 pubcomp
+    , by_evt   // 0x8 subscribe
+    , by_id    // 0x9 suback
+    , by_evt   // 0xa unsubscribe
+    , by_id    // 0xb unsuback
+    , by_evt   // 0xc pingreq
+    , by_evt   // 0xd pingresp
+    , by_evt   // 0xe disconnect
+    , by_type  ]// 0xf auth
+
+
+    function by_id(disp, pkt) {
+      disp.resolve(pkt.pkt_id, pkt); }
+
+    function by_type(disp, pkt) {
+      disp.resolve(pkt.type_obj.type, pkt);
+      by_evt(disp, pkt);}
+
+    async function by_evt({target}, pkt) {
+      const fn = target[`mqtt_${pkt.type_obj.type}`];
+      if (undefined !== fn) {
+        await fn.call(target, pkt);}
+      else {
+        await target.mqtt_pkt(pkt);} } })()) };
+
+
+
+function _mqtt_client_dispatch(client, target) {
+  if (null == target) {
+    target = client;}
+  else if ('function' === typeof target) {
+    target = {mqtt_pkt: target};}
+
+
+  const hashbelt = [new Map()];
+  let _hb_key, _pkt_id=100;
+  const _deferred_by_key = (...args) =>
+    hashbelt[0].set(_hb_key, args);
+
+  const _disp_ ={
+    __proto__: _mqtt_client_cmdid_dispatch
+  , target, hashbelt,
+
+    future(pkt_or_key) {
+      if ('string' === typeof pkt_or_key) {
+        _hb_key = pkt_or_key;}
+      else {
+        _pkt_id = (_pkt_id + 1) & 0xffff;
+        _hb_key = pkt_or_key.pkt_id = _pkt_id;}
+
+      return new Promise(_deferred_by_key)} };
+
+  client._on_mqtt = _disp_.on_mqtt;
+  return _disp_}
+
 function _mqtt_web_api(mqtt_session) {
   return {
     async with_websock(websock) {
+      if (null == websock) {
+        websock = 'ws://127.0.0.1:9001';}
+
       if ('string' === typeof websock) {
         websock = new WebSocket(websock, ['mqtt']);}
 
@@ -956,10 +1066,9 @@ var web = MQTTClient.with_api(
 //import MQTTClient from 'u8-mqtt-packet/esm/tiny/web.mjs'
 
 {(async ()=>{
-  const c = new web (( pkt_list ) => {
-    for (const pkt of pkt_list) {
-      const {type_obj, u8_body, b0, cmd, ... tip} = pkt;
-      console.log(`%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip); } });
+  const c = new web (( pkt ) => {
+    const {type_obj, u8_body, b0, cmd, ... tip} = pkt;
+    console.log(`%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip); });
 
   c.with_websock('ws://127.0.0.1:9001');
 

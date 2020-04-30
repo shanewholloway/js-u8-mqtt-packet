@@ -7,7 +7,7 @@ export function mqtt_encode_subscribe(mqtt_level, pkt) ::
   if 5 <= pkt.mqtt_level ::
     wrt.props(pkt.props)
 
-  for const each of pkt.sub_topics ::
+  for const each of pkt.topics ::
     if 'string' === typeof each ::
       wrt.utf8(each)
       wrt.u8(0)

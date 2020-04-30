@@ -1,7 +1,14 @@
+import {connect as net_connect} from 'net'
 export {MQTTClient} from './core.jsy'
 
 export function _mqtt_node_api(mqtt_session) ::
   return @{}
+    with_tcp(...args) ::
+      if 0 === args.length ::
+        args = @[] 1883, '127.0.0.1'
+
+      return this.with_stream @ net_connect(...args)
+
     with_stream(duplex_stream, passthrough) ::
       const on_mqtt_chunk = this._conn_.set @
         mqtt_session

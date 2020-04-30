@@ -7,7 +7,7 @@ export function mqtt_encode_unsubscribe(mqtt_level, pkt) ::
   if 5 <= pkt.mqtt_level ::
     wrt.props(pkt.props)
 
-  for const topic of pkt.unsub_topics ::
+  for const topic of pkt.topics ::
     wrt.utf8(topic)
 
   return wrt.as_pkt(0xa2)

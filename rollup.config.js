@@ -28,13 +28,13 @@ export default configs
 add_jsy('index')
 add_jsy('session', {min: true})
 
-add_jsy('client/node')
-add_jsy('client/web', {min: true})
+add_jsy('client/node', {exports: 'default'})
+add_jsy('client/web', {min: true, exports: 'default'})
 
 if (1) {
   add_jsy('tiny/session', {min: true})
-  add_jsy('tiny/node')
-  add_jsy('tiny/web', {min: true})
+  add_jsy('tiny/node', {exports: 'default'})
+  add_jsy('tiny/web', {min: true, exports: 'default'})
 }
 
 if (1) {
@@ -55,7 +55,7 @@ function add_jsy(src_name, opt={}) {
       { ..._out_, file: `esm/${src_name}.mjs`, format: 'es' },
       { ..._out_, file: `cjs/${src_name}.cjs`, format: 'cjs', exports: opt.exports || 'named' },
       opt.name && 
-        { ..._out_, file: `umd/${src_name}.js`, format: 'umd', name: opt.name, exports:'named' },
+        { ..._out_, file: `umd/${src_name}.js`, format: 'umd', name: opt.name, exports: opt.exports || 'named' },
     ].filter(Boolean)})
 
   if (opt.min && cfg_web_min)
@@ -64,6 +64,6 @@ function add_jsy(src_name, opt={}) {
       output: [
         { ..._out_, file: `esm/${src_name}.min.mjs`, format: 'es' },
         opt.name && 
-          { ..._out_, file: `umd/${src_name}.min.js`, format: 'umd', name: opt.name, exports:'named' },
+          { ..._out_, file: `umd/${src_name}.min.js`, format: 'umd', name: opt.name, exports: opt.exports || 'named' },
       ].filter(Boolean)})
 }

@@ -3,6 +3,9 @@ export {MQTTClient} from './core.jsy'
 export function _mqtt_web_api(mqtt_session) ::
   return @{}
     async with_websock(websock) ::
+      if null == websock ::
+        websock = 'ws://127.0.0.1:9001'
+
       if 'string' === typeof websock ::
         websock = new WebSocket(websock, ['mqtt'])
 

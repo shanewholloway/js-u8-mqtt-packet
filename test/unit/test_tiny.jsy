@@ -10,7 +10,7 @@ describe @ 'tiny client packets', @::
     expect(type_obj).to.deep.equal @: type: 'pingreq', cmd: 0xc0, id: 0xc
     expect(u8_body).null
 
-    expect(tip).to.deep.equal @: b0: 0xc0, cmd: 0xc0, hdr: 0
+    expect(tip).to.deep.equal @: b0: 0xc0, cmd: 0xc0, id: 0x0c, hdr: 0
 
 
   it @ 'pingresp', @::
@@ -21,7 +21,7 @@ describe @ 'tiny client packets', @::
     expect(type_obj).to.deep.equal @: type: 'pingresp', cmd: 0xd0, id: 0xd
     expect(u8_body).null
 
-    expect(tip).to.deep.equal @: b0: 0xd0, cmd: 0xd0, hdr: 0
+    expect(tip).to.deep.equal @: b0: 0xd0, cmd: 0xd0, id: 0x0d, hdr: 0
 
 
   it @ 'connack', @::
@@ -33,7 +33,7 @@ describe @ 'tiny client packets', @::
     expect(u8_body).not.null
 
     expect(tip).to.deep.equal @:
-      b0: 0x20, cmd: 0x20, hdr: 0
+      b0: 0x20, cmd: 0x20, id: 0x02, hdr: 0
 
     expect(+connect_flags).to.equal @ 0
     expect(0 == connect_flags).to.be.true
@@ -52,7 +52,7 @@ describe @ 'tiny client packets', @::
     expect(u8_body).not.null
 
     expect(tip).to.deep.equal @:
-      b0: 0x30, cmd: 0x30, hdr: 0
+      b0: 0x30, cmd: 0x30, id: 0x03, hdr: 0
       qos: 0, dup: false, retain: false
       topic: 'test/topic'
 
@@ -83,7 +83,7 @@ describe @ 'tiny client packets', @::
       expect(u8_body).not.null
 
       expect(tip).to.deep.equal @:
-        b0: 0x10, cmd: 0x10, hdr: 0,
+        b0: 0x10, cmd: 0x10, id: 0x01, hdr: 0,
         mqtt_level: 4
         keep_alive: 60
 
@@ -110,7 +110,7 @@ describe @ 'tiny client packets', @::
 
     const packet_id_list = []
     for const each of log ::
-      const {type_obj, u8_body, pkt_id, sub_topics, ...tip} =
+      const {type_obj, u8_body, pkt_id, topics, ...tip} =
         mqtt_decode_one_hex(each)
 
       expect(type_obj).to.deep.equal @: type: 'subscribe', cmd: 0x80, id: 0x8
@@ -118,10 +118,10 @@ describe @ 'tiny client packets', @::
 
       packet_id_list.push(pkt_id)
       expect(tip).to.deep.equal @:
-        b0: 0x82, cmd: 0x80, hdr: 0x2
+        b0: 0x82, cmd: 0x80, id: 0x08, hdr: 0x2
 
       expect @
-        sub_topics.map @\: topic, opts => @: topic, opts: +opts
+        topics.map @\: topic, opts => @: topic, opts: +opts
       .to.deep.equal @#
         @{} topic: 'test/topic', opts: 0
 
@@ -140,7 +140,7 @@ describe @ 'tiny client packets', @::
 
     const packet_id_list = []
     for const each of log ::
-      const {type_obj, u8_body, pkt_id, sub_answers, ...tip} =
+      const {type_obj, u8_body, pkt_id, answers, ...tip} =
         mqtt_decode_one_hex(each)
 
       expect(type_obj).to.deep.equal @: type: 'suback', cmd: 0x90, id: 0x9
@@ -148,10 +148,10 @@ describe @ 'tiny client packets', @::
 
       packet_id_list.push(pkt_id)
       expect(tip).to.deep.equal @:
-        b0: 0x90, cmd: 0x90, hdr: 0
+        b0: 0x90, cmd: 0x90, id: 0x09, hdr: 0
 
       expect @
-        sub_answers.map @ a => +a
+        answers.map @ a => +a
       .to.deep.equal @# 0
 
     expect(packet_id_list).to.deep.equal @#
@@ -169,7 +169,7 @@ describe @ 'tiny client packets', @::
     expect(u8_body).not.null
 
     expect(tip).to.deep.equal @:
-      b0: 0x31, cmd: 0x30, hdr: 0x1
+      b0: 0x31, cmd: 0x30, id: 0x03, hdr: 0x1
       qos: 0, dup: false, retain: true
       topic: 'test/topic'
 

@@ -12,7 +12,7 @@ export function mqtt_decode_subscribe(pkt) ::
   if 5 <= pkt.mqtt_level ::
     pkt.props = rdr.props()
 
-  const topic_list = pkt.sub_topics = []
+  const topic_list = pkt.topics = []
   while rdr.has_more() ::
     topic_list.push @:
       topic: rdr.utf8()

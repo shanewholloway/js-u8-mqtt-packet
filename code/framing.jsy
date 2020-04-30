@@ -8,10 +8,10 @@ export function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) ::
 
   const len_pkt = len_body + len_vh
   if u8.byteLength >= len_pkt ::
-    const b0 = u8[0], cmd = b0 & 0xf0, hdr = b0 & 0x0f
+    const b0 = u8[0], cmd = b0 & 0xf0
     u8_ref[0] = u8.subarray(len_pkt)
     return @{} __proto__: _pkt_ctx_
-      b0, cmd, hdr
+      b0, cmd, id: b0>>>4, hdr: b0 & 0x0f
       type_obj: mqtt_cmd_by_type(cmd)
       u8_body: 0 === len_body ? null
         : u8.subarray(len_vh, len_pkt)

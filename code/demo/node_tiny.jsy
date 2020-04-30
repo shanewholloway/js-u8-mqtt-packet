@@ -3,10 +3,9 @@ import {connect} from 'net'
 import MQTTClient from 'u8-mqtt-packet/esm/tiny/node.mjs'
 
 ::!>
-  const c = new MQTTClient @\ pkt_list ::
-    for const pkt of pkt_list ::
-      const {type_obj, u8_body, b0, cmd, ... tip} = pkt
-      console.log @ `%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip
+  const c = new MQTTClient @\ pkt ::
+    const {type_obj, u8_body, b0, cmd, ... tip} = pkt
+    console.log @ `%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip
 
   const mqtt_port = parseInt @ process.argv.slice(2).pop() || 1883
   c.with_stream @ connect(mqtt_port, '127.0.0.1')
