@@ -44,10 +44,11 @@ export class mqtt_type_writer ::
     this.utf8(k)
     this.utf8(v)
 
-  u8_flags(v, enc_flags) ::
+  u8_flags(v, enc_flags, b0=0) ::
     if undefined !== v && isNaN(+v) ::
       v = enc_flags(v, 0)
-    v |= 0
+
+    v |= b0
     this.push @# v
     return v
 

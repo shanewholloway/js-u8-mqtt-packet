@@ -39,11 +39,11 @@ function somewhere_in_your_code() {
   my_mqtt.connect({
     keep_alive: 60,
     connect_flags: { will_flag: 1, will_qos: 0, },
-    payload: {
-      client_id: 'swh_demo',
-      will_topic: 'swh/aaa/awesome',
-      will_payload: 'will is awesome',
-    },
+    client_id: 'swh_demo',
+    will: {
+      topic: 'swh/aaa/awesome',
+      payload: 'will is awesome',
+    }
   })
 
   my_mqtt.publish({

@@ -27,19 +27,21 @@ export function mqtt_decode_connect(pkt) ::
 
 
 
-  const payload = pkt.payload = {}
-  payload.client_id = rdr.utf8()
+  pkt.client_id = rdr.utf8()
   if flags.will_flag ::
+    const will = pkt.will = {}
     if 5 <= pkt.mqtt_level ::
-      payload.will_properties = rdr.props()
+      will.properties = rdr.props()
 
-    payload.will_topic = rdr.utf8()
-    payload.will_payload = rdr.bin()
+    will.topic = rdr.utf8()
+    will.payload = rdr.bin()
+    will.qos = flags.will_qos
+    will.retain = flags.will_retain
 
   if flags.username ::
-    payload.username = rdr.utf8()
+    pkt.username = rdr.utf8()
 
   if flags.password ::
-    payload.password = rdr.bin()
+    pkt.password = rdr.bin()
   return pkt
 

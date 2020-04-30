@@ -18,10 +18,10 @@ async function main() {
     },
     keep_alive: 60,
 
-    payload: {
-      client_id: 'swh_demo',
-      will_topic: 'swh/aaa/awesome',
-      will_payload: 'last will is awesome',
+    client_id: 'swh_demo',
+    will: {
+      topic: 'swh/aaa/awesome',
+      payload: 'last will is awesome',
     }})
 
   await delay(10)

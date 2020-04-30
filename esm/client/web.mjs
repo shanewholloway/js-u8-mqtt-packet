@@ -181,20 +181,22 @@ function mqtt_decode_connect(pkt) {
 
 
 
-  const payload = pkt.payload = {};
-  payload.client_id = rdr.utf8();
+  pkt.client_id = rdr.utf8();
   if (flags.will_flag) {
+    const will = pkt.will = {};
     if (5 <= pkt.mqtt_level) {
-      payload.will_properties = rdr.props();}
+      will.properties = rdr.props();}
 
-    payload.will_topic = rdr.utf8();
-    payload.will_payload = rdr.bin();}
+    will.topic = rdr.utf8();
+    will.payload = rdr.bin();
+    will.qos = flags.will_qos;
+    will.retain = flags.will_retain;}
 
   if (flags.username) {
-    payload.username = rdr.utf8();}
+    pkt.username = rdr.utf8();}
 
   if (flags.password) {
-    payload.password = rdr.bin();}
+    pkt.password = rdr.bin();}
   return pkt}
 
 class _connack_flags_ extends Number {
@@ -535,10 +537,11 @@ class mqtt_type_writer {
     this.utf8(k);
     this.utf8(v);}
 
-  u8_flags(v, enc_flags) {
+  u8_flags(v, enc_flags, b0=0) {
     if (undefined !== v && isNaN(+v)) {
       v = enc_flags(v, 0);}
-    v |= 0;
+
+    v |= b0;
     this.push([v]);
     return v}
 
@@ -557,9 +560,12 @@ function mqtt_encode_connect(mqtt_level, pkt) {
 
   wrt.push(_c_mqtt_proto);
   wrt.u8(mqtt_level);
+
+  const {will} = pkt;
   const flags = wrt.u8_flags(
     pkt.connect_flags
-  , _enc_connect_flags);
+  , _enc_connect_flags
+  , will ? _enc_will_flags(will) : 0);
 
   wrt.u16(pkt.keep_alive);
 
@@ -567,20 +573,19 @@ function mqtt_encode_connect(mqtt_level, pkt) {
     wrt.props(pkt.props);}
 
 
-  const {payload} = pkt;
-  wrt.utf8(payload.client_id);
+  wrt.utf8(pkt.client_id);
   if (flags & 0x04) {// .will_flag
     if (5 <= mqtt_level) {
-      wrt.props(payload.will_properties); }
+      wrt.props(will.properties); }
 
-    wrt.utf8(payload.will_topic);
-    wrt.bin(payload.will_payload); }
+    wrt.utf8(will.topic);
+    wrt.bin(will.payload); }
 
   if (flags & 0x80) {// .username
-    wrt.utf8(payload.username); }
+    wrt.utf8(pkt.username); }
 
   if (flags & 0x40) {// .password
-    wrt.bin(payload.password); }
+    wrt.bin(pkt.password); }
 
   return wrt.as_pkt(0x10)}
 
@@ -592,6 +597,10 @@ const _enc_connect_flags = flags => 0
     |(flags.will_retain ? 0x20 : 0)
     |(flags.password ? 0x40 : 0)
     |(flags.username ? 0x80 : 0);
+
+const _enc_will_flags = will => 0x4
+    |((will.qos & 0x3) << 3)
+    |(will.retain ? 0x20 : 0);
 
 function mqtt_encode_connack(mqtt_level, pkt) {
   const wrt = new mqtt_type_writer();
