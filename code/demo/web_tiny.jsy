@@ -7,9 +7,9 @@ import MQTTClient from 'u8-mqtt-packet/esm/tiny/web.mjs'
       const {type_obj, u8_body, b0, cmd, ... tip} = pkt
       console.log @ `%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip
 
-  await c.with_websock('ws://127.0.0.1:9001')
+  c.with_websock('ws://127.0.0.1:9001')
 
-  c.connect @:
+  await c.connect @:
     connect_flags: @{}
       will_flag: 1
       will_qos: 0
@@ -23,13 +23,13 @@ import MQTTClient from 'u8-mqtt-packet/esm/tiny/web.mjs'
 
   await delay(10)
 
-  c.publish @:
+  await c.publish @:
     topic: 'swh/test-topic'
     payload: 'awesome from web'
 
   await delay(10)
 
-  c.disconnect()
+  await c.disconnect()
 
 function delay(ms) ::
   return @{} then(y) :: setTimeout(y,ms)

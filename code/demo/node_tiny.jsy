@@ -9,9 +9,9 @@ import MQTTClient from 'u8-mqtt-packet/esm/tiny/node.mjs'
       console.log @ `%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip
 
   const mqtt_port = parseInt @ process.argv.slice(2).pop() || 1883
-  await c.with_stream @ connect(mqtt_port, '127.0.0.1')
+  c.with_stream @ connect(mqtt_port, '127.0.0.1')
 
-  c.connect @:
+  await c.connect @:
     connect_flags: @{}
       will_flag: 1
       will_qos: 0
@@ -25,13 +25,13 @@ import MQTTClient from 'u8-mqtt-packet/esm/tiny/node.mjs'
 
   await delay(10)
 
-  c.publish @:
+  await c.publish @:
     topic: 'swh/test-topic'
     payload: 'awesome from node'
 
   await delay(10)
 
-  c.disconnect()
+  await c.disconnect()
 
 function delay(ms) ::
   return @{} then(y) :: setTimeout(y,ms)

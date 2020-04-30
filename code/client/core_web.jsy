@@ -15,21 +15,20 @@ export function _mqtt_web_api(mqtt_session) ::
           websock.addEventListener @ 'open', y, {once: true}
 
 
-      const [mqtt_decode, mqtt_encode] =
-        mqtt_session()
+      const {_conn_} = this
+      const on_mqtt_chunk = _conn_.set @
+        mqtt_session
+        u8_pkt => websock.send @ u8_pkt
 
-      this._send = @\ type, pkt ::>
-        websock.send @
-          mqtt_encode(type, pkt)
-        return true
+      websock.addEventListener @ 'close',
+        _conn_.reset, {once: true}
 
       websock.onmessage = @\: data ::>
         const u8_buf = new Uint8Array @
           data instanceof ArrayBuffer ? data
             : await data.arrayBuffer()
 
-        this._on_mqtt @
-          mqtt_decode(u8_buf)
+        on_mqtt_chunk @ u8_buf
 
       return this
 

@@ -865,22 +865,58 @@ const mqtt_session_v5 =
 
 class MQTTClient {
   constructor(on_mqtt) {
+    this._conn_ = this._transport(this);
     if ('function' === typeof on_mqtt) {
       this._on_mqtt = on_mqtt;} }
 
-  _on_mqtt(pkt_list) {}
+  _on_mqtt(/*pkt_list, self*/) {}
+  /* async _send(type, pkt) -- provided by concete client */
 
-  auth(pkt) {this._send('auth', pkt);}
-  connect(pkt) {this._send('connect', pkt);}
-  disconnect(pkt) {this._send('disconnect', pkt);}
-  publish(pkt) {this._send('publish', pkt);}
-  subscribe(pkt) {this._send('subscribe', pkt);}
-  unsubscribe(pkt) {this._send('unsubscribe', pkt);}
+  auth(pkt) {return this._send('auth', pkt)}
+  connect(pkt) {return this._send('connect', pkt)}
+  disconnect(pkt) {return this._send('disconnect', pkt)}
+  publish(pkt) {return this._send('publish', pkt)}
+  subscribe(pkt) {return this._send('subscribe', pkt)}
+  unsubscribe(pkt) {return this._send('unsubscribe', pkt)}
 
   static with_api(api) {
     class MQTTClient extends this {}
     Object.assign(MQTTClient.prototype, api);
     return MQTTClient} }
+
+
+MQTTClient.prototype._transport = mqtt_client_transport;
+
+function mqtt_client_transport(client) {
+  const q = []; // tiny version of deferred
+  q.then = y => void q.push(y);
+  q.notify = v => {for (const fn of q.splice(0,q.length)) {fn(v);} };
+
+  const send0 = async (type, pkt) =>(
+    (await q)(type, pkt));
+
+  client._send = send0;
+  return {
+    is_live: (() =>send0 !== client._send)
+  , reset() {client._send = send0;}
+
+  , set(mqtt_session, send_u8_pkt) {
+      const [mqtt_decode, mqtt_encode] =
+        mqtt_session();
+
+      const on_mqtt_chunk = u8_buf =>
+        client._on_mqtt(
+          mqtt_decode(u8_buf)
+        , client);
+
+      const send_pkt = async (type, pkt) =>(
+        send_u8_pkt(
+          mqtt_encode(type, pkt)) );
+
+
+      client._send = send_pkt;
+      q.notify(send_pkt);
+      return on_mqtt_chunk} } }
 
 function _mqtt_web_api(mqtt_session) {
   return {
@@ -897,21 +933,20 @@ function _mqtt_web_api(mqtt_session) {
           websock.addEventListener('open', y, {once: true}) ); }
 
 
-      const [mqtt_decode, mqtt_encode] =
-        mqtt_session();
+      const {_conn_} = this;
+      const on_mqtt_chunk = _conn_.set(
+        mqtt_session
+      , u8_pkt => websock.send(u8_pkt) );
 
-      this._send = (async ( type, pkt ) => {
-        websock.send(
-          mqtt_encode(type, pkt));
-        return true});
+      websock.addEventListener('close',
+        _conn_.reset, {once: true});
 
       websock.onmessage = (async ({ data }) => {
         const u8_buf = new Uint8Array(
           data instanceof ArrayBuffer ? data
             : await data.arrayBuffer());
 
-        this._on_mqtt(
-          mqtt_decode(u8_buf)); });
+        on_mqtt_chunk(u8_buf); });
 
       return this} } }
 

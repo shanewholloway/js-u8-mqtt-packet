@@ -865,49 +865,82 @@ const mqtt_session_v5 =
 
 class MQTTClient {
   constructor(on_mqtt) {
+    this._conn_ = this._transport(this);
     if ('function' === typeof on_mqtt) {
       this._on_mqtt = on_mqtt;} }
 
-  _on_mqtt(pkt_list) {}
+  _on_mqtt(/*pkt_list, self*/) {}
+  /* async _send(type, pkt) -- provided by concete client */
 
-  auth(pkt) {this._send('auth', pkt);}
-  connect(pkt) {this._send('connect', pkt);}
-  disconnect(pkt) {this._send('disconnect', pkt);}
-  publish(pkt) {this._send('publish', pkt);}
-  subscribe(pkt) {this._send('subscribe', pkt);}
-  unsubscribe(pkt) {this._send('unsubscribe', pkt);}
+  auth(pkt) {return this._send('auth', pkt)}
+  connect(pkt) {return this._send('connect', pkt)}
+  disconnect(pkt) {return this._send('disconnect', pkt)}
+  publish(pkt) {return this._send('publish', pkt)}
+  subscribe(pkt) {return this._send('subscribe', pkt)}
+  unsubscribe(pkt) {return this._send('unsubscribe', pkt)}
 
   static with_api(api) {
     class MQTTClient extends this {}
     Object.assign(MQTTClient.prototype, api);
     return MQTTClient} }
 
-function _mqtt_node_api(mqtt_session) {
+
+MQTTClient.prototype._transport = mqtt_client_transport;
+
+function mqtt_client_transport(client) {
+  const q = []; // tiny version of deferred
+  q.then = y => void q.push(y);
+  q.notify = v => {for (const fn of q.splice(0,q.length)) {fn(v);} };
+
+  const send0 = async (type, pkt) =>(
+    (await q)(type, pkt));
+
+  client._send = send0;
   return {
-    async with_stream(duplex_stream, passthrough) {
+    is_live: (() =>send0 !== client._send)
+  , reset() {client._send = send0;}
+
+  , set(mqtt_session, send_u8_pkt) {
       const [mqtt_decode, mqtt_encode] =
         mqtt_session();
 
-      this._send = (( type, pkt ) => {
-        duplex_stream.write(
-          mqtt_encode(type, pkt)); });
+      const on_mqtt_chunk = u8_buf =>
+        client._on_mqtt(
+          mqtt_decode(u8_buf)
+        , client);
+
+      const send_pkt = async (type, pkt) =>(
+        send_u8_pkt(
+          mqtt_encode(type, pkt)) );
+
+
+      client._send = send_pkt;
+      q.notify(send_pkt);
+      return on_mqtt_chunk} } }
+
+function _mqtt_node_api(mqtt_session) {
+  return {
+    with_stream(duplex_stream, passthrough) {
+      const on_mqtt_chunk = this._conn_.set(
+        mqtt_session
+      , u8_pkt => duplex_stream.write(u8_pkt));
+
+      duplex_stream.once('end', this._conn_.reset);
 
       this._msg_loop = passthrough
-        ? _aiter_msg_loop(duplex_stream, mqtt_decode, this)
-        : _async_msg_loop(duplex_stream, mqtt_decode, this);
+        ? _aiter_msg_loop(duplex_stream, on_mqtt_chunk)
+        : _async_msg_loop(duplex_stream, on_mqtt_chunk);
 
       return this} } }
 
 
-async function _async_msg_loop(duplex_stream, mqtt_decode, client) {
+async function _async_msg_loop(duplex_stream, on_mqtt_chunk) {
   for await (const chunk of duplex_stream) {
-    client._on_mqtt(
-      mqtt_decode(chunk)); } }
+    on_mqtt_chunk(chunk); } }
 
-async function * _aiter_msg_loop(duplex_stream, mqtt_decode, client) {
+async function * _aiter_msg_loop(duplex_stream, on_mqtt_chunk) {
   for await (const chunk of duplex_stream) {
-    client._on_mqtt(
-      mqtt_decode(chunk));
+    on_mqtt_chunk(chunk);
     yield chunk;} }
 
 var node = MQTTClient.with_api(
