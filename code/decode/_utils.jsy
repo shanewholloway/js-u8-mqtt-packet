@@ -1,6 +1,8 @@
 import {decode_varint} from '../mqtt_varint.jsy'
 import {mqtt_props_by_id} from '../mqtt_props.jsy'
 
+export const as_utf8 = u8 =>
+  new TextDecoder('utf-8').decode @ u8
 
 export class mqtt_type_reader ::
   constructor(buf, idx=0) ::
@@ -38,8 +40,10 @@ export class mqtt_type_reader ::
     const i0 = step(len)
     return buf.subarray(i0, i0+len)
 
-  utf8() :: return new TextDecoder('utf-8').decode @ this.bin()
-  pair() :: return @[] this.utf8(), this.utf8()
+  utf8() :: return as_utf8 @ this.bin()
+  pair() :: return @[]
+    as_utf8(this.bin())
+    as_utf8(this.bin())
 
   u8_flags(FlagsType) ::
     const {buf, step} = this

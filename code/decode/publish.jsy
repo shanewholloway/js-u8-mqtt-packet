@@ -1,4 +1,4 @@
-import {mqtt_type_reader} from './_utils.jsy'
+import {mqtt_type_reader, as_utf8} from './_utils.jsy'
 
 export function mqtt_decode_publish(pkt) ::
   const {hdr} = pkt

@@ -63,6 +63,9 @@ const [mqtt_props_by_id, mqtt_props_entries] = ((() => {
     prop_map.get.bind(prop_map)
   , Array.from(prop_map.values()) ] })());
 
+const as_utf8 = u8 =>
+  new TextDecoder('utf-8').decode(u8);
+
 class mqtt_type_reader {
   constructor(buf, idx=0) {
     this.buf = buf;
@@ -99,8 +102,10 @@ class mqtt_type_reader {
     const i0 = step(len);
     return buf.subarray(i0, i0+len)}
 
-  utf8() {return new TextDecoder('utf-8').decode(this.bin())}
-  pair() {return [this.utf8(), this.utf8()]}
+  utf8() {return as_utf8(this.bin())}
+  pair() {return [
+    as_utf8(this.bin())
+  , as_utf8(this.bin())] }
 
   u8_flags(FlagsType) {
     const {buf, step} = this;
@@ -799,10 +804,14 @@ function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) {
         : u8.subarray(len_vh, len_pkt)} } }
 
 
+function _pkt_utf8(u8) {
+  return as_utf8(u8 || this.payload) }
+
 function _mqtt_raw_pkt_dispatch(u8_pkt_dispatch) {
   return (( _pkt_ctx_={} ) => {
     const l = [new Uint8Array(0)]; // reuse array to prevent garbage collection churn on ephemeral ones
     _pkt_ctx_._base_ = _pkt_ctx_;
+    _pkt_ctx_.utf8 = _pkt_utf8;
 
     return (( u8_buf ) => {
       l[0] = 0 === l[0].byteLength
@@ -862,42 +871,6 @@ const mqtt_session_v5 =
     mqtt_decode_session,
     mqtt_encode_session,);
 
-class MQTTClient {
-  constructor(target) {
-    this._conn_ = this._transport(this);
-    this._disp_ = this._dispatch(this, target);}
-
-  /* async _send(type, pkt) -- provided by _transport */
-  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
-
-  auth(pkt) {return this._disp_send('auth', pkt, 'auth')}
-  connect(pkt) {return this._disp_send('connect', pkt, 'connack')}
-
-  disconnect(pkt) {return this._send('disconnect', pkt)}
-  publish(pkt) {
-    return pkt.qos > 0 
-      ? this._disp_send('publish', pkt, pkt)
-      : this._send('publish', pkt)}
-
-  subscribe(pkt) {return this._disp_send('subscribe', pkt, pkt)}
-  unsubscribe(pkt) {return this._disp_send('unsubscribe', pkt, pkt)}
-
-  async _disp_send(type, pkt, key) {
-    const res = this._disp_.future(key);
-    await this._send(type, pkt);
-    return res}
-
-  static with_api(api) {
-    class MQTTClient extends this {}
-    Object.assign(MQTTClient.prototype, api);
-    return MQTTClient} }
-
-
-Object.assign(MQTTClient.prototype,{
-  _transport: _mqtt_client_transport
-, _dispatch: _mqtt_client_dispatch} );
-
-
 function _mqtt_client_transport(client) {
   const q = []; // tiny version of deferred
   q.then = y => void q.push(y);
@@ -929,15 +902,42 @@ function _mqtt_client_transport(client) {
       q.notify(send_pkt);
       return on_mqtt_chunk} } }
 
+function _mqtt_client_dispatch(client, target) {
+  if (null == target) {
+    target ={__proto__: client}; }
+  else if ('function' === typeof target) {
+    target = {mqtt_pkt: target};}
+
+
+  const hashbelt = [new Map()];
+  let _hb_key, _pkt_id=100;
+  const _deferred_by_key = (...args) =>
+    hashbelt[0].set(_hb_key, args);
+
+  const _disp_ ={
+    __proto__: _mqtt_client_cmdid_dispatch
+  , target, hashbelt,
+
+    future(pkt_or_key) {
+      if ('string' === typeof pkt_or_key) {
+        _hb_key = pkt_or_key;}
+      else {
+        _pkt_id = (_pkt_id + 1) & 0xffff;
+        _hb_key = pkt_or_key.pkt_id = _pkt_id;}
+
+      return new Promise(_deferred_by_key)} };
+
+  client._on_mqtt = _disp_.on_mqtt;
+  return _disp_}
 
 
 const _mqtt_client_cmdid_dispatch ={
   get on_mqtt() {
     const {cmdids, rotate:{td,n} } = this;
     let ts = td + Date.now();
-    return (( pkt_list ) => {
+    return (( pkt_list, client ) => {
       for (const pkt of pkt_list) {
-        cmdids[pkt.id](this, pkt); }
+        cmdids[pkt.id](this, pkt, client); }
 
       if (Date.now() > ts) {
         this.rotate_belt(n);
@@ -984,46 +984,51 @@ const _mqtt_client_cmdid_dispatch ={
     function by_id(disp, pkt) {
       disp.resolve(pkt.pkt_id, pkt); }
 
-    function by_type(disp, pkt) {
+    function by_type(disp, pkt, client) {
       disp.resolve(pkt.type_obj.type, pkt);
-      by_evt(disp, pkt);}
+      by_evt(disp, pkt, client);}
 
-    async function by_evt({target}, pkt) {
-      const fn = target[`mqtt_${pkt.type_obj.type}`];
+    async function by_evt({target}, pkt, client) {
+      const fn = target[`mqtt_${pkt.type_obj.type}`]
+        || target.mqtt_pkt;
+
       if (undefined !== fn) {
-        await fn.call(target, pkt);}
-      else {
-        await target.mqtt_pkt(pkt);} } })()) };
+        await fn.call(target, pkt, client);} } })()) };
+
+class MQTTClient {
+  constructor(target) {
+    this._conn_ = this._transport(this);
+    this._disp_ = this._dispatch(this, target);}
+
+  /* async _send(type, pkt) -- provided by _transport */
+  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
+
+  auth(pkt) {return this._disp_send('auth', pkt, 'auth')}
+  connect(pkt) {return this._disp_send('connect', pkt, 'connack')}
+
+  disconnect(pkt) {return this._send('disconnect', pkt)}
+  publish(pkt) {
+    return pkt.qos > 0 
+      ? this._disp_send('publish', pkt, pkt)
+      : this._send('publish', pkt)}
+
+  subscribe(pkt) {return this._disp_send('subscribe', pkt, pkt)}
+  unsubscribe(pkt) {return this._disp_send('unsubscribe', pkt, pkt)}
+
+  async _disp_send(type, pkt, key) {
+    const res = this._disp_.future(key);
+    await this._send(type, pkt);
+    return res}
+
+  static with_api(api) {
+    class MQTTClient extends this {}
+    Object.assign(MQTTClient.prototype, api);
+    return MQTTClient} }
 
 
-
-function _mqtt_client_dispatch(client, target) {
-  if (null == target) {
-    target = client;}
-  else if ('function' === typeof target) {
-    target = {mqtt_pkt: target};}
-
-
-  const hashbelt = [new Map()];
-  let _hb_key, _pkt_id=100;
-  const _deferred_by_key = (...args) =>
-    hashbelt[0].set(_hb_key, args);
-
-  const _disp_ ={
-    __proto__: _mqtt_client_cmdid_dispatch
-  , target, hashbelt,
-
-    future(pkt_or_key) {
-      if ('string' === typeof pkt_or_key) {
-        _hb_key = pkt_or_key;}
-      else {
-        _pkt_id = (_pkt_id + 1) & 0xffff;
-        _hb_key = pkt_or_key.pkt_id = _pkt_id;}
-
-      return new Promise(_deferred_by_key)} };
-
-  client._on_mqtt = _disp_.on_mqtt;
-  return _disp_}
+Object.assign(MQTTClient.prototype,{
+  _transport: _mqtt_client_transport
+, _dispatch: _mqtt_client_dispatch} );
 
 class MQTTWebClient extends MQTTClient {
   async with_websock(websock) {
