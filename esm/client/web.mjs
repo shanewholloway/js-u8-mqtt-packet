@@ -1025,43 +1025,43 @@ function _mqtt_client_dispatch(client, target) {
   client._on_mqtt = _disp_.on_mqtt;
   return _disp_}
 
-function _mqtt_web_api(mqtt_session) {
-  return {
-    async with_websock(websock) {
-      if (null == websock) {
-        websock = 'ws://127.0.0.1:9001';}
+class MQTTWebClient extends MQTTClient {
+  async with_websock(websock) {
+    if (null == websock) {
+      websock = 'ws://127.0.0.1:9001';}
 
-      if ('string' === typeof websock) {
-        websock = new WebSocket(websock, ['mqtt']);}
+    if ('string' === typeof websock) {
+      websock = new WebSocket(websock, ['mqtt']);}
 
-      const {readyState} = websock;
-      if (1 !== readyState) {
-        if (0 !== readyState) {
-          throw new Error('Invalid WebSocket readyState') }
+    const {readyState} = websock;
+    if (1 !== readyState) {
+      if (0 !== readyState) {
+        throw new Error('Invalid WebSocket readyState') }
 
-        await new Promise(y =>
-          websock.addEventListener('open', y, {once: true}) ); }
+      await new Promise(y =>
+        websock.addEventListener('open', y, {once: true}) ); }
 
 
-      const {_conn_} = this;
-      const on_mqtt_chunk = _conn_.set(
-        mqtt_session
-      , u8_pkt => websock.send(u8_pkt) );
+    const {_conn_} = this;
+    const on_mqtt_chunk = _conn_.set(
+      this.mqtt_session
+    , u8_pkt => websock.send(u8_pkt) );
 
-      websock.addEventListener('close',
-        _conn_.reset, {once: true});
+    websock.addEventListener('close',
+      _conn_.reset, {once: true});
 
-      websock.onmessage = (async ({ data }) => {
-        const u8_buf = new Uint8Array(
-          data instanceof ArrayBuffer ? data
-            : await data.arrayBuffer());
+    websock.onmessage = (async ({ data }) => {
+      const u8_buf = new Uint8Array(
+        data instanceof ArrayBuffer ? data
+          : await data.arrayBuffer());
 
-        on_mqtt_chunk(u8_buf); });
+      on_mqtt_chunk(u8_buf); });
 
-      return this} } }
+    return this} }
 
-var web = MQTTClient.with_api(
-  _mqtt_web_api(mqtt_session_v4));
+class web extends MQTTWebClient {
+  get mqtt_session() {
+    return mqtt_session_v4} }
 
 export default web;
 //# sourceMappingURL=web.mjs.map

@@ -1027,26 +1027,25 @@ function _mqtt_client_dispatch(client, target) {
   client._on_mqtt = _disp_.on_mqtt;
   return _disp_}
 
-function _mqtt_node_api(mqtt_session) {
-  return {
-    with_tcp(...args) {
-      if (0 === args.length) {
-        args =[1883, '127.0.0.1']; }
+class MQTTNodeClient extends MQTTClient {
+  with_tcp(...args) {
+    const sock = args.length
+      ? connect(...args)
+      : connect(1883);
+    return this.with_stream(sock)}
 
-      return this.with_stream(connect(...args)) }
+  with_stream(duplex_stream, passthrough) {
+    const on_mqtt_chunk = this._conn_.set(
+      this.mqtt_session
+    , u8_pkt => duplex_stream.write(u8_pkt));
 
-  , with_stream(duplex_stream, passthrough) {
-      const on_mqtt_chunk = this._conn_.set(
-        mqtt_session
-      , u8_pkt => duplex_stream.write(u8_pkt));
+    duplex_stream.once('end', this._conn_.reset);
 
-      duplex_stream.once('end', this._conn_.reset);
+    this._msg_loop = passthrough
+      ? _aiter_msg_loop(duplex_stream, on_mqtt_chunk)
+      : _async_msg_loop(duplex_stream, on_mqtt_chunk);
 
-      this._msg_loop = passthrough
-        ? _aiter_msg_loop(duplex_stream, on_mqtt_chunk)
-        : _async_msg_loop(duplex_stream, on_mqtt_chunk);
-
-      return this} } }
+    return this} }
 
 
 async function _async_msg_loop(duplex_stream, on_mqtt_chunk) {
@@ -1058,8 +1057,9 @@ async function * _aiter_msg_loop(duplex_stream, on_mqtt_chunk) {
     on_mqtt_chunk(chunk);
     yield chunk;} }
 
-var node = MQTTClient.with_api(
-  _mqtt_node_api(mqtt_session_v4));
+class node extends MQTTNodeClient {
+  get mqtt_session() {
+    return mqtt_session_v4} }
 
 export default node;
 //# sourceMappingURL=node.mjs.map

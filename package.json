@@ -35,6 +35,7 @@
     "rollup-plugin-dgnotify": "^0.1.5",
     "rollup-plugin-jsy": "^1.7.1",
     "rollup-plugin-terser": "^5.3.0",
+    "source-map-support": "^0.5.19",
     "u8-mqtt-packet": "file:."
   },
   "scripts": {

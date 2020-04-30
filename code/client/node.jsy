@@ -1,6 +1,7 @@
 import {mqtt_session} from '../session.jsy'
-import {MQTTClient, _mqtt_node_api} from './core_node.jsy'
+import MQTTNodeClient from './core_node.jsy'
 
-export default MQTTClient.with_api @
-  _mqtt_node_api(mqtt_session)
+export default class extends MQTTNodeClient ::
+  get mqtt_session() ::
+    return mqtt_session
 

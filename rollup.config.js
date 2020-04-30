@@ -25,26 +25,14 @@ const configs = []
 export default configs
 
 
-add_jsy('index')
+add_jsy('index', {})
 add_jsy('session', {min: true})
 
+add_jsy('client/core', {})
+add_jsy('client/core_node', {exports: 'default'})
+add_jsy('client/core_web', {min: true, exports: 'default'})
 add_jsy('client/node', {exports: 'default'})
 add_jsy('client/web', {min: true, exports: 'default'})
-
-if (1) {
-  add_jsy('tiny/session', {min: true})
-  add_jsy('tiny/node', {exports: 'default'})
-  add_jsy('tiny/web', {min: true, exports: 'default'})
-}
-
-if (1) {
-  add_jsy('demo/node')
-  add_jsy('demo/web', {min: true})
-  add_jsy('demo/node_tiny')
-  add_jsy('demo/web_tiny', {min: true})
-
-  add_jsy('demo/_mitm')
-}
 
 
 
