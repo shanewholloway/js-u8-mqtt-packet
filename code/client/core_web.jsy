@@ -9,6 +9,7 @@ export default class MQTTWebClient extends MQTTClient ::
       websock = new WebSocket(websock, ['mqtt'])
 
     const {readyState} = websock
+    websock.binaryType = 'arraybuffer'
     if 1 !== readyState ::
       if 0 !== readyState ::
         throw new Error @ 'Invalid WebSocket readyState'
@@ -23,14 +24,15 @@ export default class MQTTWebClient extends MQTTClient ::
       u8_pkt => websock.send @ u8_pkt
 
     websock.addEventListener @ 'close',
-      _conn_.reset, {once: true}
+      @::
+        delete websock.onmessage
+        _conn_.reset()
 
-    websock.onmessage = @\: data ::>
-      const u8_buf = new Uint8Array @
-        data instanceof ArrayBuffer ? data
-          : await data.arrayBuffer()
+      {once: true}
 
-      on_mqtt_chunk @ u8_buf
+    websock.onmessage = evt =>
+      on_mqtt_chunk @
+        new Uint8Array(evt.data)
 
     return this
 
