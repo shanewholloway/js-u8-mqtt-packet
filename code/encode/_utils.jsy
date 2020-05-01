@@ -23,13 +23,15 @@ export class mqtt_type_writer ::
     push @ u8_buf
 
   flush(buf) ::
-    this.push @
-      'string' === typeof buf
-        ? pack_utf8(buf) : buf
+    if null != buf ::
+      this.push @
+        'string' === typeof buf
+          ? pack_utf8(buf) : buf
 
     this.push = false
 
   bin(u8_buf) ::
+    if ! u8_buf :: return this.u16(0)
     if 'string' === typeof u8_buf ::
       return this.utf8(u8_buf)
 
