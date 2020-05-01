@@ -674,18 +674,23 @@ function mqtt_encode_subscribe(mqtt_level, pkt) {
   if (5 <= pkt.mqtt_level) {
     wrt.props(pkt.props);}
 
+  const f0 = _enc_subscribe_flags(pkt);
   for (const each of pkt.topics) {
     if ('string' === typeof each) {
       wrt.utf8(each);
-      wrt.u8(0);}
+      wrt.u8(f0);}
 
     else if (Array.isArray(each)) {
       wrt.utf8(each[0]);
-      wrt.u8_flags(each[1], _enc_subscribe_flags);}
+      if (undefined !== each[1]) {
+        wrt.u8_flags(each[1], _enc_subscribe_flags);}
+      else wrt.u8(f0);}
 
     else {
       wrt.utf8(each.topic);
-      wrt.u8_flags(each.opts, _enc_subscribe_flags);} }
+      if (undefined !== each.opts) {
+        wrt.u8_flags(each.opts, _enc_subscribe_flags);}
+      else wrt.u8(f0);} }
 
   return wrt.as_pkt(0x82)}
 
@@ -816,11 +821,16 @@ function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) {
 function _pkt_utf8(u8) {
   return as_utf8(u8 || this.payload) }
 
+function _pkt_json(u8) {
+  return JSON.parse(
+    as_utf8(u8 || this.payload) ) }
+
 function _mqtt_raw_pkt_dispatch(u8_pkt_dispatch) {
   return (( _pkt_ctx_={} ) => {
     const l = [new Uint8Array(0)]; // reuse array to prevent garbage collection churn on ephemeral ones
     _pkt_ctx_._base_ = _pkt_ctx_;
     _pkt_ctx_.utf8 = _pkt_utf8;
+    _pkt_ctx_.json = _pkt_json;
 
     return (( u8_buf ) => {
       l[0] = 0 === l[0].byteLength
@@ -880,6 +890,52 @@ const mqtt_session_v5 =
     mqtt_decode_session,
     mqtt_encode_session,);
 
+const _c_pub = 'publish';
+
+class MQTTBaseClient {
+  constructor(target) {
+    this._conn_ = this._transport(this);
+    this._disp_ = this._dispatch(this, target);}
+
+  /* async _send(type, pkt) -- provided by _transport */
+  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
+
+  auth(pkt) {return this._disp_send('auth', pkt, 'auth')}
+  connect(pkt) {return this._disp_send('connect', pkt, 'connack')}
+
+  disconnect(pkt) {return this._send('disconnect', pkt)}
+  publish(pkt) {
+    return pkt.qos > 0 
+      ? this._disp_send(_c_pub, pkt)
+      : this._send(_c_pub, pkt)}
+
+  post(topic, payload) {
+    return this._send(_c_pub,
+      {topic, payload, qos:0} ) }
+  send(topic, payload) {
+    return this._disp_send(_c_pub,
+      {topic, payload, qos:1} ) }
+
+  subscribe(pkt, ex) {
+    pkt = _as_topics(pkt, ex);
+    return this._disp_send('subscribe', pkt)}
+  unsubscribe(pkt, ex) {
+    pkt = _as_topics(pkt, ex);
+    return this._disp_send('unsubscribe', pkt)}
+
+  async _disp_send(type, pkt, key) {
+    const res = this._disp_.future(key || pkt);
+    await this._send(type, pkt);
+    return res} }
+
+
+function _as_topics(pkt, ex) {
+  if ('string' === typeof pkt) {
+    return {topics:[pkt], ... ex}}
+  if (pkt[Symbol.iterator]) {
+    return {topics:[... pkt], ... ex}}
+  return ex ? {...pkt, ...ex} : pkt}
+
 function _mqtt_client_transport(client) {
   const q = []; // tiny version of deferred
   q.then = y => void q.push(y);
@@ -912,11 +968,20 @@ function _mqtt_client_transport(client) {
       return on_mqtt_chunk} } }
 
 function _mqtt_client_dispatch(client, target) {
+  let use_router;
   if (null == target) {
-    target ={__proto__: client}; }
-  else if ('function' === typeof target) {
-    target = {mqtt_pkt: target};}
+    target ={__proto__: client};
+    use_router = 'function' !== typeof target.mqtt_publish;}
 
+  else if ('function' === typeof target) {
+    target = {mqtt_publish: target};}
+
+  else {
+    use_router = true === target.mqtt_publish;}
+
+  if (use_router) {
+    target.mqtt_publish =
+      client._topic_router(client);}
 
   const hashbelt = [new Map()];
   let _hb_key, _pkt_id=100;
@@ -1004,60 +1069,91 @@ const _mqtt_client_cmdid_dispatch ={
       if (undefined !== fn) {
         await fn.call(target, pkt, client);} } })()) };
 
-const _c_pub = 'publish';
+function _rxp_parse (str, loose) {
+	if (str instanceof RegExp) return { keys:false, pattern:str };
+	var c, o, tmp, ext, keys=[], pattern='', arr = str.split('/');
+	arr[0] || arr.shift();
 
-class MQTTClient {
-  constructor(target) {
-    this._conn_ = this._transport(this);
-    this._disp_ = this._dispatch(this, target);}
+	while (tmp = arr.shift()) {
+		c = tmp[0];
+		if (c === '*') {
+			keys.push('wild');
+			pattern += '/(.*)';
+		} else if (c === ':') {
+			o = tmp.indexOf('?', 1);
+			ext = tmp.indexOf('.', 1);
+			keys.push( tmp.substring(1, !!~o ? o : !!~ext ? ext : tmp.length) );
+			pattern += !!~o && !~ext ? '(?:/([^/]+?))?' : '/([^/]+?)';
+			if (!!~ext) pattern += (!!~o ? '?' : '') + '\\' + tmp.substring(ext);
+		} else {
+			pattern += '/' + tmp;
+		}
+	}
 
-  /* async _send(type, pkt) -- provided by _transport */
-  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
+	return {
+		keys: keys,
+		pattern: new RegExp('^' + pattern + (loose ? '(?=$|\/)' : '\/?$'), 'i')
+	};
+}
 
-  auth(pkt) {return this._disp_send('auth', pkt, 'auth')}
-  connect(pkt) {return this._disp_send('connect', pkt, 'connack')}
+// Use [regexparam][] for url-like topic parsing
 
-  disconnect(pkt) {return this._send('disconnect', pkt)}
-  publish(pkt) {
-    return pkt.qos > 0 
-      ? this._disp_send(_c_pub, pkt)
-      : this._send(_c_pub, pkt)}
+function _mqtt_topic_router(client) {
+  const lst=[], find=_iter_topic_routes.bind(null, lst);
 
-  post(topic, payload) {
-    return this._send(_c_pub,
-      {topic, payload, qos:0} ) }
-  send(topic, payload) {
-    return this._disp_send(_c_pub,
-      {topic, payload, qos:1} ) }
+  client.router ={
+    find, invoke,
+    add(route, tgt) {
+      route = _rxp_parse(route);
+      route.tgt = tgt;
+      lst.push(route);
+      return this} };
 
-  subscribe(pkt) {
-    pkt = _as_topics(pkt);
-    return this._disp_send('subscribe', pkt)}
-  unsubscribe(pkt) {
-    pkt = _as_topics(pkt);
-    return this._disp_send('unsubscribe', pkt)}
+  return invoke
 
-  async _disp_send(type, pkt, key) {
-    const res = this._disp_.future(key || pkt);
-    await this._send(type, pkt);
-    return res}
 
-  static with_api(api) {
-    class MQTTClient extends this {}
-    Object.assign(MQTTClient.prototype, api);
-    return MQTTClient} }
+  function invoke(pkt) {
+    for (const [fn, kw] of find(pkt.topic)) {
+      return undefined !== kw
+        ? fn(kw, pkt)
+        : fn(pkt)} } }
+
+
+
+function * _iter_topic_routes(route_list, topic) {
+  for (const route of route_list) {
+    const {keys, pattern, tgt} = route;
+
+    const match = pattern.exec('/'+topic);
+    if (null === match) {
+      continue}
+
+    if (false === keys) {
+      const {groups} = match;
+      if (groups) {
+        const kw = {};
+        for (let k in groups) {
+          kw[k] = groups[k];}
+
+        yield [tgt, kw];}
+
+      else yield [tgt];}
+
+    else if (0 !== keys.length) {
+      const kw = {};
+      for (let i=0; i<keys.length; i++) {
+        kw[ keys[i] ] = match[1+i];}
+      yield [tgt, kw];}
+
+    else yield [tgt];} }
+
+class MQTTClient extends MQTTBaseClient {}
 
 
 Object.assign(MQTTClient.prototype,{
   _transport: _mqtt_client_transport
-, _dispatch: _mqtt_client_dispatch} );
-
-function _as_topics(pkt) {
-  if ('string' === typeof pkt) {
-    return {topics:[pkt]}}
-  if (pkt[Symbol.iterator]) {
-    return {topics:[... pkt]}}
-  return pkt}
+, _dispatch: _mqtt_client_dispatch
+, _topic_router: _mqtt_topic_router} );
 
 class MQTTWebClient extends MQTTClient {
   async with_websock(websock) {
@@ -1068,6 +1164,7 @@ class MQTTWebClient extends MQTTClient {
       websock = new WebSocket(websock, ['mqtt']);}
 
     const {readyState} = websock;
+    websock.binaryType = 'arraybuffer';
     if (1 !== readyState) {
       if (0 !== readyState) {
         throw new Error('Invalid WebSocket readyState') }
@@ -1082,14 +1179,15 @@ class MQTTWebClient extends MQTTClient {
     , u8_pkt => websock.send(u8_pkt) );
 
     websock.addEventListener('close',
-      _conn_.reset, {once: true});
+      (() => {
+        delete websock.onmessage;
+        _conn_.reset();})
 
-    websock.onmessage = (async ({ data }) => {
-      const u8_buf = new Uint8Array(
-        data instanceof ArrayBuffer ? data
-          : await data.arrayBuffer());
+    , {once: true});
 
-      on_mqtt_chunk(u8_buf); });
+    websock.onmessage = evt =>
+      on_mqtt_chunk(
+        new Uint8Array(evt.data));
 
     return this} }
 

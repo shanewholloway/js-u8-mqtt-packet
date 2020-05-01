@@ -1,10 +1,18 @@
-
 export function _mqtt_client_dispatch(client, target) ::
+  let use_router
   if null == target ::
     target = @{} __proto__: client
-  else if 'function' === typeof target ::
-    target = {mqtt_pkt: target}
+    use_router = 'function' !== typeof target.mqtt_publish
 
+  else if 'function' === typeof target ::
+    target = {mqtt_publish: target}
+
+  else ::
+    use_router = true === target.mqtt_publish
+
+  if use_router ::
+    target.mqtt_publish =
+      client._topic_router(client)
 
   const hashbelt = [new Map()]
   let _hb_key, _pkt_id=100

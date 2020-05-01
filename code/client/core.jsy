@@ -1,61 +1,17 @@
+import {MQTTBaseClient} from './base.jsy'
 import {_mqtt_client_transport} from './_transport.jsy'
 import {_mqtt_client_dispatch} from './_dispatch.jsy'
+import {_mqtt_topic_router} from './_router.jsy'
 
 export * from './_transport.jsy'
 export * from './_dispatch.jsy'
+export * from './_router.jsy'
 
-const _c_pub = 'publish'
-
-export class MQTTClient ::
-  constructor(target) ::
-    this._conn_ = this._transport(this)
-    this._disp_ = this._dispatch(this, target)
-
-  /* async _send(type, pkt) -- provided by _transport */
-  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
-
-  auth(pkt) :: return this._disp_send('auth', pkt, 'auth')
-  connect(pkt) :: return this._disp_send('connect', pkt, 'connack')
-
-  disconnect(pkt) :: return this._send('disconnect', pkt)
-  publish(pkt) ::
-    return pkt.qos > 0 
-      ? this._disp_send(_c_pub, pkt)
-      : this._send(_c_pub, pkt)
-
-  post(topic, payload) ::
-    return this._send @ _c_pub,
-      @{} topic, payload, qos:0
-  send(topic, payload) ::
-    return this._disp_send @ _c_pub,
-      @{} topic, payload, qos:1
-
-  subscribe(pkt) ::
-    pkt = _as_topics(pkt)
-    return this._disp_send('subscribe', pkt)
-  unsubscribe(pkt) ::
-    pkt = _as_topics(pkt)
-    return this._disp_send('unsubscribe', pkt)
-
-  async _disp_send(type, pkt, key) ::
-    const res = this._disp_.future(key || pkt)
-    await this._send(type, pkt)
-    return res
-
-  static with_api(api) ::
-    class MQTTClient extends this ::
-    Object.assign @ MQTTClient.prototype, api
-    return MQTTClient
+export class MQTTClient extends MQTTBaseClient ::
 
 
 Object.assign @ MQTTClient.prototype, @{}
   _transport: _mqtt_client_transport
   _dispatch: _mqtt_client_dispatch
-
-function _as_topics(pkt) ::
-  if 'string' === typeof pkt ::
-    return {topics:[pkt]}
-  if pkt[Symbol.iterator] ::
-    return {topics:[... pkt]}
-  return pkt
+  _topic_router: _mqtt_topic_router
 
