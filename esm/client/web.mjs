@@ -1004,6 +1004,8 @@ const _mqtt_client_cmdid_dispatch ={
       if (undefined !== fn) {
         await fn.call(target, pkt, client);} } })()) };
 
+const _c_pub = 'publish';
+
 class MQTTClient {
   constructor(target) {
     this._conn_ = this._transport(this);
@@ -1018,14 +1020,25 @@ class MQTTClient {
   disconnect(pkt) {return this._send('disconnect', pkt)}
   publish(pkt) {
     return pkt.qos > 0 
-      ? this._disp_send('publish', pkt, pkt)
-      : this._send('publish', pkt)}
+      ? this._disp_send(_c_pub, pkt)
+      : this._send(_c_pub, pkt)}
 
-  subscribe(pkt) {return this._disp_send('subscribe', pkt, pkt)}
-  unsubscribe(pkt) {return this._disp_send('unsubscribe', pkt, pkt)}
+  post(topic, payload) {
+    return this._send(_c_pub,
+      {topic, payload, qos:0} ) }
+  send(topic, payload) {
+    return this._disp_send(_c_pub,
+      {topic, payload, qos:1} ) }
+
+  subscribe(pkt) {
+    pkt = _as_topics(pkt);
+    return this._disp_send('subscribe', pkt)}
+  unsubscribe(pkt) {
+    pkt = _as_topics(pkt);
+    return this._disp_send('unsubscribe', pkt)}
 
   async _disp_send(type, pkt, key) {
-    const res = this._disp_.future(key);
+    const res = this._disp_.future(key || pkt);
     await this._send(type, pkt);
     return res}
 
@@ -1038,6 +1051,13 @@ class MQTTClient {
 Object.assign(MQTTClient.prototype,{
   _transport: _mqtt_client_transport
 , _dispatch: _mqtt_client_dispatch} );
+
+function _as_topics(pkt) {
+  if ('string' === typeof pkt) {
+    return {topics:[pkt]}}
+  if (pkt[Symbol.iterator]) {
+    return {topics:[... pkt]}}
+  return pkt}
 
 class MQTTWebClient extends MQTTClient {
   async with_websock(websock) {
