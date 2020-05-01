@@ -7,18 +7,23 @@ export function mqtt_encode_subscribe(mqtt_level, pkt) ::
   if 5 <= pkt.mqtt_level ::
     wrt.props(pkt.props)
 
+  const f0 = _enc_subscribe_flags(pkt)
   for const each of pkt.topics ::
     if 'string' === typeof each ::
       wrt.utf8(each)
-      wrt.u8(0)
+      wrt.u8(f0)
 
     else if Array.isArray(each) ::
       wrt.utf8(each[0])
-      wrt.u8_flags(each[1], _enc_subscribe_flags)
+      if undefined !== each[1] ::
+        wrt.u8_flags(each[1], _enc_subscribe_flags)
+      else wrt.u8(f0)
 
     else ::
       wrt.utf8(each.topic)
-      wrt.u8_flags(each.opts, _enc_subscribe_flags)
+      if undefined !== each.opts ::
+        wrt.u8_flags(each.opts, _enc_subscribe_flags)
+      else wrt.u8(f0)
 
   return wrt.as_pkt(0x82)
 
