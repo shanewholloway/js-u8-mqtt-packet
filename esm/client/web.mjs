@@ -516,13 +516,15 @@ class mqtt_type_writer {
     push(u8_buf); }
 
   flush(buf) {
-    this.push(
-      'string' === typeof buf
-        ? pack_utf8(buf) : buf);
+    if (null != buf) {
+      this.push(
+        'string' === typeof buf
+          ? pack_utf8(buf) : buf); }
 
     this.push = false;}
 
   bin(u8_buf) {
+    if (! u8_buf) {return this.u16(0)}
     if ('string' === typeof u8_buf) {
       return this.utf8(u8_buf)}
 
@@ -897,24 +899,10 @@ class MQTTBaseClient {
     this._conn_ = this._transport(this);
     this._disp_ = this._dispatch(this, target);}
 
-  /* async _send(type, pkt) -- provided by _transport */
-  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
 
   auth(pkt) {return this._disp_send('auth', pkt, 'auth')}
   connect(pkt) {return this._disp_send('connect', pkt, 'connack')}
-
   disconnect(pkt) {return this._send('disconnect', pkt)}
-  publish(pkt) {
-    return pkt.qos > 0 
-      ? this._disp_send(_c_pub, pkt)
-      : this._send(_c_pub, pkt)}
-
-  post(topic, payload) {
-    return this._send(_c_pub,
-      {topic, payload, qos:0} ) }
-  send(topic, payload) {
-    return this._disp_send(_c_pub,
-      {topic, payload, qos:1} ) }
 
   subscribe(pkt, ex) {
     pkt = _as_topics(pkt, ex);
@@ -923,11 +911,28 @@ class MQTTBaseClient {
     pkt = _as_topics(pkt, ex);
     return this._disp_send('unsubscribe', pkt)}
 
+  publish(pkt) {return _pub(this, pkt.qos, pkt)}
+  post(topic, payload) {return _pub(this, 0, {topic, payload})}
+  send(topic, payload) {return _pub(this, 1, {topic, payload})}
+  json_post(topic, msg) {return _pub(this, 0, {topic, msg})}
+  json_send(topic, msg) {return _pub(this, 1, {topic, msg})}
+
+  /* async _send(type, pkt) -- provided by _transport */
+  /* _on_mqtt(pkt_list, self) -- provided by _dispatch */
+
   async _disp_send(type, pkt, key) {
     const res = this._disp_.future(key || pkt);
     await this._send(type, pkt);
     return res} }
 
+
+function _pub(self, qos, pkt) {
+  const {msg} = pkt;
+  if (undefined !== msg) {
+    pkt.payload = JSON.stringify(msg);}
+  return qos > 0
+    ? self._disp_send(_c_pub, pkt)
+    : self._send(_c_pub, pkt)}
 
 function _as_topics(pkt, ex) {
   if ('string' === typeof pkt) {
@@ -985,8 +990,8 @@ function _mqtt_client_dispatch(client, target) {
 
   const hashbelt = [new Map()];
   let _hb_key, _pkt_id=100;
-  const _deferred_by_key = (...args) =>
-    hashbelt[0].set(_hb_key, args);
+  const _deferred_by_key = resolve =>
+    hashbelt[0].set(_hb_key, resolve);
 
   const _disp_ ={
     __proto__: _mqtt_client_cmdid_dispatch
@@ -1020,20 +1025,20 @@ const _mqtt_client_cmdid_dispatch ={
 
 , resolve(key, pkt) {
     for (const map of this.hashbelt) {
-      const entry = map.get(key);
-      if (undefined !== entry) {
+      const resolve = map.get(key);
+      if (undefined !== resolve) {
         map.delete(key);
-        entry[0](pkt);
+        resolve([pkt]);
         return true} }
     return false}
 
-, rotate:{n: 3, td: 1000 }// 3 * 1s buckets
+, rotate:{n: 5, td: 1000 }// 5 * 1s buckets
 , rotate_belt(n) {
     const {hashbelt} = this;
     hashbelt.unshift(new Map());
     for (const old of hashbelt.splice(n)) {
-      for (const entry of old.values()) {
-        entry[1]('expired');} } }
+      for (const resolve of old.values()) {
+        resolve([undefined, 'expired']); } } }
 
 , cmdids: ((() => {
     return [
