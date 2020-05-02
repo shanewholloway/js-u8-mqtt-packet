@@ -2,6 +2,7 @@ import {
   _mqtt_pkt_id_dispatch,
   _mqtt_bind_encode,
   _bind_mqtt_session,
+  _mqtt_std_pkt_api,
 
   // Server to Client Types: connack, publish, suback
   mqtt_decode_noop as noop,
@@ -34,7 +35,9 @@ export const mqtt_encode_session =
 
 export const mqtt_tiny_session =
   _bind_mqtt_session(
-    4, mqtt_decode_session, mqtt_encode_session)
+    {mqtt_level: 4, ... _mqtt_std_pkt_api},
+    mqtt_decode_session,
+    mqtt_encode_session)
 
 export default mqtt_tiny_session
 

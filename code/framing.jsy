@@ -18,20 +18,11 @@ export function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) ::
         : u8.subarray(len_vh, len_pkt)
 
 
-function _pkt_utf8(u8) ::
-  return as_utf8 @ u8 || this.payload
-
-function _pkt_json(u8) ::
-  return JSON.parse @
-    as_utf8 @ u8 || this.payload
-
 export function _mqtt_raw_pkt_dispatch(u8_pkt_dispatch) ::
-  return @\ _pkt_ctx_={} ::
-    const l = [new Uint8Array(0)] // reuse array to prevent garbage collection churn on ephemeral ones
-    _pkt_ctx_._base_ = _pkt_ctx_
-    _pkt_ctx_.utf8 = _pkt_utf8
-    _pkt_ctx_.json = _pkt_json
+  return @\ _pkt_ctx_ ::
+    if _pkt_ctx_ !== _pkt_ctx_._base_ :: throw '_pkt_ctx_._base_'
 
+    const l = [new Uint8Array(0)] // reuse array to prevent garbage collection churn on ephemeral ones
     return @\ u8_buf ::
       l[0] = 0 === l[0].byteLength
         ? u8_buf : _u8_join(l[0], u8_buf)

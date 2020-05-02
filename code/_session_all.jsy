@@ -16,9 +16,14 @@ export const _mqtt_bind_encode = enc_by_type =>
       enc_by_type[type] @ mqtt_level, pkt
 
 
-export function _bind_mqtt_session(mqtt_level, mqtt_decode_session, mqtt_encode_session) ::
-  mqtt_level = mqtt_level || 4
-  return @\ _pkt_ctx_={mqtt_level} => @[]
-    mqtt_decode_session(_pkt_ctx_)
-    mqtt_encode_session(_pkt_ctx_)
+export function _bind_mqtt_session(_pkt_ctx_, mqtt_decode_session, mqtt_encode_session) ::
+  if ! _pkt_ctx_.mqtt_level ::
+    _pkt_ctx_.mqtt_level = 4
+
+  return @::
+    let x = {__proto__: _pkt_ctx_}
+    x._base_ = x
+    return @[]
+      mqtt_decode_session(x)
+      mqtt_encode_session(x)
 
