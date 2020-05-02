@@ -1,5 +1,5 @@
 import {encode_varint} from '../mqtt_varint.jsy'
-//import {mqtt_props_by_id} from '../mqtt_props.jsy'
+import {mqtt_props_by_id} from '../mqtt_props.jsy'
 import {mqtt_pkt_writer_pool} from './_pkt_writer.jsy'
 
 export * from './_pkt_writer.jsy'
@@ -10,7 +10,9 @@ const pack_u32 = v => @[] (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 
 
 export class mqtt_type_writer ::
   constructor() ::
-    Object.assign @ this, this._pkt_writer()
+    this._pkt_writer(this)
+
+  as_pkt(hdr) :: return this.pack([hdr])
 
   u8(v) :: this.push @# v & 0xff
   u16(v) :: this.push @ pack_u16(v)
@@ -56,7 +58,23 @@ export class mqtt_type_writer ::
 
   u8_reason(v) :: this.push @# v | 0
 
-  props() :: throw "TODO"
+  props(props) ::
+    if ! props ::
+      return this.u8(0)
+
+    if ! Array.isArray(props) ::
+      props = props.entries
+        ? Array.from @ props.entries()
+        : Object.entries(props)
+
+    const wrt = this._fork()
+    for const [name, value] of props ::
+      const {id, type} = mqtt_props_by_id(name)
+      wrt.u8(id)
+      wrt[type](value)
+
+    this.push @ wrt.pack([])
+
 
 mqtt_type_writer.prototype._pkt_writer = 
   mqtt_pkt_writer_pool()
