@@ -8,7 +8,7 @@ export default class MQTTNodeClient extends MQTTClient ::
       : tcp_connect(1883)
     return this.with_stream(sock)
 
-  with_stream(duplex_stream, passthrough) ::
+  async with_stream(duplex_stream, passthrough) ::
     const on_mqtt_chunk = this._conn_.set @
       this.mqtt_session
       u8_pkt => duplex_stream.write(u8_pkt)
