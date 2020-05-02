@@ -17,7 +17,7 @@ export function _mqtt_client_conn(client) ::
         mqtt_session()
 
       const on_mqtt_chunk = u8_buf =>
-        client._on_mqtt @
+        client.on_mqtt @
           mqtt_decode(u8_buf)
           client
 

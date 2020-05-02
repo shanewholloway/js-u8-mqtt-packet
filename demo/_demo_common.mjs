@@ -9,19 +9,33 @@ export function on_mqtt(pkt_list, my_mqtt) {
   }
 }
 
-
 export async function somewhere_in_your_code(my_mqtt) {
+  const my_id = sess_id()
+
+  await delay(10)
+
   my_mqtt.connect({
-    client_id: `u8-mqtt-packet-demo [${sess_id()}]`,
-    flags: { clean_start: true },
-  })
+    keep_alive: 60,
+    client_id: `u8-mqtt-packet-${my_id}-`,
+    flags: { clean_start: true } })
+
+  await delay(10)
+
+  my_mqtt.subscribe({
+    pkt_id: 10,
+    topics: ['u8-mqtt-packet/+']})
 
   await delay(10)
 
   my_mqtt.publish({
     topic: 'u8-mqtt-packet/test-topic',
-    payload: 'awesome from node or web',
-  })
+    payload: 'awesome from node or web' })
+
+  await delay(10)
+
+  my_mqtt.publish({
+    topic: `u8-mqtt-packet/hello-from/${my_id}`,
+    payload: `Hello from ${my_id}` })
 }
 
 
@@ -34,19 +48,20 @@ export async function demo_in_your_code(my_mqtt) {
 }
 
 
-let _sess_id = null
 export function sess_id() {
-  let res = sess_id.res
+  let res = sess_id.id
+
   if (!res) {
     res = Math.random().toString(36).slice(2)
 
     if ('undefined' !== typeof sessionStorage) {
       let k ='u8-mqtt-demo sess_id'
-      let prev = sessionStorage.get(k)
-      if (undefined === k)
-        sessionStorage.set(k, res)
+      let prev = sessionStorage.getItem(k)
+      if (!prev)
+        sessionStorage.setItem(k, res)
       else res = prev
     }
+    sess_id.id = res
   }
 
   return res

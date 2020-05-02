@@ -942,7 +942,7 @@ function _mqtt_client_conn(client) {
         mqtt_session();
 
       const on_mqtt_chunk = u8_buf =>
-        client._on_mqtt(
+        client.on_mqtt(
           mqtt_decode(u8_buf)
         , client);
 
@@ -956,11 +956,11 @@ function _mqtt_client_conn(client) {
       return on_mqtt_chunk} } }
 
 class MQTTBonesClient {
-  constructor(_on_mqtt) {
+  constructor(on_mqtt) {
     this._conn_ = _mqtt_client_conn(this);
-    if (_on_mqtt) {
-      this._on_mqtt = _on_mqtt;
-      this._on_mqtt([], this);} }
+    if (on_mqtt) {
+      this.on_mqtt = on_mqtt;
+      this.on_mqtt([], this);} }
 
   auth(pkt) {return this._send('auth', pkt)}
   connect(pkt) {return this._send('connect', pkt)}
@@ -971,8 +971,8 @@ class MQTTBonesClient {
 
   publish(pkt) {return this._send('publish', pkt)}
 
-  _on_mqtt(pkt_list, self) {}
   // _send(type, pkt) -- provided by _conn_ and transport
+  on_mqtt(/*pkt_list, self*/) {}
 
   static with(mqtt_session) {
     this.prototype.mqtt_session = mqtt_session;
