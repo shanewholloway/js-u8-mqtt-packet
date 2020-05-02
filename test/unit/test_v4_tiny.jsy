@@ -35,7 +35,7 @@ describe @ 'mqtt v4: small pub/sub capture', @::
 
 
   it @ 'connack', @::
-    const {type_obj, u8_body, reason, connect_flags, ...tip} =
+    const {type_obj, u8_body, reason, flags, ...tip} =
       _decode_one_hex @
         '20020000'
 
@@ -45,8 +45,8 @@ describe @ 'mqtt v4: small pub/sub capture', @::
     expect(tip).to.deep.equal @:
       b0: 0x20, cmd: 0x20, id: 0x02, hdr: 0
 
-    expect(+connect_flags).to.equal @ 0
-    expect(0 == connect_flags).to.be.true
+    expect(+flags).to.equal @ 0
+    expect(0 == flags).to.be.true
 
     expect(0 == reason).to.be.true
     expect(+reason).to.equal @ 0
@@ -81,7 +81,7 @@ describe @ 'mqtt v4: small pub/sub capture', @::
 
     const client_id_list = []
     for const each of log ::
-      const {_base_, type_obj, u8_body, client_id, connect_flags, ...tip} =
+      const {_base_, type_obj, u8_body, client_id, flags, ...tip} =
         _decode_one_hex(each)
 
       expect(type_obj).to.deep.equal @:
@@ -96,8 +96,8 @@ describe @ 'mqtt v4: small pub/sub capture', @::
         mqtt_level: 4
         keep_alive: 60
 
-      expect(+connect_flags).to.equal @ 2
-      expect(2 == connect_flags).to.be.true
+      expect(+flags).to.equal @ 2
+      expect(2 == flags).to.be.true
 
       client_id_list.push(client_id)
 

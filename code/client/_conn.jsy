@@ -1,5 +1,5 @@
 
-export function _mqtt_client_transport(client) ::
+export function _mqtt_client_conn(client) ::
   const q = [] // tiny version of deferred
   q.then = y => void q.push(y)
   q.notify = v => :: for const fn of q.splice(0,q.length) :: fn(v)

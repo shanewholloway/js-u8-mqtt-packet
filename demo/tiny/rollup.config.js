@@ -5,9 +5,6 @@ const plugins = [rpi_resolve(), rpi_terser()]
 const external = ['net']
 
 export default [
-  //{ input: `tiny_session.mjs`, output: { file: `esm/tiny_session.min.mjs`, format: 'es', sourcemap: false }, plugins},
-  //{ input: `tiny_node.mjs`, output: { file: `esm/tiny_node.min.mjs`, format: 'es', sourcemap: false }, plugins, external},
-  //{ input: `tiny_web.mjs`, output: { file: `esm/tiny_web.min.mjs`, format: 'es', sourcemap: false }, plugins},
   { input: `demo_web.mjs`, output: { file: `esm/demo_web.min.mjs`, format: 'es', sourcemap: false }, plugins},
   { input: `demo_node.mjs`, output: { file: `esm/demo_node.min.mjs`, format: 'es', sourcemap: false  }, plugins, external},
 ]

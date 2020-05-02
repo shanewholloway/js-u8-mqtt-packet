@@ -17,7 +17,7 @@ export function mqtt_decode_connect(pkt) ::
 
   pkt._base_.mqtt_level = pkt.mqtt_level = rdr.u8()
 
-  const flags = pkt.connect_flags =
+  const flags = pkt.flags =
     rdr.u8_flags(_connect_flags_)
 
   pkt.keep_alive = rdr.u16()

@@ -3,7 +3,7 @@ const mqtt_encode = mqtt_encode_session(4)
 
 const u8_pkt = mqtt_encode('connect', {
   keep_alive: 60,
-  connect_flags: 0,
+  flags: 0,
   client_id: 'readme',
 })
 
@@ -32,7 +32,7 @@ console.log(pkt_list)
         97, 100, 109, 101
       ],
       mqtt_level: 4,
-      connect_flags: [Number (_connect_flags_): 0],
+      flags: [Number (_flags_): 0],
       keep_alive: 60,
       client_id: 'readme'
     }

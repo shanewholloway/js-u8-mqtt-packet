@@ -11,9 +11,9 @@ export function mqtt_encode_connect(mqtt_level, pkt) ::
 
   const {will} = pkt
   const flags = wrt.u8_flags @
-    pkt.connect_flags
-    _enc_connect_flags
-    will ? _enc_will_flags(will) : 0
+    pkt.flags
+    _enc_flags_connect
+    will ? _enc_flags_will(will) : 0
 
   wrt.u16(pkt.keep_alive)
 
@@ -37,7 +37,7 @@ export function mqtt_encode_connect(mqtt_level, pkt) ::
 
   return wrt.as_pkt(0x10)
 
-const _enc_connect_flags = flags => 0
+const _enc_flags_connect = flags => 0
     | @ flags.reserved ? 0x01 : 0
     | @ (flags.will_qos & 0x3) << 3
     | @ flags.clean_start ? 0x02 : 0
@@ -46,6 +46,6 @@ const _enc_connect_flags = flags => 0
     | @ flags.password ? 0x40 : 0
     | @ flags.username ? 0x80 : 0
 
-const _enc_will_flags = will => 0x4
+const _enc_flags_will = will => 0x4
     | @ (will.qos & 0x3) << 3
     | @ will.retain ? 0x20 : 0

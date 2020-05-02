@@ -1,39 +1,14 @@
-import MQTTClient from './tiny_web.mjs'
+import {on_mqtt, demo_in_your_code} from '../_demo_common.mjs'
+import {mqtt_tiny_session} from './tiny_session.mjs'
+import {MQTTBonesWebClient} from 'u8-mqtt-packet/esm/client/core_web.mjs'
 
-const delay = ms => new Promise(y => setTimeout(y,ms))
+class MQTTClient extends MQTTBonesWebClient {}
+MQTTClient.with(mqtt_tiny_session)
 
-async function main() {
-  const my_mqtt = new MQTTClient({
-    mqtt_pkt(pkt) {
-      const {type_obj, u8_body, b0, cmd, ... tip} = pkt
-      console.log(`%c[mqtt ${type_obj.type}]: %o`, 'color: blue', tip)
-    },
-  })
 
-  my_mqtt.with_websock('ws://127.0.0.1:9001')
+const my_mqtt = new MQTTClient(on_mqtt)
+my_mqtt
+  .with_websock('ws://127.0.0.1:9001')
+  .then(demo_in_your_code)
 
-  await my_mqtt.connect({
-    connect_flags: {
-      will_flag: 1, will_qos: 0,
-    },
-    keep_alive: 60,
-
-    client_id: 'swh_demo',
-    will: {
-      topic: 'swh/aaa/awesome',
-      payload: 'last will is awesome',
-    }})
-
-  await delay(10)
-
-  await my_mqtt.publish({
-    topic: 'swh/test-topic',
-    payload: 'awesome from node',
-  })
-
-  await delay(10)
-
-  await my_mqtt.disconnect()
-}
-
-main()
+window.my_mqtt = my_mqtt

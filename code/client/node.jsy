@@ -1,7 +1,10 @@
-import {mqtt_session} from '../session.jsy'
-import MQTTNodeClient from './core_node.jsy'
+import {mqtt_session_v4, mqtt_session_v5} from '../session.jsy'
+import {MQTTBonesNodeClient as Bones} from './core_node.jsy'
 
-export default class extends MQTTNodeClient ::
-  get mqtt_session() ::
-    return mqtt_session
+export class MQTTBonesNode_v4 extends Bones ::
+MQTTBonesNode_v4.with(mqtt_session_v4)
 
+export class MQTTBonesNode_v5 extends Bones ::
+MQTTBonesNode_v5.with(mqtt_session_v5)
+
+export default MQTTBonesNode_v4

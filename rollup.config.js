@@ -28,11 +28,10 @@ export default configs
 add_jsy('index', {})
 add_jsy('session', {min: true})
 
-add_jsy('client/core', {})
-add_jsy('client/core_node', {exports: 'default'})
-add_jsy('client/core_web', {min: true, exports: 'default'})
-add_jsy('client/node', {exports: 'default'})
-add_jsy('client/web', {min: true, exports: 'default'})
+add_jsy('client/core_node', {})
+add_jsy('client/core_web', {min: true})
+add_jsy('client/node', {})
+add_jsy('client/web', {min: true})
 
 
 

@@ -38,7 +38,7 @@ export const _connack_reason_ = bind_reason_lookup @#
 export function mqtt_decode_connack(pkt) ::
   const rdr = new mqtt_type_reader(pkt.u8_body, 0)
 
-  const flags = pkt.connect_flags =
+  const flags = pkt.flags =
     rdr.u8_flags(_connack_flags_)
 
   pkt.reason = rdr.u8_reason(_connack_reason_)

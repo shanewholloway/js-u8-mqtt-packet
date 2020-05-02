@@ -1,7 +1,10 @@
-import {mqtt_session} from '../session.jsy'
-import MQTTWebClient from './core_web.jsy'
+import {mqtt_session_v4, mqtt_session_v5} from '../session.jsy'
+import {MQTTBonesWebClient as Bones} from './core_web.jsy'
 
-export default class extends MQTTWebClient ::
-  get mqtt_session() ::
-    return mqtt_session
+export class MQTTBonesWeb_v4 extends Bones ::
+MQTTBonesWeb_v4.with(mqtt_session_v4)
 
+export class MQTTBonesWeb_v5 extends Bones ::
+MQTTBonesWeb_v5.with(mqtt_session_v5)
+
+export default MQTTBonesWeb_v4

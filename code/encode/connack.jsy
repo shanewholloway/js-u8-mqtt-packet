@@ -3,8 +3,8 @@ import {mqtt_type_writer} from './_utils.jsy'
 export function mqtt_encode_connack(mqtt_level, pkt) ::
   const wrt = new mqtt_type_writer()
 
-  const {connect_flags} = pkt
-  wrt.u8_flags @ pkt.connect_flags, _enc_flags_connack
+  const {flags} = pkt
+  wrt.u8_flags @ pkt.flags, _enc_flags_connack
 
   if 5 <= mqtt_level ::
     wrt.u8_reason @ pkt.reason
@@ -15,6 +15,6 @@ export function mqtt_encode_connack(mqtt_level, pkt) ::
 
   return wrt.as_pkt(0x20)
 
-const _enc_flags_connack = connect_flags =>
-  connect_flags.session_present ? 1 : 0
+const _enc_flags_connack = flags =>
+  flags.session_present ? 1 : 0
 
