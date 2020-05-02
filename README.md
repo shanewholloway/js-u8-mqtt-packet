@@ -121,10 +121,9 @@ async function somewhere_in_your_code() {
 
   my_mqtt.send(
     'u8-mqtt-demo/another/apple/orange',
-    'Web-side Fruity fun')
+    'MQTT Fruity fun')
 
 }
-// ...
 ```
 
 ## License
