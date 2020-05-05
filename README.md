@@ -19,14 +19,8 @@ Buffer, EventEmitter, Streams.
 ### Session Codec Client
 
 ```javascript
-import {mqtt_session} from 'u8-mqtt-packet'
-
-const [mqtt_decode, mqtt_encode] = mqtt_session()
-```
-
-```javascript
-import {mqtt_encode_session} from 'u8-mqtt-packet'
-const mqtt_encode = mqtt_encode_session(4)
+import {mqtt_session_ctx} from 'u8-mqtt-packet'
+const [mqtt_decode, mqtt_encode] = mqtt_session_ctx().v4()
 
 const u8_pkt = mqtt_encode('connect', {
   keep_alive: 60,
@@ -41,10 +35,7 @@ console.log(u8_pkt)
 */
 
 
-import {mqtt_decode_session} from 'u8-mqtt-packet'
-const mqtt_decode = mqtt_decode_session()
-const pkt_list = mqtt_decode(u8_pkt)
-console.log(pkt_list)
+console.log(mqtt_decode(u8_pkt))
 
 /*
   [
