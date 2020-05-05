@@ -1,5 +1,5 @@
-import {mqtt_session_v4} from 'u8-mqtt-packet'
-const [mqtt_decode, mqtt_encode] = mqtt_session_v4()
+import {mqtt_session_ctx} from 'u8-mqtt-packet'
+const [mqtt_decode, mqtt_encode] = mqtt_session_ctx().v4()
 
 const u8_pkt = mqtt_encode('connect', {
   keep_alive: 60,
