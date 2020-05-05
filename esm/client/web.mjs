@@ -1080,9 +1080,12 @@ class MQTTBonesClient {
   connect(pkt) { return this._send('connect', pkt) }
   disconnect(pkt) { return this._send('disconnect', pkt) }
 
+  ping() { return this._send('pingreq') }
+
   subscribe(pkt) { return this._send('subscribe', pkt) }
   unsubscribe(pkt) { return this._send('unsubscribe', pkt) }
 
+  puback(pkt) { return this._send('puback', pkt) }
   publish(pkt) { return this._send('publish', pkt) }
 
   // _send(type, pkt) -- provided by _conn_ and transport
