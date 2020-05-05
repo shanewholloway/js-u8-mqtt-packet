@@ -36,9 +36,11 @@ export function _mqtt_raw_pkt_dispatch(u8_pkt_dispatch) {
       const res = []
       while (true) {
         const u8_pkt = _mqtt_raw_pkt_decode_v(l, _pkt_ctx_)
-        if (undefined !== u8_pkt)
-          res.push( u8_pkt_dispatch(u8_pkt) )
-        else return res
+        if (undefined === u8_pkt) return res
+
+        const pkt = u8_pkt_dispatch(u8_pkt)
+        if (null != pkt)
+          res.push( pkt )
       }
     }
   }
