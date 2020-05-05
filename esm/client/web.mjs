@@ -857,7 +857,7 @@ function mqtt_encode_auth(ns) {
 const mqtt_decode_zero = ns =>(ns[0] = pkt => pkt);
 
 
-function _mqtt_bind_decode(lst_decode_ops) {
+function _bind_mqtt_decode(lst_decode_ops) {
   const by_id = [];
   for (const op of lst_decode_ops) {op(by_id);}
 
@@ -867,7 +867,7 @@ function _mqtt_bind_decode(lst_decode_ops) {
       return decode_pkt(pkt)} }) }
 
 
-function _mqtt_bind_encode(lst_encode_ops) {
+function _bind_mqtt_encode(lst_encode_ops) {
   const by_type = {};
   for (const op of lst_encode_ops) {op(by_type);}
 
@@ -886,12 +886,12 @@ const _bind_mqtt_session =
         , sess_encode(x)] });
 
 
-function _bind_mqtt_suite(lst_decode_ops, lst_encode_ops) {
-  const decode = _mqtt_bind_decode(lst_decode_ops);
-  const encode = _mqtt_bind_encode(lst_encode_ops);
+function _bind_mqtt_suite(lst_decode_ops, lst_encode_ops, extra) {
+  const decode = _bind_mqtt_decode(lst_decode_ops);
+  const encode = _bind_mqtt_encode(lst_encode_ops);
   return {decode, encode,
-    v4: _bind_mqtt_session(decode, encode, {mqtt_level: 4})
-  , v5: _bind_mqtt_session(decode, encode, {mqtt_level: 5}) } }
+    v4: _bind_mqtt_session(decode, encode, {mqtt_level: 4, ...extra})
+  , v5: _bind_mqtt_session(decode, encode, {mqtt_level: 5, ...extra}) } }
 
 const _mqtt_decode_all = [
     mqtt_decode_zero,

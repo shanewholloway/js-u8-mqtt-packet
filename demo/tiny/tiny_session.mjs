@@ -13,7 +13,7 @@ import {
   mqtt_encode_subscribe,
 } from 'u8-mqtt-packet/esm/codec.mjs'
 
-export const _tiny_decode_all = [
+const _tiny_decode_all = [
     mqtt_decode_connack,
     mqtt_decode_suback,
     mqtt_decode_publish,

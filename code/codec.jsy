@@ -30,7 +30,7 @@ export {mqtt_encode_disconnect} from './encode/disconnect.jsy'
 export {mqtt_encode_auth} from './encode/auth.jsy'
 
 
-export function _mqtt_bind_decode(lst_decode_ops) ::
+export function _bind_mqtt_decode(lst_decode_ops) ::
   const by_id = []
   for const op of lst_decode_ops :: op(by_id)
 
@@ -40,7 +40,7 @@ export function _mqtt_bind_decode(lst_decode_ops) ::
       return decode_pkt(pkt)
 
 
-export function _mqtt_bind_encode(lst_encode_ops) ::
+export function _bind_mqtt_encode(lst_encode_ops) ::
   const by_type = {}
   for const op of lst_encode_ops :: op(by_type)
 
@@ -59,10 +59,10 @@ export const _bind_mqtt_session =
           sess_encode(x)
 
 
-export function _bind_mqtt_suite(lst_decode_ops, lst_encode_ops) ::
-  const decode = _mqtt_bind_decode(lst_decode_ops)
-  const encode = _mqtt_bind_encode(lst_encode_ops)
+export function _bind_mqtt_suite(lst_decode_ops, lst_encode_ops, extra) ::
+  const decode = _bind_mqtt_decode(lst_decode_ops)
+  const encode = _bind_mqtt_encode(lst_encode_ops)
   return @{} decode, encode,
-    v4: _bind_mqtt_session @ decode, encode, {mqtt_level: 4}
-    v5: _bind_mqtt_session @ decode, encode, {mqtt_level: 5}
+    v4: _bind_mqtt_session @ decode, encode, {mqtt_level: 4, ...extra}
+    v5: _bind_mqtt_session @ decode, encode, {mqtt_level: 5, ...extra}
 
