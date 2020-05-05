@@ -1,0 +1,68 @@
+import { _mqtt_raw_pkt_dispatch } from './framing.jsy'
+export { _mqtt_raw_pkt_dispatch } from './framing.jsy'
+
+
+export {mqtt_decode_connect} from './decode/connect.jsy'
+export {mqtt_decode_connack} from './decode/connack.jsy'
+export {mqtt_decode_publish} from './decode/publish.jsy'
+export {mqtt_decode_puback} from './decode/puback.jsy'
+export {mqtt_decode_pubxxx} from './decode/pubrec_pubrel_pubcomp.jsy'
+export {mqtt_decode_subscribe} from './decode/subscribe.jsy'
+export {mqtt_decode_suback} from './decode/suback.jsy'
+export {mqtt_decode_unsubscribe} from './decode/unsubscribe.jsy'
+export {mqtt_decode_unsuback} from './decode/unsuback.jsy'
+export {mqtt_decode_pingxxx} from './decode/pingreq_pingresp.jsy'
+export {mqtt_decode_disconnect} from './decode/disconnect.jsy'
+export {mqtt_decode_auth} from './decode/auth.jsy'
+export const mqtt_decode_zero = ns => @ ns[0] = pkt => pkt
+
+
+export {mqtt_encode_connect} from './encode/connect.jsy'
+export {mqtt_encode_connack} from './encode/connack.jsy'
+export {mqtt_encode_publish} from './encode/publish.jsy'
+export {mqtt_encode_puback} from './encode/puback.jsy'
+export {mqtt_encode_pubxxx} from './encode/pubrec_pubrel_pubcomp.jsy'
+export {mqtt_encode_subscribe} from './encode/subscribe.jsy'
+export {mqtt_encode_xxsuback} from './encode/suback_unsuback.jsy'
+export {mqtt_encode_unsubscribe} from './encode/unsubscribe.jsy'
+export {mqtt_encode_pingxxx} from './encode/pingreq_pingresp.jsy'
+export {mqtt_encode_disconnect} from './encode/disconnect.jsy'
+export {mqtt_encode_auth} from './encode/auth.jsy'
+
+
+export function _mqtt_bind_decode(lst_decode_ops) ::
+  const by_id = []
+  for const op of lst_decode_ops :: op(by_id)
+
+  return _mqtt_raw_pkt_dispatch @\ pkt ::
+    const decode_pkt = by_id[pkt.type_obj.id] || by_id[0]
+    if undefined !== decode_pkt ::
+      return decode_pkt(pkt)
+
+
+export function _mqtt_bind_encode(lst_encode_ops) ::
+  const by_type = {}
+  for const op of lst_encode_ops :: op(by_type)
+
+  return @\ mqtt_level ::
+    mqtt_level = +mqtt_level || mqtt_level.mqtt_level
+    return @\ type, pkt =>
+      by_type[type] @ mqtt_level, pkt
+
+
+export const _bind_mqtt_session =
+  (sess_decode, sess_encode, _pkt_ctx_) =>
+    @:: let x = {__proto__: _pkt_ctx_}
+        x._base_ = x
+        return @[]
+          sess_decode(x)
+          sess_encode(x)
+
+
+export function _bind_mqtt_suite(lst_decode_ops, lst_encode_ops) ::
+  const decode = _mqtt_bind_decode(lst_decode_ops)
+  const encode = _mqtt_bind_encode(lst_encode_ops)
+  return @{} decode, encode,
+    v4: _bind_mqtt_session @ decode, encode, {mqtt_level: 4}
+    v5: _bind_mqtt_session @ decode, encode, {mqtt_level: 5}
+

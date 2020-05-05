@@ -1,6 +1,0 @@
-import {_mqtt_encode_suback} from './_suback_unsuback.jsy'
-
-export function mqtt_encode_suback(mqtt_level, pkt) ::
-  return _mqtt_encode_suback @
-    0x90, mqtt_level, pkt
-

@@ -1,5 +1,0 @@
-import {_mqtt_encode_pubxxx} from './_pubrec_pubrel_pubcomp.jsy'
-
-export function mqtt_encode_pubcomp(mqtt_level, pkt) ::
-  return _mqtt_encode_pubxxx @ 0x70, mqtt_level, pkt
-

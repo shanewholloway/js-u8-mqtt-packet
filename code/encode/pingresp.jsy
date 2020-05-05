@@ -1,2 +1,0 @@
-export const mqtt_encode_pingresp = @=>
-  new Uint8Array @# 0xd0, 0

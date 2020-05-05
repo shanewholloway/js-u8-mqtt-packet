@@ -27,6 +27,7 @@ export default configs
 
 add_jsy('index', {})
 add_jsy('session', {min: true})
+add_jsy('codec', {min: true})
 
 add_jsy('client/core_node', {})
 add_jsy('client/core_web', {min: true})
