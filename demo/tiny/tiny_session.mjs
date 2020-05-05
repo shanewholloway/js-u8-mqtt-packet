@@ -11,7 +11,7 @@ import {
   mqtt_encode_disconnect,
   mqtt_encode_publish,
   mqtt_encode_subscribe,
-} from 'u8-mqtt-packet/esm/codec.mjs'
+} from 'u8-mqtt-packet'
 
 export const {v4: mqtt_tiny_session} =
   _bind_mqtt_session_ctx(

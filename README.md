@@ -16,8 +16,6 @@ Buffer, EventEmitter, Streams.
 
 ## Use
 
-### Session Codec Client
-
 ```javascript
 import {mqtt_session_ctx} from 'u8-mqtt-packet'
 const [mqtt_decode, mqtt_encode] = mqtt_session_ctx().v4()
