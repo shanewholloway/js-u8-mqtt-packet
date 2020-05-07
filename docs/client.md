@@ -31,7 +31,7 @@
 
 * Web capable ready-to-use: `MQTTBonesWeb_v4`, `MQTTBonesWeb_v5`, bound with `mqtt_session_ctx()` suitable as a base-bones MQTT client
 
-* `MQTTBonesWebClient::with_websock(websock)` connects to MQTT over websocket protocol. Pass either a websocket URL or a WebSocket instance.
+* `MQTTBonesWebClient::with_websock(websock)` connects to MQTT using a WebSocket. Pass either a URL or a WebSocket instance.
 
 
 ### NodeJS Client
