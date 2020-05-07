@@ -33,7 +33,7 @@ export function mqtt_decode_connect(ns) {
     if (flags.will_flag) {
       const will = pkt.will = {}
       if (5 <= pkt.mqtt_level)
-        will.properties = rdr.props()
+        will.props = rdr.props()
 
       will.topic = rdr.utf8()
       will.payload = rdr.bin()

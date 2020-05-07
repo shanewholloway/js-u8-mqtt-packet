@@ -6,8 +6,8 @@ export class MQTTBonesWebClient extends MQTTBonesClient {
     if (null == websock)
       websock = 'ws://127.0.0.1:9001'
 
-    if ('string' === typeof websock)
-      websock = new WebSocket(websock, ['mqtt'])
+    if ('string' === typeof websock || websock.origin)
+      websock = new WebSocket(new URL(websock), ['mqtt'])
 
     const {readyState} = websock
     websock.binaryType = 'arraybuffer'

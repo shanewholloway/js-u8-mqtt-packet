@@ -1,10 +1,10 @@
 import { hex_to_u8, u8_to_utf8 } from 'u8-utils'
-import { mqtt_session_ctx } from 'u8-mqtt-packet'
+import { mqtt_session_v4 } from 'u8-mqtt-packet'
 
 const { assert, expect } = require('chai')
 
 function _decode_one_hex(hex_pkt) {
-  const [mqtt_decode] = mqtt_session_ctx().v4()
+  const [mqtt_decode] = mqtt_session_v4()
   const [pkt0, pkt1] = mqtt_decode(hex_to_u8(hex_pkt))
   expect(pkt1).to.be.undefined
   return pkt0

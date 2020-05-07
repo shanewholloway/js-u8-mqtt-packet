@@ -1,5 +1,5 @@
 import {decode_varint} from '../mqtt_varint.mjs'
-import {mqtt_props_by_id} from '../mqtt_props.mjs'
+import {mqtt_props} from '../mqtt_props.mjs'
 
 const as_utf8 = u8 =>
   new TextDecoder('utf-8').decode(u8)
@@ -87,7 +87,7 @@ export class mqtt_type_reader {
       buf.subarray(vi, end_part) )
 
     while (rdr.has_more()) {
-      const {name, type} = mqtt_props_by_id( rdr.u8() )
+      const {name, type} = mqtt_props.get( rdr.u8() )
       const value = rdr[type]()
       prop_entries.push([ name, value ])
     }

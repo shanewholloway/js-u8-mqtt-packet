@@ -1,5 +1,5 @@
 import {encode_varint} from '../mqtt_varint.mjs'
-import {mqtt_props_by_id} from '../mqtt_props.mjs'
+import {mqtt_props} from '../mqtt_props.mjs'
 import {mqtt_pkt_writer_pool} from './_pkt_writer.mjs'
 
 export * from './_pkt_writer.mjs'
@@ -74,7 +74,7 @@ export class mqtt_type_writer {
 
     const wrt = this._fork()
     for (const [name, value] of props) {
-      const {id, type} = mqtt_props_by_id(name)
+      const {id, type} = mqtt_props.get(name)
       wrt.u8(id)
       wrt[type](value)
     }

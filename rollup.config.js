@@ -23,13 +23,12 @@ const configs = []
 export default configs
 
 
-add_module('index', {ext: 'mjs'})
+add_module('index', {})
 add_module('session', {min: true})
-add_module('codec', {min: true})
 
-add_module('client/core_node', {ext: 'mjs'})
+add_module('client/core_node', {})
 add_module('client/core_web', {min: true})
-add_module('client/node', {ext: 'mjs'})
+add_module('client/node', {})
 add_module('client/web', {min: true})
 
 
@@ -39,9 +38,9 @@ function add_module(src_name, opt={}) {
   configs.push({ ..._cfg_, input,
     output: [
       { ..._out_, file: `esm/${src_name}.mjs`, format: 'es' },
-      { ..._out_, file: `cjs/${src_name}.cjs`, format: 'cjs', exports: opt.exports || 'named' },
+      { ..._out_, file: `cjs/${src_name}.cjs`, format: 'cjs', exports: 'named' },
       opt.name && 
-        { ..._out_, file: `umd/${src_name}.js`, format: 'umd', name: opt.name, exports: opt.exports || 'named' },
+        { ..._out_, file: `umd/${src_name}.js`, format: 'umd', name: opt.name, exports: 'named' },
     ].filter(Boolean)})
 
   if (opt.min && cfg_web_min)
@@ -49,6 +48,6 @@ function add_module(src_name, opt={}) {
       output: [
         { ..._out_, file: `esm/${src_name}.min.mjs`, format: 'es' },
         opt.name && 
-          { ..._out_, file: `umd/${src_name}.min.js`, format: 'umd', name: opt.name, exports: opt.exports || 'named' },
+          { ..._out_, file: `umd/${src_name}.min.js`, format: 'umd', name: opt.name, exports: 'named' },
       ].filter(Boolean)})
 }

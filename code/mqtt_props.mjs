@@ -1,5 +1,7 @@
 
-export const [mqtt_props_by_id, mqtt_props_entries] = (()=>{
+export const mqtt_props = new Map() 
+
+{
   const entries = [
     [ 0x01, 'u8',   'payload_format_indicator'],
     [ 0x02, 'u32',  'message_expiry_interval'],
@@ -30,17 +32,11 @@ export const [mqtt_props_by_id, mqtt_props_entries] = (()=>{
     [ 0x2A, 'u8',   'shared_subscription_available'],
   ]
 
-
-  const prop_map = new Map()
   for (const [id, type, name, plural] of entries) {
     const prop_obj = {id, type, name}
-    //if (plural) prop_obj.plural = plural
-    prop_map.set(prop_obj.id, prop_obj)
-    prop_map.set(prop_obj.name, prop_obj)
+    if (plural) prop_obj.plural = plural
+    mqtt_props.set(prop_obj.id, prop_obj)
+    mqtt_props.set(prop_obj.name, prop_obj)
   }
-
-  return [
-    prop_map.get.bind(prop_map),
-    new Set( prop_map.values() ) ]
-})();
+}
 

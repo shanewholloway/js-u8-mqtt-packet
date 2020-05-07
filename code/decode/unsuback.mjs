@@ -1,5 +1,5 @@
 import {bind_reason_lookup} from './_utils.mjs'
-import {_mqtt_decode_suback} from './_suback_unsuback.mjs'
+import {_mqtt_decode_suback} from './suback_unsuback.mjs'
 
 
 export function mqtt_decode_unsuback(ns) {

@@ -16,10 +16,11 @@ export function _mqtt_client_conn(client) {
       const [mqtt_decode, mqtt_encode] =
         mqtt_session()
 
+      const ctx = {mqtt: client}
       const on_mqtt_chunk = u8_buf =>
         client.on_mqtt(
           mqtt_decode(u8_buf),
-          client)
+          ctx)
 
       const send_pkt = async (type, pkt) =>
         send_u8_pkt(

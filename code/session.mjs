@@ -29,7 +29,8 @@ import {
 } from './codec.mjs'
 
 
-export function mqtt_session_ctx() {
+export default mqtt_session_ctx
+export function mqtt_session_ctx(mqtt_level) {
   let {ctx} = mqtt_session_ctx
   if ( undefined === ctx ) {
     mqtt_session_ctx.ctx = ctx =
@@ -62,6 +63,8 @@ export function mqtt_session_ctx() {
           mqtt_encode_auth, ])
   }
 
-  return ctx
+  return ctx(mqtt_level)
 }
 
+export const mqtt_session_v4 = ()=> mqtt_session_ctx(4)()
+export const mqtt_session_v5 = ()=> mqtt_session_ctx(5)()

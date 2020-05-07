@@ -23,11 +23,13 @@ export function mqtt_encode_connect(ns) {
     wrt.push(_c_mqtt_proto)
     wrt.u8( mqtt_level )
 
-    const {will} = pkt
+    const {will, username, password} = pkt
     const flags = wrt.u8_flags(
       pkt.flags,
       _enc_flags_connect,
-      will ? _enc_flags_will(will) : 0 )
+      0 | (username ? 0x80 : 0)
+        | (password ? 0x40 : 0)
+        | (will ? _enc_flags_will(will) : 0) )
 
     wrt.u16(pkt.keep_alive)
 
@@ -38,17 +40,17 @@ export function mqtt_encode_connect(ns) {
     wrt.utf8(pkt.client_id)
     if (flags & 0x04) { // .will_flag
       if (5 <= mqtt_level)
-        wrt.props(will.properties)
+        wrt.props(will.props)
 
       wrt.utf8(will.topic)
       wrt.bin(will.payload)
     }
 
     if (flags & 0x80) // .username
-      wrt.utf8(pkt.username)
+      wrt.utf8(username)
 
     if (flags & 0x40) // .password
-      wrt.bin(pkt.password)
+      wrt.bin(password)
 
     return wrt.as_pkt(0x10)
   }

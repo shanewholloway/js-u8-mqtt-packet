@@ -6,7 +6,7 @@ export class MQTTBonesClient {
     this._conn_ = _mqtt_client_conn(this)
     if (on_mqtt) {
       this.on_mqtt = on_mqtt
-      this.on_mqtt([], this)
+      this.on_mqtt([], {mqtt:this})
     }
   }
 
@@ -23,7 +23,7 @@ export class MQTTBonesClient {
   publish(pkt) { return this._send('publish', pkt) }
 
   // _send(type, pkt) -- provided by _conn_ and transport
-  on_mqtt(/*pkt_list, self*/) {}
+  on_mqtt(/*pkt_list, ctx*/) {}
 
   static with(mqtt_session) {
     this.prototype.mqtt_session = mqtt_session

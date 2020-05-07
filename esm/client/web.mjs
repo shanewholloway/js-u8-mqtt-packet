@@ -9,34 +9,29 @@ function encode_varint(n, a=[]) {
 
 
 /*
-export function decode_varint_loop(u8, vi=0, vi_tuple=[]) {
-  let shift = 0, n = (u8[vi] & 0x7f)
-  while ( 0x80 & u8[vi++] )
-    n |= (u8[vi] & 0x7f) << (shift += 7)
+export function decode_varint_loop(u8, i=0) {
+  let shift = 0, n = (u8[i] & 0x7f)
+  while ( 0x80 & u8[i++] )
+    n |= (u8[i] & 0x7f) << (shift += 7)
 
-  vi_tuple[0] = n
-  vi_tuple[1] = vi
-  return vi_tuple
+  return [n, i]
 }
 */
 
 
-function decode_varint(u8, vi=0, vi_tuple=[]) {
+function decode_varint(u8, i=0) {
   // unrolled for a max of 4 chains
-  let n = (u8[vi] & 0x7f) <<  0;
-  if ( 0x80 & u8[vi++] ) {
-    n |= (u8[vi] & 0x7f) <<  7;
-    if ( 0x80 & u8[vi++] ) {
-      n |= (u8[vi] & 0x7f) << 14;
-      if ( 0x80 & u8[vi++] ) {
-        n |= (u8[vi] & 0x7f) << 21;
+  let n = (u8[i] & 0x7f) <<  0;
+  if ( 0x80 & u8[i++] ) {
+    n |= (u8[i] & 0x7f) <<  7;
+    if ( 0x80 & u8[i++] ) {
+      n |= (u8[i] & 0x7f) << 14;
+      if ( 0x80 & u8[i++] ) {
+        n |= (u8[i] & 0x7f) << 21;
       }
     }
   }
-
-  vi_tuple[0] = n;
-  vi_tuple[1] = vi;
-  return vi_tuple
+  return [n, i]
 }
 
 function _mqtt_raw_pkt_decode_v(by_ref) {
@@ -44,16 +39,15 @@ function _mqtt_raw_pkt_decode_v(by_ref) {
   const [len_body, len_vh] = decode_varint(u8, 1);
 
   const len_pkt = len_body + len_vh;
-  if ( u8.byteLength >= len_pkt ) {
+  if ( u8.byteLength < len_pkt ) {
+    by_ref.length = 1; // truncate
+    return true
+  }
 
-    by_ref[0] = u8.subarray(len_pkt);
-    by_ref[1] = u8[0];
-    by_ref[2] = 0 === len_body ? null
-        : u8.subarray(len_vh, len_pkt);
-
-  } else by_ref.length = 1; // truncate
-
-  return by_ref
+  by_ref[0] = u8.subarray(len_pkt);
+  by_ref[1] = u8[0];
+  by_ref[2] = 0 === len_body ? null
+      : u8.subarray(len_vh, len_pkt);
 }
 
 
@@ -65,8 +59,7 @@ function _mqtt_raw_pkt_dispatch(decode_raw_pkt) {
 
     const res = [];
     do {
-      _mqtt_raw_pkt_decode_v(l);
-      if (1 === l.length)
+      if (_mqtt_raw_pkt_decode_v(l))
         return res
 
       const pkt = decode_raw_pkt(l[1], l[2]);
@@ -85,7 +78,9 @@ function _u8_join(a, b) {
   return r
 }
 
-const [mqtt_props_by_id, mqtt_props_entries] = (()=>{
+const mqtt_props = new Map(); 
+
+{
   const entries = [
     [ 0x01, 'u8',   'payload_format_indicator'],
     [ 0x02, 'u32',  'message_expiry_interval'],
@@ -116,19 +111,13 @@ const [mqtt_props_by_id, mqtt_props_entries] = (()=>{
     [ 0x2A, 'u8',   'shared_subscription_available'],
   ];
 
-
-  const prop_map = new Map();
   for (const [id, type, name, plural] of entries) {
     const prop_obj = {id, type, name};
-    //if (plural) prop_obj.plural = plural
-    prop_map.set(prop_obj.id, prop_obj);
-    prop_map.set(prop_obj.name, prop_obj);
+    if (plural) prop_obj.plural = plural;
+    mqtt_props.set(prop_obj.id, prop_obj);
+    mqtt_props.set(prop_obj.name, prop_obj);
   }
-
-  return [
-    prop_map.get.bind(prop_map),
-    new Set( prop_map.values() ) ]
-})();
+}
 
 const as_utf8 = u8 =>
   new TextDecoder('utf-8').decode(u8);
@@ -216,7 +205,7 @@ class mqtt_type_reader {
       buf.subarray(vi, end_part) );
 
     while (rdr.has_more()) {
-      const {name, type} = mqtt_props_by_id( rdr.u8() );
+      const {name, type} = mqtt_props.get( rdr.u8() );
       const value = rdr[type]();
       prop_entries.push([ name, value ]);
     }
@@ -272,7 +261,7 @@ function mqtt_decode_connect(ns) {
     if (flags.will_flag) {
       const will = pkt.will = {};
       if (5 <= pkt.mqtt_level)
-        will.properties = rdr.props();
+        will.props = rdr.props();
 
       will.topic = rdr.utf8();
       will.payload = rdr.bin();
@@ -679,7 +668,7 @@ class mqtt_type_writer {
 
     const wrt = this._fork();
     for (const [name, value] of props) {
-      const {id, type} = mqtt_props_by_id(name);
+      const {id, type} = mqtt_props.get(name);
       wrt.u8(id);
       wrt[type](value);
     }
@@ -714,11 +703,13 @@ function mqtt_encode_connect(ns) {
     wrt.push(_c_mqtt_proto);
     wrt.u8( mqtt_level );
 
-    const {will} = pkt;
+    const {will, username, password} = pkt;
     const flags = wrt.u8_flags(
       pkt.flags,
       _enc_flags_connect,
-      will ? _enc_flags_will(will) : 0 );
+      0 | (username ? 0x80 : 0)
+        | (password ? 0x40 : 0)
+        | (will ? _enc_flags_will(will) : 0) );
 
     wrt.u16(pkt.keep_alive);
 
@@ -729,17 +720,17 @@ function mqtt_encode_connect(ns) {
     wrt.utf8(pkt.client_id);
     if (flags & 0x04) { // .will_flag
       if (5 <= mqtt_level)
-        wrt.props(will.properties);
+        wrt.props(will.props);
 
       wrt.utf8(will.topic);
       wrt.bin(will.payload);
     }
 
     if (flags & 0x80) // .username
-      wrt.utf8(pkt.username);
+      wrt.utf8(username);
 
     if (flags & 0x40) // .password
-      wrt.bin(pkt.password);
+      wrt.bin(password);
 
     return wrt.as_pkt(0x10)
   }
@@ -950,42 +941,30 @@ function _bind_mqtt_encode(lst_encode_ops) {
   const by_type = {};
   for (const op of lst_encode_ops) op(by_type);
 
-  return mqtt_level => {
-    mqtt_level = +mqtt_level || mqtt_level.mqtt_level;
-    return (type, pkt) =>
+  return ({mqtt_level}) => (type, pkt) =>
       by_type[type]( mqtt_level, pkt )
-  }
 }
 
 
 const _pkt_types = ['reserved', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth'];
-function _bind_pkt_ctx(_pkt_ctx_={}, mqtt_level=4) {
-  _pkt_ctx_ = {
-    __proto__: _pkt_ctx_,
-    mqtt_level,
-    get hdr() { return this.b0 & 0xf },
-    get id() { return this.b0 >>> 4 },
-    get type() { return _pkt_types[this.b0 >>> 4] },
-  };
-  return _pkt_ctx_._base_ = _pkt_ctx_
-}
+const _bind_pkt_ctx = _pkt_ctx_ =>
+  Object.defineProperties(_pkt_ctx_ || {}, {
+    hdr:  {get() { return this.b0 & 0xf }},
+    id:   {get() { return this.b0 >>> 4 }},
+    type: {get() { return _pkt_types[this.b0 >>> 4] }},
+  });
 
 function _bind_mqtt_session_ctx(sess_decode, sess_encode, _pkt_ctx_) {
   sess_decode = _bind_mqtt_decode(sess_decode);
   sess_encode = _bind_mqtt_encode(sess_encode);
+  _pkt_ctx_ = _bind_pkt_ctx(_pkt_ctx_);
 
-  const _sess_ctx = mqtt_level =>
-    () => {
-      let x = _bind_pkt_ctx(_pkt_ctx_, mqtt_level);
-      return [sess_decode(x), sess_encode(x)]
-    };
-
-  _sess_ctx.v4 = _sess_ctx(4);
-  _sess_ctx.v5 = _sess_ctx(5);
-  return _sess_ctx
+  return mqtt_level => ()=> {
+    let _base_ = {__proto__: _pkt_ctx_, mqtt_level, get _base_() { return _base_ }};
+    return [ sess_decode(_base_), sess_encode(_base_)] }
 }
 
-function mqtt_session_ctx() {
+function mqtt_session_ctx(mqtt_level) {
   let {ctx} = mqtt_session_ctx;
   if ( undefined === ctx ) {
     mqtt_session_ctx.ctx = ctx =
@@ -1018,7 +997,7 @@ function mqtt_session_ctx() {
           mqtt_encode_auth, ]);
   }
 
-  return ctx
+  return ctx(mqtt_level)
 }
 
 function _mqtt_client_conn(client) {
@@ -1038,10 +1017,11 @@ function _mqtt_client_conn(client) {
       const [mqtt_decode, mqtt_encode] =
         mqtt_session();
 
+      const ctx = {mqtt: client};
       const on_mqtt_chunk = u8_buf =>
         client.on_mqtt(
           mqtt_decode(u8_buf),
-          client);
+          ctx);
 
       const send_pkt = async (type, pkt) =>
         send_u8_pkt(
@@ -1060,7 +1040,7 @@ class MQTTBonesClient {
     this._conn_ = _mqtt_client_conn(this);
     if (on_mqtt) {
       this.on_mqtt = on_mqtt;
-      this.on_mqtt([], this);
+      this.on_mqtt([], {mqtt:this});
     }
   }
 
@@ -1077,7 +1057,7 @@ class MQTTBonesClient {
   publish(pkt) { return this._send('publish', pkt) }
 
   // _send(type, pkt) -- provided by _conn_ and transport
-  on_mqtt(/*pkt_list, self*/) {}
+  on_mqtt(/*pkt_list, ctx*/) {}
 
   static with(mqtt_session) {
     this.prototype.mqtt_session = mqtt_session;
@@ -1090,8 +1070,8 @@ class MQTTBonesWebClient extends MQTTBonesClient {
     if (null == websock)
       websock = 'ws://127.0.0.1:9001';
 
-    if ('string' === typeof websock)
-      websock = new WebSocket(websock, ['mqtt']);
+    if ('string' === typeof websock || websock.origin)
+      websock = new WebSocket(new URL(websock), ['mqtt']);
 
     const {readyState} = websock;
     websock.binaryType = 'arraybuffer';
@@ -1127,9 +1107,8 @@ class MQTTBonesWebClient extends MQTTBonesClient {
 class MQTTBonesWeb_v4 extends MQTTBonesWebClient {}
 class MQTTBonesWeb_v5 extends MQTTBonesWebClient {}
 
-const {v4, v5} = mqtt_session_ctx();
-MQTTBonesWeb_v4.with(v4);
-MQTTBonesWeb_v5.with(v5);
+MQTTBonesWeb_v4.with(mqtt_session_ctx(4));
+MQTTBonesWeb_v5.with(mqtt_session_ctx(5));
 
 export default MQTTBonesWeb_v4;
 export { MQTTBonesWeb_v4, MQTTBonesWeb_v5 };
