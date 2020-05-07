@@ -1,14 +1,17 @@
 # u8-mqtt-packet
 
-MQTT packet encoder and decoder using Uint8Array -- suitable for use in the
-browser, nodejs, and deno. Zero dependencies. ESM / Tree-shaking friendly.
+MQTT packet encoder and decoder using Uint8Array in ES Modules (ESM). Zero dependencies. [Tree-shaking friendly](https://rollupjs.org/guide/en/).
 
-Targeting [MQTT-3.1.1][spec-3.1.1] and [MQTT-5.0.0][spec-5.0.0] compatibility.
+Suited for use in modern ES6 environments: the Browser, [NodeJS](https://nodejs.org/en/), and [Deno](https://deno.land/). 
 
-This project was inspired by [mqtt-packet](https://github.com/mqttjs/mqtt-packet)
-written for NodeJS. Their codecs are written with a NodeJS ecosystem in mind:
-Buffer, EventEmitter, Streams.
 
+## Docs
+
+- [API docs](./docs/api.md)
+- [Bare-bones Client docs](./docs/client.md)
+
+
+Targeting [MQTT-3.1.1 (v4)][spec-3.1.1] and [MQTT-5.0.0 (v5)][spec-5.0.0] compatibility.
 
  [spec-5.0.0]: https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
  [spec-3.1.1]: http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html
@@ -47,6 +50,11 @@ console.log(mqtt_decode(u8_pkt))
   ]
 */
 ```
+
+## Prior Art
+
+The `u8-mqtt-packet` project was inspired by [mqtt-packet](https://github.com/mqttjs/mqtt-packet) written for NodeJS. The codecs of that project are written with a NodeJS ecosystem in mind: Buffer, EventEmitter, Streams.
+
 
 ## License
 
