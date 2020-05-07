@@ -8,6 +8,19 @@ function encode_varint(n, a=[]) {
 }
 
 
+/*
+export function decode_varint_loop(u8, vi=0, vi_tuple=[]) {
+  let shift = 0, n = (u8[vi] & 0x7f)
+  while ( 0x80 & u8[vi++] )
+    n |= (u8[vi] & 0x7f) << (shift += 7)
+
+  vi_tuple[0] = n
+  vi_tuple[1] = vi
+  return vi_tuple
+}
+*/
+
+
 function decode_varint(u8, vi=0, vi_tuple=[]) {
   // unrolled for a max of 4 chains
   let n = (u8[vi] & 0x7f) <<  0;
@@ -26,77 +39,40 @@ function decode_varint(u8, vi=0, vi_tuple=[]) {
   return vi_tuple
 }
 
-const [mqtt_cmd_by_type, mqtt_type_entries] = (()=>{
-
-  const entries = [
-    [ 0x0, 'reserved'],
-    [ 0x1, 'connect'],
-    [ 0x2, 'connack'],
-    [ 0x3, 'publish'],
-    [ 0x4, 'puback'],
-    [ 0x5, 'pubrec'],
-    [ 0x6, 'pubrel'],
-    [ 0x7, 'pubcomp'],
-    [ 0x8, 'subscribe'],
-    [ 0x9, 'suback'],
-    [ 0xa, 'unsubscribe'],
-    [ 0xb, 'unsuback'],
-    [ 0xc, 'pingreq'],
-    [ 0xd, 'pingresp'],
-    [ 0xe, 'disconnect'],
-    [ 0xf, 'auth'],
-  ];
-
-  const type_map = new Map();
-  for (const [id, type] of entries) {
-    const cmd = id << 4;
-    type_map.set(cmd, {type, cmd, id});
-  }
-
-  return [
-    type_map.get.bind(type_map),
-    Array.from(type_map.values()) ]
-})();
-
-function _mqtt_raw_pkt_decode_v(u8_ref, _pkt_ctx_) {
-  const [u8] = u8_ref;
+function _mqtt_raw_pkt_decode_v(by_ref) {
+  const [u8] = by_ref;
   const [len_body, len_vh] = decode_varint(u8, 1);
 
   const len_pkt = len_body + len_vh;
   if ( u8.byteLength >= len_pkt ) {
-    const b0 = u8[0], cmd = b0 & 0xf0;
-    u8_ref[0] = u8.subarray(len_pkt);
 
-    return { __proto__: _pkt_ctx_,
-      b0, cmd, id: b0>>>4, hdr: b0 & 0x0f,
-      type_obj: mqtt_cmd_by_type(cmd),
-      u8_body: 0 === len_body ? null
-        : u8.subarray(len_vh, len_pkt)
-      }
-  }
+    by_ref[0] = u8.subarray(len_pkt);
+    by_ref[1] = u8[0];
+    by_ref[2] = 0 === len_body ? null
+        : u8.subarray(len_vh, len_pkt);
+
+  } else by_ref.length = 1; // truncate
+
+  return by_ref
 }
 
 
-function _mqtt_raw_pkt_dispatch(u8_pkt_dispatch) {
-  const _px0_ = {};
-  _px0_._base_ = _px0_;
-  return (_pkt_ctx_=_px0_) => {
-    if (_pkt_ctx_ !== _pkt_ctx_._base_)
-      throw '_pkt_ctx_._base_'
+function _mqtt_raw_pkt_dispatch(decode_raw_pkt) {
+  const l = [new Uint8Array(0)]; // reuse array to prevent garbage collection churn on ephemeral ones
+  return u8_buf => {
+    l[0] = 0 === l[0].byteLength
+      ? u8_buf : _u8_join(l[0], u8_buf);
 
-    const l = [new Uint8Array(0)]; // reuse array to prevent garbage collection churn on ephemeral ones
-    return u8_buf => {
-      l[0] = 0 === l[0].byteLength
-        ? u8_buf : _u8_join(l[0], u8_buf);
+    const res = [];
+    do {
+      _mqtt_raw_pkt_decode_v(l);
+      if (1 === l.length)
+        return res
 
-      const res = [];
-      while (true) {
-        const u8_pkt = _mqtt_raw_pkt_decode_v(l, _pkt_ctx_);
-        if (undefined !== u8_pkt)
-          res.push( u8_pkt_dispatch(u8_pkt) );
-        else return res
-      }
-    }
+      const pkt = decode_raw_pkt(l[1], l[2]);
+      if (undefined !== pkt && null !== pkt)
+        res.push( pkt );
+    } while (1)
   }
 }
 
@@ -275,8 +251,8 @@ function mqtt_decode_connect(ns) {
   }
 
 
-  return ns[0x1] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return ns[0x1] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
     if ('MQTT' !== rdr.utf8())
       throw new Error('Invalid mqtt_connect packet')
 
@@ -350,8 +326,8 @@ function mqtt_decode_connack(ns) {
   ]);
 
 
-  return ns[0x2] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return ns[0x2] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
 
     const flags = pkt.flags =
       rdr.u8_flags(_connack_flags_);
@@ -363,13 +339,13 @@ function mqtt_decode_connack(ns) {
 }
 
 function mqtt_decode_publish(ns) {
-  return ns[0x3] = pkt => {
+  return ns[0x3] = (pkt, u8_body) => {
     const {hdr} = pkt;
     pkt.dup = Boolean(hdr & 0x8);
     pkt.retain = Boolean(hdr & 0x1);
     const qos = pkt.qos = (hdr>>1) & 0x3;
 
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+    const rdr = new mqtt_type_reader(u8_body, 0);
     pkt.topic = rdr.utf8();
     if (0 !== qos)
       pkt.pkt_id = rdr.u16();
@@ -400,8 +376,8 @@ function mqtt_decode_puback(ns) {
   ]);
 
 
-  return ns[0x4] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return ns[0x4] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
 
     pkt.pkt_id = rdr.u16();
     if (5 <= pkt.mqtt_level) {
@@ -418,8 +394,8 @@ function mqtt_decode_pubxxx(ns) {
     [ 0x92, 'Packet Identifier not found' ],
   ]);
 
-  return ns[0x5] = ns[0x6] = ns[0x7] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return ns[0x5] = ns[0x6] = ns[0x7] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
 
     pkt.pkt_id = rdr.u16();
     pkt.reason = rdr.u8_reason(_pubxxx_reason_);
@@ -435,8 +411,8 @@ function mqtt_decode_subscribe(ns) {
     get retain_handling() { return (this >> 2) & 0x3 }
   }
 
-  return ns[0x8] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return ns[0x8] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
 
     pkt.pkt_id = rdr.u16();
     if (5 <= pkt.mqtt_level)
@@ -452,8 +428,8 @@ function mqtt_decode_subscribe(ns) {
 }
 
 function _mqtt_decode_suback(_ack_reason_) {
-  return pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
 
     pkt.pkt_id = rdr.u16();
     if (5 <= pkt.mqtt_level)
@@ -490,8 +466,8 @@ function mqtt_decode_suback(ns) {
 }
 
 function mqtt_decode_unsubscribe(ns) {
-  return ns[0xa] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+  return ns[0xa] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0);
 
     pkt.pkt_id = rdr.u16();
     if (5 <= pkt.mqtt_level)
@@ -557,9 +533,9 @@ function mqtt_decode_disconnect(ns) {
   ]);
 
 
-  return ns[0xe] = pkt => {
+  return ns[0xe] = (pkt, u8_body) => {
     if (5 <= pkt.mqtt_level) {
-      const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+      const rdr = new mqtt_type_reader(u8_body, 0);
       pkt.reason = rdr.u8_reason(_disconnect_reason_);
       pkt.props = rdr.props();
     }
@@ -574,9 +550,9 @@ function mqtt_decode_auth(ns) {
     [ 0x19, 'Re-authenticate' ],
   ]);
 
-  return ns[0xf] = pkt => {
+  return ns[0xf] = (pkt, u8_body) => {
     if ( 5 <= pkt.mqtt_level ) {
-      const rdr = new mqtt_type_reader(pkt.u8_body, 0);
+      const rdr = new mqtt_type_reader(u8_body, 0);
       pkt.reason = rdr.u8_reason(_auth_reason_);
       pkt.props = rdr.props();
     }
@@ -961,11 +937,12 @@ function _bind_mqtt_decode(lst_decode_ops) {
   const by_id = [];
   for (const op of lst_decode_ops) op(by_id);
 
-  return _mqtt_raw_pkt_dispatch( pkt => {
-    const decode_pkt = by_id[pkt.type_obj.id] || by_id[0];
-    if (undefined !== decode_pkt)
-      return decode_pkt(pkt)
-  })
+  return _pkt_ctx_ => _mqtt_raw_pkt_dispatch(
+    (b0, u8_body) => {
+      const decode_pkt = by_id[b0>>>4] || by_id[0];
+      if (undefined !== decode_pkt)
+        return decode_pkt({__proto__: _pkt_ctx_, b0}, u8_body)
+    })
 }
 
 
@@ -981,14 +958,25 @@ function _bind_mqtt_encode(lst_encode_ops) {
 }
 
 
+const _pkt_types = ['reserved', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth'];
+function _bind_pkt_ctx(_pkt_ctx_={}, mqtt_level=4) {
+  _pkt_ctx_ = {
+    __proto__: _pkt_ctx_,
+    mqtt_level,
+    get hdr() { return this.b0 & 0xf },
+    get id() { return this.b0 >>> 4 },
+    get type() { return _pkt_types[this.b0 >>> 4] },
+  };
+  return _pkt_ctx_._base_ = _pkt_ctx_
+}
+
 function _bind_mqtt_session_ctx(sess_decode, sess_encode, _pkt_ctx_) {
   sess_decode = _bind_mqtt_decode(sess_decode);
   sess_encode = _bind_mqtt_encode(sess_encode);
 
   const _sess_ctx = mqtt_level =>
     () => {
-      let x = {__proto__: _pkt_ctx_, mqtt_level};
-      x._base_ = x;
+      let x = _bind_pkt_ctx(_pkt_ctx_, mqtt_level);
       return [sess_decode(x), sess_encode(x)]
     };
 

@@ -7,8 +7,8 @@ export function mqtt_decode_pubxxx(ns) {
     [ 0x92, 'Packet Identifier not found' ],
   ])
 
-  return ns[0x5] = ns[0x6] = ns[0x7] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0)
+  return ns[0x5] = ns[0x6] = ns[0x7] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0)
 
     pkt.pkt_id = rdr.u16()
     pkt.reason = rdr.u8_reason(_pubxxx_reason_)

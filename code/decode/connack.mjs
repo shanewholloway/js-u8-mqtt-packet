@@ -38,8 +38,8 @@ export function mqtt_decode_connack(ns) {
   ])
 
 
-  return ns[0x2] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0)
+  return ns[0x2] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0)
 
     const flags = pkt.flags =
       rdr.u8_flags(_connack_flags_)

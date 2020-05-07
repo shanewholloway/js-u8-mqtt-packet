@@ -12,8 +12,8 @@ export function mqtt_decode_connect(ns) {
   }
 
 
-  return ns[0x1] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0)
+  return ns[0x1] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0)
     if ('MQTT' !== rdr.utf8())
       throw new Error('Invalid mqtt_connect packet')
 

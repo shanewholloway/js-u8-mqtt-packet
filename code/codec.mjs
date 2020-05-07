@@ -34,11 +34,12 @@ export function _bind_mqtt_decode(lst_decode_ops) {
   const by_id = []
   for (const op of lst_decode_ops) op(by_id)
 
-  return _mqtt_raw_pkt_dispatch( pkt => {
-    const decode_pkt = by_id[pkt.type_obj.id] || by_id[0]
-    if (undefined !== decode_pkt)
-      return decode_pkt(pkt)
-  })
+  return _pkt_ctx_ => _mqtt_raw_pkt_dispatch(
+    (b0, u8_body) => {
+      const decode_pkt = by_id[b0>>>4] || by_id[0]
+      if (undefined !== decode_pkt)
+        return decode_pkt({__proto__: _pkt_ctx_, b0}, u8_body)
+    })
 }
 
 
@@ -54,14 +55,25 @@ export function _bind_mqtt_encode(lst_encode_ops) {
 }
 
 
+const _pkt_types = ['reserved', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth']
+export function _bind_pkt_ctx(_pkt_ctx_={}, mqtt_level=4) {
+  _pkt_ctx_ = {
+    __proto__: _pkt_ctx_,
+    mqtt_level,
+    get hdr() { return this.b0 & 0xf },
+    get id() { return this.b0 >>> 4 },
+    get type() { return _pkt_types[this.b0 >>> 4] },
+  }
+  return _pkt_ctx_._base_ = _pkt_ctx_
+}
+
 export function _bind_mqtt_session_ctx(sess_decode, sess_encode, _pkt_ctx_) {
   sess_decode = _bind_mqtt_decode(sess_decode)
   sess_encode = _bind_mqtt_encode(sess_encode)
 
   const _sess_ctx = mqtt_level =>
     () => {
-      let x = {__proto__: _pkt_ctx_, mqtt_level}
-      x._base_ = x
+      let x = _bind_pkt_ctx(_pkt_ctx_, mqtt_level)
       return [sess_decode(x), sess_encode(x)]
     }
 

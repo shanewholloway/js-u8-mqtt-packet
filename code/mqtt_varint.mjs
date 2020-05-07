@@ -8,6 +8,7 @@ export function encode_varint(n, a=[]) {
 }
 
 
+/*
 export function decode_varint_loop(u8, vi=0, vi_tuple=[]) {
   let shift = 0, n = (u8[vi] & 0x7f)
   while ( 0x80 & u8[vi++] )
@@ -17,6 +18,7 @@ export function decode_varint_loop(u8, vi=0, vi_tuple=[]) {
   vi_tuple[1] = vi
   return vi_tuple
 }
+*/
 
 
 export function decode_varint(u8, vi=0, vi_tuple=[]) {

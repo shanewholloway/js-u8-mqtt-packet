@@ -7,8 +7,8 @@ export function mqtt_decode_subscribe(ns) {
     get retain_handling() { return (this >> 2) & 0x3 }
   }
 
-  return ns[0x8] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0)
+  return ns[0x8] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0)
 
     pkt.pkt_id = rdr.u16()
     if (5 <= pkt.mqtt_level)

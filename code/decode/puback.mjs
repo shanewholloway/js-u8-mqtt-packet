@@ -16,8 +16,8 @@ export function mqtt_decode_puback(ns) {
   ])
 
 
-  return ns[0x4] = pkt => {
-    const rdr = new mqtt_type_reader(pkt.u8_body, 0)
+  return ns[0x4] = (pkt, u8_body) => {
+    const rdr = new mqtt_type_reader(u8_body, 0)
 
     pkt.pkt_id = rdr.u16()
     if (5 <= pkt.mqtt_level) {

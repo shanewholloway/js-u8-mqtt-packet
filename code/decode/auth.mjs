@@ -8,9 +8,9 @@ export function mqtt_decode_auth(ns) {
     [ 0x19, 'Re-authenticate' ],
   ])
 
-  return ns[0xf] = pkt => {
+  return ns[0xf] = (pkt, u8_body) => {
     if ( 5 <= pkt.mqtt_level ) {
-      const rdr = new mqtt_type_reader(pkt.u8_body, 0)
+      const rdr = new mqtt_type_reader(u8_body, 0)
       pkt.reason = rdr.u8_reason(_auth_reason_)
       pkt.props = rdr.props()
     }
