@@ -5,10 +5,13 @@ Suited for use in modern ES6 environments: the Browser, [NodeJS](https://nodejs.
 
 Compare with:
 
-  - 187,038 bytes : `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  | wc -c`
-  -  32,336 bytes : `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js | wc -c`
-  -  14,253 bytes : `cat ./u8-mqtt-packet/esm/client/web.min.mjs | wc -c`
-  -  15,335 bytes : `cat ./u8-mqtt/esm/web/v4.min.mjs | wc -c`
+| Size in KB | Measurement |
+|------------|-------------|
+|     187 KB | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  | wc -c`
+|      32 KB | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js | wc -c`
+|      14 KB | `cat ./u8-mqtt-packet/esm/client/web.min.mjs | wc -c`
+|      15 KB | `cat ./u8-mqtt/esm/web/v4.min.mjs | wc -c`
+|------------|-------------|
 
 
 Use [u8-mqtt][] for a MQTT client for QOS-0 and QOS-1 communications.
