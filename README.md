@@ -58,12 +58,12 @@ console.log(mqtt_decode(u8_pkt))
 
 ## Sizes
 
-| Size in KB | Measurement |
-|------------|-------------|
-|     187 KB | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  | wc -c`
-|      32 KB | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js | wc -c`
-|      14 KB | `cat ./u8-mqtt-packet/esm/client/web.min.mjs | wc -c`
-|      15 KB | `cat ./u8-mqtt/esm/web/v4.min.mjs | wc -c`
+| Size  | Measurement |
+|-------|-------------|
+| 187KB | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  \| wc -c`
+|  32KB | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js \| wc -c`
+|  14KB | `cat ./u8-mqtt-packet/esm/client/web.min.mjs \| wc -c`
+|  15KB | `cat ./u8-mqtt/esm/web/v4.min.mjs \| wc -c`
 
 
 ## Prior Art
