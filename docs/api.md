@@ -16,11 +16,11 @@
   See `mqtt_session_ctx`.
 
 
-### MQTT Packets 
+### MQTT Packets
 
 #### Decoders
 
-MQTT decoders are of the form `(pkt, u8_body) => pkt` where `pkt` is an prototype object created by `{__proto__: _pkt_ctx_, b0}`, the `u8_body` is a `Uint8Array` that encodes the MQTT packet body. See `_bind_mqtt_decode` and `_bind_pkt_ctx` for `_pkt_ctx_` details.
+MQTT decoders are of the form `(pkt, u8_body) => pkt` where `pkt` is a prototype object created by `{__proto__: _pkt_ctx_, b0}`, the `u8_body` is a `Uint8Array` that encodes the MQTT packet body. See `_bind_mqtt_decode` and `_bind_pkt_ctx` for `_pkt_ctx_` details.
 
 Each decoder will round-trip a `Uint8Array` raw packet buffer created by the corresponding `mqtt_encode_xxx(mqtt_level, pkt)` encoder.
 
@@ -68,7 +68,7 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts
 
 * `function _bind_mqtt_session_ctx(sess_decode, sess_encode, _pkt_ctx_)`
 
-    combines `_bind_mqtt_decode(sess_decode)` with `_bind_mqtt_encode(sess_encode)` and `_bind_pkt_ctx(_pkt_ctx_)` to 
+    combines `_bind_mqtt_decode(sess_decode)` with `_bind_mqtt_encode(sess_encode)` and `_bind_pkt_ctx(_pkt_ctx_)` to
     return a closure `mqtt_level => function mqtt_session()`. Calling `mqtt_session()` returns a new bound `function mqtt_decode(pkt, u8_body)` and `function mqtt_encode(type, pkt)` suitable for use in MQTT clients.
 
   See `_bind_mqtt_decode`, `_bind_mqtt_encode`, and `_bind_pkt_ctx`. `mqtt_session_ctx` uses this function.
@@ -97,20 +97,22 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts
 ### Internal API
 
 * `function _mqtt_raw_pkt_decode_v(by_ref) : boolish`
-  
+
   where `by_ref` is a two-way reference array. Pass in `[u8_buffer]` to be processed. Returns `true` when all packets have been extracted from current buffer. Returns `undefined` and passes out `[u8_buffer, raw_pkt_byte0, raw_pkt_body]` via `by_ref` where `u8_buffer` has the remaining buffer, `raw_pkt_byte0` is the MQTT packet header byte, and `raw_pkt_body` is a `Uint8Array | null`.
 
 * `function _mqtt_raw_pkt_dispatch(decode_raw_pkt) : closure`
 
   manages packets split across incrementally recieved partial buffers. The returned closure `function(u8_buf) : [mqtt_packets]` accepts a `Uint8Array` buffer that encodes 0 or more MQTT packets and returns a list of decoded MQTT packets as processed by `decode_raw_pkt(b0, u8_body) : pkt | null`.
 
-* `encode_varint(n, a=[])` 
+* `encode_varint(n, a=[])`
 
   encodes a `uint32` according to MQTT variable integer coding rules. Individual bytes are appended to via `a.push(b)`, avoiding a temporary array.
 
-* `decode_varint(u8, i=0) : [n, i]` 
+* `decode_varint(u8, i=0) : [n, i]`
 
   decodes a `uint32` according to MQTT variable integer coding rules from `u8 : Uint8Array` at offset `i`. Returns a tuple of the decoded number and new offset.
 
-* `mqtt_props` is a map by name or property id to a property descriptor: `{id: u8, type: string, name: string, plural?: boolean}`
+* `mqtt_props`
+
+  map MQTT properties by name and id to a property descriptor: `{id: u8, type: string, name: string, plural?: boolean}`
 
