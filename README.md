@@ -3,18 +3,7 @@
 MQTT packet encoder and decoder using Uint8Array in ES Modules (ESM). Zero dependencies. [Tree-shaking friendly](https://rollupjs.org/guide/en/).
 Suited for use in modern ES6 environments: the Browser, [NodeJS](https://nodejs.org/en/), and [Deno](https://deno.land/).
 
-Compare with:
-
-| Size in KB | Measurement |
-|------------|-------------|
-|     187 KB | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  | wc -c`
-|      32 KB | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js | wc -c`
-|      14 KB | `cat ./u8-mqtt-packet/esm/client/web.min.mjs | wc -c`
-|      15 KB | `cat ./u8-mqtt/esm/web/v4.min.mjs | wc -c`
-|------------|-------------|
-
-
-Use [u8-mqtt][] for a MQTT client for QOS-0 and QOS-1 communications.
+Consider [u8-mqtt][] for QOS-0 and QOS-1 MQTT client communications.
 
  [u8-mqtt]: https://github.com/shanewholloway/js-u8-mqtt
 
@@ -65,6 +54,17 @@ console.log(mqtt_decode(u8_pkt))
   ]
 */
 ```
+
+
+## Sizes
+
+| Size in KB | Measurement |
+|------------|-------------|
+|     187 KB | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  | wc -c`
+|      32 KB | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js | wc -c`
+|      14 KB | `cat ./u8-mqtt-packet/esm/client/web.min.mjs | wc -c`
+|      15 KB | `cat ./u8-mqtt/esm/web/v4.min.mjs | wc -c`
+
 
 ## Prior Art
 
