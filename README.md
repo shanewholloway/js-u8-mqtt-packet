@@ -1,14 +1,26 @@
 # u8-mqtt-packet
 
 MQTT packet encoder and decoder using Uint8Array in ES Modules (ESM). Zero dependencies. [Tree-shaking friendly](https://rollupjs.org/guide/en/).
+Suited for use in modern ES6 environments: the Browser, [NodeJS](https://nodejs.org/en/), and [Deno](https://deno.land/).
 
-Suited for use in modern ES6 environments: the Browser, [NodeJS](https://nodejs.org/en/), and [Deno](https://deno.land/). 
+Compare with:
 
+  - 187,038 bytes : `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  | wc -c`
+  -  32,336 bytes : `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js | wc -c`
+  -  14,253 bytes : `cat ./u8-mqtt-packet/esm/client/web.min.mjs | wc -c`
+  -  15,335 bytes : `cat ./u8-mqtt/esm/web/v4.min.mjs | wc -c`
+
+
+Use [u8-mqtt][] for a MQTT client for QOS-0 and QOS-1 communications.
+
+ [u8-mqtt]: https://github.com/shanewholloway/js-u8-mqtt
 
 ## Docs
 
 - [API docs](./docs/api.md)
-- [Bare-bones Client docs](./docs/client.md)
+- [Bare-bones Client docs](./docs/client.md) -- `import 'esm/client/web.min.mjs'` for 14 KB 
+- See [u8-mqtt][] for a more friendly MQTT client using this library. (for 16 KB)
+
 
 
 Targeting [MQTT-3.1.1 (v4)][spec-3.1.1] and [MQTT-5.0.0 (v5)][spec-5.0.0] compatibility.
