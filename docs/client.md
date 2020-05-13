@@ -2,9 +2,12 @@
 
   [client/_conn.mjs]: ../code/client/_conn.mjs
 
-* `constructor(on_mqtt : function(pkt_list, ctx))`
+* `constructor({on_mqtt, on_live})`
 
-  Constructs a new MQTT bare-bones client. If `on_mqtt` closure is provided, it is installed on the client instance to receive lists of MQTT packet objects.
+  Constructs a new MQTT bare-bones client.
+
+  If `on_mqtt(pkt_list, ctx)` closure is provided, it is installed on the client instance to receive a list of MQTT packet objects.
+  If `on_live(mqtt)` closure is provided, it is installed on the client instance and called upon transport connection.
 
   Packets are decoded via the internal `_conn_` and bound `mqtt_session` objects. Please read [client/_conn.mjs][] for details.
 
@@ -25,6 +28,10 @@
 * `mqtt.publish(pkt)` -- Encode and send an MQTT publish packet. See [`mqtt_encode_publish`](./mqtt_codec_publish.md)
 
 * `mqtt._send(type, pkt)` -- Encode and send an MQTT packet of `type`. See [client/_conn.mjs][] for details.
+
+* `mqtt.on_mqtt(pkt_list, ctx)` -- Called with a list of zero or more recieved MQTT packet objects. Override or install via constructor.
+
+* `mqtt.on_live(mqtt)` -- Called upon transport connection. Override or install via constructor.
 
 
 ### Web Client
