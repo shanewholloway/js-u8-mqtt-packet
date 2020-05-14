@@ -2,7 +2,7 @@
 export const delay = ms => new Promise(y => setTimeout(y,ms))
 
 
-export function on_mqtt(pkt_list, my_mqtt) {
+export function on_mqtt(pkt_list, {mqtt: my_mqtt}) {
   for (const pkt of pkt_list) {
     const {type, ... tip} = pkt
     console.log(`%c[mqtt ${type}]: %o`, 'color: blue', tip)

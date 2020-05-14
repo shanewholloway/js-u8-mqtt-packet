@@ -31,11 +31,12 @@
   const _playground_mqtt = (...args) =>
     window.on_mqtt(...args)
 
-  const my_mqtt = new MQTTClient(_playground_mqtt)
-  my_mqtt
-    //.with_websock('ws://127.0.0.1:9001')
-    .with_websock('wss://test.mosquitto.org:8081')
-    .then(somewhere_in_your_code)
+  const my_mqtt = window.my_mqtt =
+    new MQTTClient(_playground_mqtt)
+      //.with_websock('ws://127.0.0.1:9001')
+      .with_websock('wss://test.mosquitto.org:8081')
+
+  my_mqtt.on_live = somewhere_in_your_code
 
   // allow playing with my_mqtt from developer console
   window.my_mqtt = my_mqtt

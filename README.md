@@ -1,6 +1,7 @@
 # u8-mqtt-packet
 
-MQTT packet encoder and decoder using Uint8Array in ES Modules (ESM). Zero dependencies. [Tree-shaking friendly](https://rollupjs.org/guide/en/).
+MQTT packet encoder and decoder using Uint8Array in ES Modules (ESM).
+Zero dependencies. [Tree-shaking friendly](https://rollupjs.org/guide/en/).
 Suited for use in modern ES6 environments: the Browser, [NodeJS](https://nodejs.org/en/), and [Deno](https://deno.land/).
 
 Consider [u8-mqtt][] for QOS-0 and QOS-1 MQTT client communications.
@@ -63,7 +64,7 @@ console.log(mqtt_decode(u8_pkt))
 | 187KB | 13x | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  \| wc -c`
 |  32KB |  2x | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js \| wc -c`
 |  14KB |  1x | `cat ./u8-mqtt-packet/esm/client/web.min.mjs \| wc -c`
-|  15KB |  1x | `cat ./u8-mqtt/esm/web/v4.min.mjs \| wc -c`
+|  16KB |  1x | `cat ./u8-mqtt/esm/web/v4.min.mjs \| wc -c`
 
 
 ## Prior Art

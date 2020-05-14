@@ -6,8 +6,11 @@ class MQTTClient extends MQTTBonesNodeClient {}
 MQTTClient.with(mqtt_tiny_session)
 
 
-const my_mqtt = new MQTTClient(on_mqtt)
-my_mqtt
-  .with_tcp(1883, '127.0.0.1')
-  .then(demo_in_your_code)
+const my_mqtt = globalThis.my_mqtt =
+  new MQTTClient(on_mqtt)
+    .with_tcp(1883, '127.0.0.1')
+    //.with_tcp(1883, 'test.mosquitto.org')
+
+
+my_mqtt.on_live = demo_in_your_code
 

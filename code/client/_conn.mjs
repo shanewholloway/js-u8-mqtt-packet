@@ -15,8 +15,12 @@ export function _mqtt_client_conn(client) {
       if (_asy_send === _send)
         _send = await q0
 
-      client._send = _send
       let res = _send(...args)
+
+      // microtask break between connect and following packets
+      await null
+
+      client._send = _send
       q.notify(_send)
       return res
     },

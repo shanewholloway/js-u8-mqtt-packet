@@ -11,7 +11,7 @@ export class MQTTBonesNodeClient extends MQTTBonesClient {
     return this.with_stream(sock)
   }
 
-  async with_stream(stream) {
+  with_stream(stream) {
     const {_conn_} = this
     const on_mqtt_chunk = _conn_.set(
       this.mqtt_session,
