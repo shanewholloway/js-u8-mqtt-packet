@@ -1043,7 +1043,7 @@ function _mqtt_client_conn(client) {
       q0.notify(_send);
 
       // call client.on_live in next promise microtask
-      Promise.resolve(client).then(_on_live_client);
+      Promise.resolve(client).then(client.on_live);
 
       return on_mqtt_chunk
     }
@@ -1055,10 +1055,6 @@ function _tiny_deferred_queue() {
   q.then = y => { q.push(y); };
   q.notify = v => { for (const fn of q.splice(0,q.length)) fn(v); };
   return q
-}
-
-function _on_live_client(client) {
-  client.on_live(client);
 }
 
 class MQTTBonesClient {
