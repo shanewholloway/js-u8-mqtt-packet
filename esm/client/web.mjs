@@ -999,6 +999,8 @@ function mqtt_session_ctx(mqtt_level) {
 
   return ctx(mqtt_level)
 }
+const mqtt_session_v4 = ()=> mqtt_session_ctx(4)();
+const mqtt_session_v5 = ()=> mqtt_session_ctx(5)();
 
 function _mqtt_client_conn(client) {
   const q0 = _tiny_deferred_queue();
@@ -1041,15 +1043,17 @@ function _mqtt_client_conn(client) {
 
 
       q0.notify(_send);
-
-      // call client.on_live in next promise microtask
-      Promise.resolve(client).then(client.on_live);
+      _on_live(client);
 
       return on_mqtt_chunk
     }
   }
 }
 
+async function _on_live(client) {
+  await 0;
+  client.on_live(client);
+}
 function _tiny_deferred_queue() {
   const q = []; // tiny resetting deferred queue
   q.then = y => { q.push(y); };
@@ -1136,11 +1140,13 @@ class MQTTBonesWebClient extends MQTTBonesClient {
   }
 }
 
-class MQTTBonesWeb_v4 extends MQTTBonesWebClient {}
-class MQTTBonesWeb_v5 extends MQTTBonesWebClient {}
+class MQTTBonesWeb_v4 extends MQTTBonesWebClient {
+  mqtt_session() { return mqtt_session_v4() }
+}
 
-MQTTBonesWeb_v4.with(mqtt_session_ctx(4));
-MQTTBonesWeb_v5.with(mqtt_session_ctx(5));
+class MQTTBonesWeb_v5 extends MQTTBonesWebClient {
+  mqtt_session() { return mqtt_session_v5() }
+}
 
 export default MQTTBonesWeb_v4;
 export { MQTTBonesWeb_v4, MQTTBonesWeb_v5 };

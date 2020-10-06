@@ -40,15 +40,17 @@ export function _mqtt_client_conn(client) {
 
 
       q0.notify(_send)
-
-      // call client.on_live in next promise microtask
-      Promise.resolve(client).then(client.on_live)
+      _on_live(client)
 
       return on_mqtt_chunk
     }
   }
 }
 
+async function _on_live(client) {
+  await 0
+  client.on_live(client)
+}
 function _tiny_deferred_queue() {
   const q = [] // tiny resetting deferred queue
   q.then = y => { q.push(y) }
