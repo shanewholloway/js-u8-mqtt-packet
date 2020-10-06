@@ -21,7 +21,6 @@
     "clean": "rm ./__unittest.*",
     "watch": "npm -s run build -- --watch",
     "dkr_deps": "docker stack deploy -c integ/deps-deploy.yml integ_mqtt",
-    "dkr_prune": "docker stack deploy --prune -c integ/deps-deploy.yml integ_mqtt",
     "pretest": "npm -s run build",
     "test": "npm -s run test:one",
     "test:one": "NODE_OPTIONS=--enable-source-maps  mocha ./__unittest.cjs.js",

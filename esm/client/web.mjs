@@ -332,13 +332,10 @@ function mqtt_decode_publish(ns) {
     if (0 !== qos)
       pkt.pkt_id = rdr.u16();
 
-    if (5 <= pkt.mqtt_level) {
+    if (5 <= pkt.mqtt_level)
       pkt.props = rdr.props();
-      pkt.payload = rdr.flush();
-    } else {
-      pkt.payload = rdr.flush();
-    }
 
+    pkt.payload = rdr.flush();
     return pkt }
 }
 

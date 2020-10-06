@@ -29,6 +29,15 @@ describe('mqtt v4: small pub/sub capture', () => {
     .to.deep.equal({ b0: 0xd0})
   })
 
+  it('disconnect', () => {
+    const { type, ...tip } = _decode_one_hex('e000')
+
+    expect(type).to.equal('disconnect')
+
+    expect(tip)
+    .to.deep.equal({ b0: 0xe0})
+  })
+
   it('connack', () => {
     const { type, reason, flags, ...tip } =
       _decode_one_hex('20020000')
@@ -59,6 +68,26 @@ describe('mqtt v4: small pub/sub capture', () => {
       topic: 'test/topic', })
 
     expect(u8_to_utf8(payload)).to.deep.equal('jelkkk')
+  })
+
+  it('puback s2c with qos:1', () => {
+    const { type, ...tip } =
+      _decode_one_hex('40020001')
+
+    expect(type).to.equal('puback')
+
+    expect(tip).to.deep.equal({
+      b0: 0x40, pkt_id: 1 })
+  })
+
+  it('puback c2s with qos:1 (ejabberd)', () => {
+    const { type, ...tip } =
+      _decode_one_hex('40029b36')
+
+    expect(type).to.equal('puback')
+
+    expect(tip).to.deep.equal({
+      b0: 0x40, pkt_id: 39734 })
   })
 
   it('connect', () => {
@@ -148,7 +177,8 @@ describe('mqtt v4: small pub/sub capture', () => {
       expect(answers.map((a) => +a)).to.deep.equal([0])
     }
 
-    expect(packet_id_list).to.deep.equal([33507, 33508, 50594])
+    expect(packet_id_list)
+    .to.deep.equal([33507, 33508, 50594])
   })
 
   it('publish s2c', () => {
