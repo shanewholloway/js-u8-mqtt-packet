@@ -77,17 +77,19 @@ export class mqtt_type_reader {
     const {buf, step} = this
 
     const [len, vi] = decode_varint(buf, step(0))
+    step(len+1)
+
     const end_part = vi + len
-    step(end_part)
     if (0 === len)
       return null
 
     const prop_entries = []
     const rdr = this._fork(
-      buf.subarray(vi, end_part) )
+      buf.subarray(vi, end_part), 0)
 
     while (rdr.has_more()) {
-      const {name, type} = mqtt_props.get( rdr.u8() )
+      let prop_key = rdr.u8()
+      const {name, type} = mqtt_props.get( prop_key )
       const value = rdr[type]()
       prop_entries.push([ name, value ])
     }

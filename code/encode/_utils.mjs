@@ -71,6 +71,8 @@ export class mqtt_type_writer {
       props = props.entries
         ? Array.from(props.entries())
         : Object.entries(props)
+    else if (0 === props.length)
+      return this.u8(0)
 
     const wrt = this._fork()
     for (const [name, value] of props) {
@@ -80,6 +82,12 @@ export class mqtt_type_writer {
     }
 
     this.push(wrt.pack([]))
+  }
+
+  _fork() {
+    let self = { __proto__: this }
+    this._pkt_writer(self)
+    return self
   }
 }
 

@@ -34,41 +34,32 @@ function decode_varint(u8, i=0) {
   return [n, i]
 }
 
-function _mqtt_raw_pkt_decode_v(by_ref) {
-  const [u8] = by_ref;
-  const [len_body, len_vh] = decode_varint(u8, 1);
-
-  const len_pkt = len_body + len_vh;
-  if ( u8.byteLength < len_pkt ) {
-    by_ref.length = 1; // truncate
-    return true
-  }
-
-  by_ref[0] = u8.subarray(len_pkt);
-  by_ref[1] = u8[0];
-  by_ref[2] = 0 === len_body ? null
-      : u8.subarray(len_vh, len_pkt);
-}
-
-
 function _mqtt_raw_pkt_dispatch(decode_raw_pkt) {
-  const l = [new Uint8Array(0)]; // reuse array to prevent garbage collection churn on ephemeral ones
+  let u8 = new Uint8Array(0);
   return u8_buf => {
-    l[0] = 0 === l[0].byteLength
-      ? u8_buf : _u8_join(l[0], u8_buf);
+    u8 = 0 === u8.byteLength
+      ? u8_buf : _u8_join(u8, u8_buf);
 
     const res = [];
-    do {
-      if (_mqtt_raw_pkt_decode_v(l))
+    while (1) {
+      const [len_body, len_vh] = decode_varint(u8, 1);
+      const len_pkt = len_body + len_vh;
+
+      if ( u8.byteLength < len_pkt )
         return res
 
-      const pkt = decode_raw_pkt(l[1], l[2]);
+      let b0 = u8[0];
+      let u8_body = 0 === len_body ? null
+        : u8.subarray(len_vh, len_pkt);
+
+      u8 = u8.subarray(len_pkt);
+
+      const pkt = decode_raw_pkt(b0, u8_body);
       if (undefined !== pkt && null !== pkt)
         res.push( pkt );
-    } while (1)
+    }
   }
 }
-
 
 function _u8_join(a, b) {
   const alen = a.byteLength;
@@ -195,17 +186,19 @@ class mqtt_type_reader {
     const {buf, step} = this;
 
     const [len, vi] = decode_varint(buf, step(0));
+    step(len+1);
+
     const end_part = vi + len;
-    step(end_part);
     if (0 === len)
       return null
 
     const prop_entries = [];
     const rdr = this._fork(
-      buf.subarray(vi, end_part) );
+      buf.subarray(vi, end_part), 0);
 
     while (rdr.has_more()) {
-      const {name, type} = mqtt_props.get( rdr.u8() );
+      let prop_key = rdr.u8();
+      const {name, type} = mqtt_props.get( prop_key );
       const value = rdr[type]();
       prop_entries.push([ name, value ]);
     }
@@ -523,7 +516,7 @@ function mqtt_decode_disconnect(ns) {
 
 
   return ns[0xe] = (pkt, u8_body) => {
-    if (5 <= pkt.mqtt_level) {
+    if (u8_body && 5 <= pkt.mqtt_level) {
       const rdr = new mqtt_type_reader(u8_body, 0);
       pkt.reason = rdr.u8_reason(_disconnect_reason_);
       pkt.props = rdr.props();
@@ -665,6 +658,8 @@ class mqtt_type_writer {
       props = props.entries
         ? Array.from(props.entries())
         : Object.entries(props);
+    else if (0 === props.length)
+      return this.u8(0)
 
     const wrt = this._fork();
     for (const [name, value] of props) {
@@ -674,6 +669,12 @@ class mqtt_type_writer {
     }
 
     this.push(wrt.pack([]));
+  }
+
+  _fork() {
+    let self = { __proto__: this };
+    this._pkt_writer(self);
+    return self
   }
 }
 
@@ -899,8 +900,10 @@ function mqtt_encode_disconnect(ns) {
     const wrt = new mqtt_type_writer();
 
     if (5 <= mqtt_level) {
-      wrt.u8_reason(pkt.reason);
-      wrt.props(pkt.props);
+      if (pkt.reason || pkt.props) {
+        wrt.u8_reason(pkt.reason);
+        wrt.props(pkt.props);
+      }
     }
 
     return wrt.as_pkt(0xe0)

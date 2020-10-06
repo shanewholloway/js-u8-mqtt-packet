@@ -5,8 +5,10 @@ export function mqtt_encode_disconnect(ns) {
     const wrt = new mqtt_type_writer()
 
     if (5 <= mqtt_level) {
-      wrt.u8_reason(pkt.reason)
-      wrt.props(pkt.props)
+      if (pkt.reason || pkt.props) {
+        wrt.u8_reason(pkt.reason)
+        wrt.props(pkt.props)
+      }
     }
 
     return wrt.as_pkt(0xe0)

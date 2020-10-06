@@ -96,9 +96,9 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts
 
 ### Internal API
 
-* `function _mqtt_raw_pkt_decode_v(by_ref) : boolish`
+* `function mqtt_raw_packets() : closure`
 
-  where `by_ref` is a two-way reference array. Pass in `[u8_buffer]` to be processed. Returns `true` when all packets have been extracted from current buffer. Returns `undefined` and passes out `[u8_buffer, raw_pkt_byte0, raw_pkt_body]` via `by_ref` where `u8_buffer` has the remaining buffer, `raw_pkt_byte0` is the MQTT packet header byte, and `raw_pkt_body` is a `Uint8Array | null`.
+  manages raw packets split across incrementally recieved partial buffers. The returned closure `function(u8_buf) : [mqtt_packets]` accepts a `Uint8Array` buffer that encodes 0 or more MQTT packets and returns a list of `{u8_raw, b0, u8_body}` MQTT packets.
 
 * `function _mqtt_raw_pkt_dispatch(decode_raw_pkt) : closure`
 
