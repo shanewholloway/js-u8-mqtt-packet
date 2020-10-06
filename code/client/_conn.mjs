@@ -26,8 +26,7 @@ export function _mqtt_client_conn(client) {
     },
 
     set(mqtt_session, send_u8_pkt) {
-      const [mqtt_decode, mqtt_encode] =
-        mqtt_session()
+      const [mqtt_decode, mqtt_encode] = mqtt_session
 
       const on_mqtt_chunk = u8_buf =>
         client.on_mqtt(
@@ -40,16 +39,16 @@ export function _mqtt_client_conn(client) {
 
 
       q0.notify(_send)
-      _on_live(client)
+      _async_evt(client, 'on_live')
 
       return on_mqtt_chunk
     }
   }
 }
 
-async function _on_live(client) {
-  await 0
-  client.on_live(client)
+async function _async_evt(obj, on_evt) {
+  // microtask break
+  obj[await on_evt](obj)
 }
 function _tiny_deferred_queue() {
   const q = [] // tiny resetting deferred queue

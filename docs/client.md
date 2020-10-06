@@ -47,7 +47,7 @@ See [`demo/_demo_common.mjs`](../demo/_demo_common.mjs) and
   If `on_mqtt(pkt_list, ctx)` closure is provided, it is installed on the client instance to receive a list of MQTT packet objects.
   If `on_live(mqtt)` closure is provided, it is installed on the client instance and called upon transport connection.
 
-  Packets are decoded via the internal `_conn_` and bound `mqtt_session` objects. Please read [client/_conn.mjs][] for details.
+  Packets are decoded via the internal `_conn_` and bound `_mqtt_session` objects. Please read [client/_conn.mjs][] for details.
 
 * `mqtt.auth(pkt)` -- Encode and send an MQTT auth packet. See [`mqtt_encode_auth`](./mqtt_codec_auth.md)
 

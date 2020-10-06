@@ -14,7 +14,7 @@ export class MQTTBonesNodeClient extends MQTTBonesClient {
   with_stream(stream) {
     const {_conn_} = this
     const on_mqtt_chunk = _conn_.set(
-      this.mqtt_session,
+      this._mqtt_session(),
       u8_pkt => stream.write(u8_pkt))
 
     stream.once('end', _conn_.reset)

@@ -33,7 +33,7 @@ export class MQTTBonesClient {
   on_live(/*client*/) {}
 
   static with(mqtt_session) {
-    this.prototype.mqtt_session = mqtt_session
+    this.prototype._mqtt_session = mqtt_session
     return this
   }
 }

@@ -23,7 +23,7 @@ export class MQTTBonesWebClient extends MQTTBonesClient {
 
     const {_conn_} = this
     const on_mqtt_chunk = _conn_.set(
-      this.mqtt_session,
+      this._mqtt_session(),
       async u8_pkt => (
         await ready,
         websock.send(u8_pkt)) )

@@ -999,8 +999,6 @@ function mqtt_session_ctx(mqtt_level) {
 
   return ctx(mqtt_level)
 }
-const mqtt_session_v4 = ()=> mqtt_session_ctx(4)();
-const mqtt_session_v5 = ()=> mqtt_session_ctx(5)();
 
 function _mqtt_client_conn(client) {
   const q0 = _tiny_deferred_queue();
@@ -1029,8 +1027,7 @@ function _mqtt_client_conn(client) {
     },
 
     set(mqtt_session, send_u8_pkt) {
-      const [mqtt_decode, mqtt_encode] =
-        mqtt_session();
+      const [mqtt_decode, mqtt_encode] = mqtt_session;
 
       const on_mqtt_chunk = u8_buf =>
         client.on_mqtt(
@@ -1043,16 +1040,16 @@ function _mqtt_client_conn(client) {
 
 
       q0.notify(_send);
-      _on_live(client);
+      _async_evt(client, 'on_live');
 
       return on_mqtt_chunk
     }
   }
 }
 
-async function _on_live(client) {
-  await 0;
-  client.on_live(client);
+async function _async_evt(obj, on_evt) {
+  // microtask break
+  obj[await on_evt](obj);
 }
 function _tiny_deferred_queue() {
   const q = []; // tiny resetting deferred queue
@@ -1093,7 +1090,7 @@ class MQTTBonesClient {
   on_live(/*client*/) {}
 
   static with(mqtt_session) {
-    this.prototype.mqtt_session = mqtt_session;
+    this.prototype._mqtt_session = mqtt_session;
     return this
   }
 }
@@ -1120,7 +1117,7 @@ class MQTTBonesWebClient extends MQTTBonesClient {
 
     const {_conn_} = this;
     const on_mqtt_chunk = _conn_.set(
-      this.mqtt_session,
+      this._mqtt_session(),
       async u8_pkt => (
         await ready,
         websock.send(u8_pkt)) );
@@ -1141,11 +1138,11 @@ class MQTTBonesWebClient extends MQTTBonesClient {
 }
 
 class MQTTBonesWeb_v4 extends MQTTBonesWebClient {
-  mqtt_session() { return mqtt_session_v4() }
+  _mqtt_session() { return mqtt_session_ctx(4)() }
 }
 
 class MQTTBonesWeb_v5 extends MQTTBonesWebClient {
-  mqtt_session() { return mqtt_session_v5() }
+  _mqtt_session() { return mqtt_session_ctx(5)() }
 }
 
 export default MQTTBonesWeb_v4;
