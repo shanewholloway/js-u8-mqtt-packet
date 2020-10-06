@@ -10,13 +10,18 @@
     "@rollup/plugin-node-resolve": "^9.0.0",
     "rollup": "^2.28.2",
     "rollup-plugin-dgnotify": "^0.1.7",
-    "u8-utils": "^0.3.7"
+    "u8-utils": "^0.3.7",
+    "qsrv": "^0.1.7"
   },
   "scripts": {
+    "start": "npx tmex $PWD -rn dkr_deps watch serve",
+    "serve": "qsrv -f unittest.html -- __unittest.iife.js",
     "prebuild": "test -d ./node_modules || npm -s install",
     "build": "rollup --config",
     "clean": "rm ./__unittest.*",
     "watch": "npm -s run build -- --watch",
+    "dkr_deps": "docker stack deploy -c integ/deps-deploy.yml integ_mqtt",
+    "dkr_prune": "docker stack deploy --prune -c integ/deps-deploy.yml integ_mqtt",
     "pretest": "npm -s run build",
     "test": "npm -s run test:one",
     "test:one": "NODE_OPTIONS=--enable-source-maps  mocha ./__unittest.cjs.js",

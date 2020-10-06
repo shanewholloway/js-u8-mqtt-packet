@@ -1,13 +1,12 @@
 const {createWriteStream} = require('fs')
 const {pipeline} = require('stream')
 const {createServer, connect} = require('net')
-const {mqtt_session_v4, mqtt_session_v5, mqtt_raw_packets} = require('u8-mqtt-packet')
+const {mqtt_session, mqtt_raw_packets} = require('u8-mqtt-packet')
 //const mqtt_pkt = require('mqtt-packet')
 
-const mqtt_session = 1 ? mqtt_session_v5 : mqtt_session_v4
-
-const mitm_port = parseInt(process.argv.slice(2).pop() || 1884)
-const tgt_port = parseInt(process.argv.slice(3).pop() || 1883)
+const argv_opt = process.argv.slice(2)
+const tgt_port = parseInt(argv_opt.shift() || 1883)
+const mitm_port = parseInt(argv_opt.shift() || 1884)
 
 
 createServer()
@@ -45,10 +44,14 @@ function _on_connect_mitm(sock_src) {
     )})
 }
 
+let wm_ts_log = new WeakMap()
 function _mitm_log(ts_log, tag_chunk, tag_type, arrows) {
   return async function *(stream) {
     const mqtt_decode_raw = mqtt_raw_packets()
-    const [mqtt_decode, mqtt_encode] = mqtt_session()
+    const [mqtt_decode, mqtt_encode, _mqtt_base_] =
+      mqtt_session(wm_ts_log.get(ts_log))
+
+    wm_ts_log.set(ts_log, _mqtt_base_)
 
     for await (let buf_chunk of stream) {
       ts_log.write(`  {"${tag_chunk}": "${buf_chunk.toString('hex')}"},\n`)

@@ -63,8 +63,8 @@ export function _bind_mqtt_session_ctx(sess_decode, sess_encode, _pkt_ctx_) {
   sess_encode = _bind_mqtt_encode(sess_encode)
   _pkt_ctx_ = _bind_pkt_ctx(_pkt_ctx_)
 
-  return mqtt_level => ()=> {
-    let _base_ = {__proto__: _pkt_ctx_, mqtt_level, get _base_() { return _base_ }}
-    return [ sess_decode(_base_), sess_encode(_base_)] }
+  return mqtt_level => _base_ => {
+    _base_ = _base_ || {__proto__: _pkt_ctx_, mqtt_level, get _base_() { return _base_ }}
+    return [ sess_decode(_base_), sess_encode(_base_), _base_ ] }
 }
 

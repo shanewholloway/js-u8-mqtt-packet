@@ -66,5 +66,6 @@ export function mqtt_session_ctx(mqtt_level) {
   return ctx(mqtt_level)
 }
 
+export const mqtt_session = ()=> mqtt_session_ctx('?')()
 export const mqtt_session_v4 = ()=> mqtt_session_ctx(4)()
 export const mqtt_session_v5 = ()=> mqtt_session_ctx(5)()
