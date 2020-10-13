@@ -11,20 +11,13 @@ export class MQTTBonesNodeClient extends MQTTBonesClient {
     return this.with_stream(sock)
   }
 
-  with_stream(stream) {
-    const {_conn_} = this
-    const on_mqtt_chunk = _conn_.set(
-      this._mqtt_session(),
-      u8_pkt => stream.write(u8_pkt))
+  with_stream(read_stream, write_stream) {
+    if (undefined === write_stream)
+      write_stream = read_stream
 
-    stream.once('end', _conn_.reset)
-
-    this._msg_loop = (async ()=>{
-        for await (let chunk of stream)
-          on_mqtt_chunk(chunk)
-      })()
-
-    return this
+    read_stream.once('end', this._conn_.reset)
+    return this.with_async_iter(read_stream,
+      u8_pkt => write_stream.write(u8_pkt))
   }
 }
 

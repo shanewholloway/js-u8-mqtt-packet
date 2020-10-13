@@ -27,8 +27,10 @@ add_module('index', {})
 add_module('session', {min: true})
 
 add_module('client/core_node', {})
+add_module('client/core_deno', {})
 add_module('client/core_web', {min: true})
 add_module('client/node', {})
+add_module('client/deno', {})
 add_module('client/web', {min: true})
 
 
