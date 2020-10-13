@@ -21,17 +21,14 @@
     "clean": "rm ./__*js",
     "watch": "npm -s run build -- --watch",
     "dkr_deps": "docker stack deploy -c integ/deps-deploy.yml integ_mqtt",
-
     "preinteg": "npm -s run build",
     "integ": "npm -s run integ:one",
     "integ:one": "NODE_OPTIONS=--enable-source-maps  mocha ./__integ.node.cjs",
     "integ:min": "NODE_OPTIONS=--enable-source-maps  mocha --reporter=min ./__integ.node.cjs",
-
     "preunit": "npm -s run build",
     "unit": "npm -s run unit:one",
     "unit:one": "NODE_OPTIONS=--enable-source-maps  mocha ./__unittest.cjs",
     "unit:min": "NODE_OPTIONS=--enable-source-maps  mocha --reporter=min ./__unittest.cjs",
-
     "pretest": "npm -s run build",
     "test": "npm -s run test:one",
     "test:one": "NODE_OPTIONS=--enable-source-maps  mocha ./__alltests.cjs",
