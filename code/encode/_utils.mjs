@@ -4,6 +4,7 @@ import {mqtt_pkt_writer_pool} from './_pkt_writer.mjs'
 
 export * from './_pkt_writer.mjs'
 
+export const _is_array = Array.isArray
 const pack_utf8 = v => new TextEncoder('utf-8').encode(v)
 const pack_u16 = v => [ (v>>>8) & 0xff, v & 0xff ]
 const pack_u32 = v => [ (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 0xff ]
@@ -67,11 +68,12 @@ export class mqtt_type_writer {
     if (! props)
       return this.u8(0)
 
-    if (! Array.isArray(props))
+    if (! _is_array(props))
       props = props.entries
         ? Array.from(props.entries())
         : Object.entries(props)
-    else if (0 === props.length)
+
+    if (0 === props.length)
       return this.u8(0)
 
     const wrt = this._fork()

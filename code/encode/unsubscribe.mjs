@@ -5,7 +5,7 @@ export function mqtt_encode_unsubscribe(ns) {
     const wrt = new mqtt_type_writer()
 
     wrt.u16(pkt.pkt_id)
-    if (5 <= pkt.mqtt_level)
+    if (5 <= mqtt_level)
       wrt.props(pkt.props)
 
     for (const topic of pkt.topics)
