@@ -10,16 +10,18 @@ export function encode_varint(n, a=[]) {
 
 /*
 export function decode_varint_loop(u8, i=0) {
+  let i0 = i
   let shift = 0, n = (u8[i] & 0x7f)
   while ( 0x80 & u8[i++] )
     n |= (u8[i] & 0x7f) << (shift += 7)
 
-  return [n, i]
+  return [n, i, i0]
 }
 */
 
 
 export function decode_varint(u8, i=0) {
+  let i0 = i
   // unrolled for a max of 4 chains
   let n = (u8[i] & 0x7f) <<  0
   if ( 0x80 & u8[i++] ) {
@@ -31,6 +33,6 @@ export function decode_varint(u8, i=0) {
       }
     }
   }
-  return [n, i]
+  return [n, i, i0]
 }
 

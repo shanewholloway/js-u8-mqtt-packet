@@ -41,9 +41,17 @@ export class mqtt_type_reader {
 
   vint() {
     const {buf, step} = this
-    const [n, vi] = decode_varint(buf, step(0))
-    step(vi)
+    const [n, vi, vi0] = decode_varint(buf, step(0))
+    step(vi - vi0)
     return n
+  }
+
+  vbuf() {
+    const {buf, step} = this
+    const [n, vi, vi0] = decode_varint(buf, step(0))
+    step(n + vi - vi0)
+    return 0 === n ? null
+      : buf.subarray(vi, step(0))
   }
 
   bin() {
@@ -74,27 +82,19 @@ export class mqtt_type_reader {
   }
 
   props() {
-    const {buf, step} = this
+    let sub = this.vbuf()
+    return null === sub ? null
+      : this._fork(sub, 0)._read_props([])
+  }
 
-    const [len, vi] = decode_varint(buf, step(0))
-    step(len+1)
-
-    const end_part = vi + len
-    if (0 === len)
-      return null
-
-    const prop_entries = []
-    const rdr = this._fork(
-      buf.subarray(vi, end_part), 0)
-
-    while (rdr.has_more()) {
-      let prop_key = rdr.u8()
-      const {name, type} = mqtt_props.get( prop_key )
-      const value = rdr[type]()
-      prop_entries.push([ name, value ])
+  _read_props(lst) {
+    while (this.has_more()) {
+      let k = this.u8()
+      let p = mqtt_props.get( k )
+      let v = this[p.type]()
+      lst.push([p.name, v])
     }
-
-    return prop_entries
+    return lst
   }
 }
 
