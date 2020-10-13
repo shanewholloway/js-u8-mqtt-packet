@@ -15,10 +15,11 @@ export function mqtt_decode_subscribe(ns) {
       pkt.props = rdr.props()
 
     const topic_list = pkt.topics = []
-    while (rdr.has_more())
-      topic_list.push({
-        topic: rdr.utf8(),
-        opts: rdr.u8_flags(_subscription_options_) })
+    while (rdr.has_more()) {
+      let topic = rdr.utf8()
+      let opts = rdr.u8_flags(_subscription_options_)
+      topic_list.push({topic, opts})
+    }
 
     return pkt }
 }
