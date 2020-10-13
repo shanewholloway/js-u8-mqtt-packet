@@ -10,16 +10,18 @@ function encode_varint(n, a=[]) {
 
 /*
 export function decode_varint_loop(u8, i=0) {
+  let i0 = i
   let shift = 0, n = (u8[i] & 0x7f)
   while ( 0x80 & u8[i++] )
     n |= (u8[i] & 0x7f) << (shift += 7)
 
-  return [n, i]
+  return [n, i, i0]
 }
 */
 
 
 function decode_varint(u8, i=0) {
+  let i0 = i;
   // unrolled for a max of 4 chains
   let n = (u8[i] & 0x7f) <<  0;
   if ( 0x80 & u8[i++] ) {
@@ -31,7 +33,7 @@ function decode_varint(u8, i=0) {
       }
     }
   }
-  return [n, i]
+  return [n, i, i0]
 }
 
 function _mqtt_raw_pkt_dispatch(decode_raw_pkt) {
@@ -150,9 +152,17 @@ class mqtt_type_reader {
 
   vint() {
     const {buf, step} = this;
-    const [n, vi] = decode_varint(buf, step(0));
-    step(vi);
+    const [n, vi, vi0] = decode_varint(buf, step(0));
+    step(vi - vi0);
     return n
+  }
+
+  vbuf() {
+    const {buf, step} = this;
+    const [n, vi, vi0] = decode_varint(buf, step(0));
+    step(n + vi - vi0);
+    return 0 === n ? null
+      : buf.subarray(vi, step(0))
   }
 
   bin() {
@@ -183,27 +193,19 @@ class mqtt_type_reader {
   }
 
   props() {
-    const {buf, step} = this;
+    let sub = this.vbuf();
+    return null === sub ? null
+      : this._fork(sub, 0)._read_props([])
+  }
 
-    const [len, vi] = decode_varint(buf, step(0));
-    step(len+1);
-
-    const end_part = vi + len;
-    if (0 === len)
-      return null
-
-    const prop_entries = [];
-    const rdr = this._fork(
-      buf.subarray(vi, end_part), 0);
-
-    while (rdr.has_more()) {
-      let prop_key = rdr.u8();
-      const {name, type} = mqtt_props.get( prop_key );
-      const value = rdr[type]();
-      prop_entries.push([ name, value ]);
+  _read_props(lst) {
+    while (this.has_more()) {
+      let k = this.u8();
+      let p = mqtt_props.get( k );
+      let v = this[p.type]();
+      lst.push([p.name, v]);
     }
-
-    return prop_entries
+    return lst
   }
 }
 
@@ -398,10 +400,11 @@ function mqtt_decode_subscribe(ns) {
       pkt.props = rdr.props();
 
     const topic_list = pkt.topics = [];
-    while (rdr.has_more())
-      topic_list.push({
-        topic: rdr.utf8(),
-        opts: rdr.u8_flags(_subscription_options_) });
+    while (rdr.has_more()) {
+      let topic = rdr.utf8();
+      let opts = rdr.u8_flags(_subscription_options_);
+      topic_list.push({topic, opts});
+    }
 
     return pkt }
 }
@@ -588,6 +591,7 @@ function _mqtt_pkt_rope(hdr, n, rope) {
   return pkt
 }
 
+const _is_array = Array.isArray;
 const pack_utf8 = v => new TextEncoder('utf-8').encode(v);
 const pack_u16 = v => [ (v>>>8) & 0xff, v & 0xff ];
 const pack_u32 = v => [ (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 0xff ];
@@ -651,11 +655,12 @@ class mqtt_type_writer {
     if (! props)
       return this.u8(0)
 
-    if (! Array.isArray(props))
+    if (! _is_array(props))
       props = props.entries
         ? Array.from(props.entries())
         : Object.entries(props);
-    else if (0 === props.length)
+
+    if (0 === props.length)
       return this.u8(0)
 
     const wrt = this._fork();
@@ -823,7 +828,7 @@ function mqtt_encode_subscribe(ns) {
     const wrt = new mqtt_type_writer();
 
     wrt.u16(pkt.pkt_id);
-    if (5 <= pkt.mqtt_level)
+    if (5 <= mqtt_level)
       wrt.props(pkt.props);
 
     const f0 = _enc_subscribe_flags(pkt);
@@ -831,19 +836,14 @@ function mqtt_encode_subscribe(ns) {
       if ('string' === typeof each) {
         wrt.utf8(each);
         wrt.u8(f0);
-      }
-
-      else if (Array.isArray(each)) {
-        wrt.utf8(each[0]);
-        if (undefined !== each[1])
-          wrt.u8_flags(each[1], _enc_subscribe_flags);
-        else wrt.u8(f0);
-
       } else {
-        wrt.utf8(each.topic);
-        if (undefined !== each.opts)
-          wrt.u8_flags(each.opts, _enc_subscribe_flags);
-        else wrt.u8(f0);
+        let [topic, opts] =
+          _is_array(each) ? each
+            : [each.topic, each.opts];
+
+        wrt.utf8(topic);
+        if (undefined === opts) wrt.u8(f0);
+        else wrt.u8_flags(opts, _enc_subscribe_flags);
       }
     }
 
@@ -861,7 +861,7 @@ function mqtt_encode_xxsuback(ns) {
       const wrt = new mqtt_type_writer();
 
       wrt.u16(pkt.pkt_id);
-      if (5 <= pkt.mqtt_level)
+      if (5 <= mqtt_level)
         wrt.props(pkt.props);
 
       for (const ans of pkt.answers)
@@ -877,7 +877,7 @@ function mqtt_encode_unsubscribe(ns) {
     const wrt = new mqtt_type_writer();
 
     wrt.u16(pkt.pkt_id);
-    if (5 <= pkt.mqtt_level)
+    if (5 <= mqtt_level)
       wrt.props(pkt.props);
 
     for (const topic of pkt.topics)
@@ -896,7 +896,7 @@ function mqtt_encode_disconnect(ns) {
   return ns.disconnect = ( mqtt_level, pkt ) => {
     const wrt = new mqtt_type_writer();
 
-    if (5 <= mqtt_level) {
+    if (pkt && 5 <= mqtt_level) {
       if (pkt.reason || pkt.props) {
         wrt.u8_reason(pkt.reason);
         wrt.props(pkt.props);

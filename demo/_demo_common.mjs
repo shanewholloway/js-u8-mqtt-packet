@@ -16,7 +16,7 @@ export async function somewhere_in_your_code(my_mqtt) {
 
   my_mqtt.connect({
     keep_alive: 60,
-    client_id: `u8-mqtt-packet-${my_id}-`,
+    client_id: `u8-mqtt-packet-${my_id}`,
     flags: { clean_start: true } })
 
   await delay(10)
