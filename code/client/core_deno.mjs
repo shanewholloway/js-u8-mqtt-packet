@@ -9,13 +9,15 @@ export class MQTTBonesDenoClient extends MQTTBonesClient {
       ({port, host: hostname} = port)
     }
 
-    const conn = Deno.connect({
+    Deno.connect({
       port: port || 1883, hostname,
       transport: 'tcp' })
+    .then(conn =>
+      this.with_async_iter(
+        Deno.iter(conn),
+        u8_pkt => conn.write(u8_pkt)) )
 
-    return this.with_async_iter(
-      conn.then(conn => Deno.iter(conn)),
-      async u8_pkt => (await conn).write(u8_pkt))
+    return this
   }
 }
 
