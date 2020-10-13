@@ -60,7 +60,11 @@ function _mitm_log(ts_log, tag, arrows) {
       try {
         for (const {u8_raw} of mqtt_decode_raw(chunk)) {
           for (const pkt of mqtt_decode(u8_raw)) {
-            ts_log.write(`  ${JSON.stringify([tag, pkt.type, u8_to_hex(u8_raw)])},\n`)
+            let row = JSON.stringify([tag, pkt.type, u8_to_hex(u8_raw)])
+            if (1)
+              row = `${row.slice(0, -1)},\n      ${JSON.stringify(pkt)} ]`
+            ts_log.write(`  ${row},\n`)
+
             if (1) console.log(arrows, pkt.type, pkt)
             else rt_pkt(pkt, u8_raw)
 
