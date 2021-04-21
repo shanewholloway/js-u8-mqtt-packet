@@ -12,7 +12,7 @@ configs:
 
 services:
   mosquitto:
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto:1.6
     configs:
       - source: mosquitto_conf_v1
         target: /mosquitto/config/mosquitto.conf
