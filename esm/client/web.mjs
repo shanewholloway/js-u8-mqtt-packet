@@ -313,7 +313,7 @@ function mqtt_decode_connack(ns) {
   return ns[0x2] = (pkt, u8_body) => {
     const rdr = new mqtt_type_reader(u8_body, 0);
 
-    const flags = pkt.flags =
+    pkt.flags =
       rdr.u8_flags(_connack_flags_);
 
     pkt.reason = rdr.u8_reason(_connack_reason_);
@@ -1040,16 +1040,17 @@ function _mqtt_client_conn(client) {
 
 
       q0.notify(_send);
-      _async_evt(client, 'on_live');
+      _async_evt(client, client.on_live);
 
       return on_mqtt_chunk
     }
   }
 }
 
-async function _async_evt(obj, on_evt) {
+async function _async_evt(obj, evt) {
   // microtask break
-  obj[await on_evt](obj);
+  if (undefined !== evt)
+    await evt.call(obj, await obj);
 }
 function _tiny_deferred_queue() {
   const q = []; // tiny resetting deferred queue
