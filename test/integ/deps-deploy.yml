@@ -21,7 +21,7 @@ services:
       - '9883:9883'
 
   ejabberd:
-    image: ejabberd/ecs
+    image: ejabberd/ecs:21.04
     configs:
       - source: ejabberd_conf_v4
         target: /home/ejabberd/conf/ejabberd.yml
