@@ -2,11 +2,14 @@ import {MQTTBonesNode_v4, MQTTBonesNode_v5} from 'u8-mqtt-packet/esm/client/node
 import {integ_suite} from './integtests.mjs'
 
 const integ_configs = [
-  {test_name: 'v4 with localhost', port: 1883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v4},
-  {test_name: 'v5 with localhost', port: 1883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v5},
+  {test_name: 'v4 with localhost:1883', port: 1883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v4},
+  {test_name: 'v5 with localhost:1883', port: 1883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v5},
 
-  {test_name: 'v4 with Mosquitto in Docker', port: 9883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v4},
-  {test_name: 'v5 with Mosquitto in Docker', port: 9883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v5},
+  {test_name: 'v4 with Mosquitto v1.6 in Docker', port: 9883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v4},
+  {test_name: 'v5 with Mosquitto v1.6 in Docker', port: 9883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v5},
+
+  {test_name: 'v4 with Mosquitto v2.0 in Docker', port: 9893, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v4},
+  {test_name: 'v5 with Mosquitto v2.0 in Docker', port: 9893, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v5},
 
   {test_name: 'v4 with EJabberD in Docker', port: 5883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v4},
   {test_name: 'v5 with EJabberD in Docker', port: 5883, host: '127.0.0.1', MQTTClient: MQTTBonesNode_v5},
