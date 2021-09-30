@@ -1162,6 +1162,5 @@ class MQTTBonesWeb_v5 extends MQTTBonesWebClient {
   _mqtt_session() { return mqtt_session_ctx(5)() }
 }
 
-export default MQTTBonesWeb_v4;
-export { MQTTBonesWeb_v4, MQTTBonesWeb_v5 };
+export { MQTTBonesWeb_v4, MQTTBonesWeb_v5, MQTTBonesWeb_v4 as default };
 //# sourceMappingURL=web.mjs.map

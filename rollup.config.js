@@ -6,12 +6,8 @@ import {builtinModules} from 'module'
 const DEBUG = false
 
 const _cfg_ = {
-  plugins: [
-    rpi_dgnotify(),
-    rpi_resolve(),
-  ],
-  external: id => builtinModules.includes(id),
-}
+  external: id => /^node:/.test(id) || builtinModules.includes(id),
+  plugins: [ rpi_dgnotify(), rpi_resolve() ] }
 
 const cfg_web_min = DEBUG ? null : { ... _cfg_,
   plugins: [ ... _cfg_.plugins, rpi_terser() ]}
