@@ -43,14 +43,14 @@
     "clean": "rm -rf ./cjs/* ./esm/*",
     "prebuild": "test -d ./node_modules || npm -s ci",
     "build": "rollup --config",
-    "watch": "npm -s run build -- --watch",
-    "pretest": "npm -s run build",
+    "watch": "rollup --config --watch",
     "demo:node": "node ./demo/std/node.mjs",
     "demo:node_v4": "U8_MQTT_VER=v4 node ./demo/std/node.mjs",
     "demo:node_v5": "U8_MQTT_VER=v5 node ./demo/std/node.mjs",
     "demo:deno": "deno run --allow-env --allow-net ./demo/std/deno.mjs",
     "demo:deno_v4": "U8_MQTT_VER=v4 deno run --allow-env --allow-net ./demo/std/deno.mjs",
     "demo:deno_v5": "U8_MQTT_VER=v5 deno run --allow-env --allow-net ./demo/std/deno.mjs",
+    "pretest": "npm -s run build",
     "test": "cd test; npm -s run test",
     "prepublish": "npm -s run clean && npm -s run build && cd test && npm -s run test"
   }
