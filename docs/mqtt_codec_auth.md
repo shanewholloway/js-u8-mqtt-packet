@@ -1,8 +1,10 @@
 ##### MQTT `auth [0xf]` packet
 
+Also see [connect packet](../mqtt_codec_connect.md) for default `{username, password}` authentication methods.
+
 ###### Version 4
 
-Not applicable.
+Not available. Use [connect packet](../mqtt_codec_connect.md) for default `{username, password}` authentication.
 
 
 ###### Version 5
