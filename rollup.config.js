@@ -3,13 +3,13 @@ import rpi_resolve from '@rollup/plugin-node-resolve'
 import { terser as rpi_terser } from 'rollup-plugin-terser'
 import {builtinModules} from 'module'
 
-const DEBUG = false
-
 const _cfg_ = {
-  external: id => /^node:/.test(id) || builtinModules.includes(id),
+  external: id => /^\w*:/.test(id) || builtinModules.includes(id),
   plugins: [ rpi_dgnotify(), rpi_resolve() ] }
 
-const cfg_web_min = DEBUG ? null : { ... _cfg_,
+
+let is_watch = process.argv.includes('--watch')
+const cfg_web_min = is_watch ? null : { ... _cfg_,
   plugins: [ ... _cfg_.plugins, rpi_terser() ]}
 
 const _out_ = { sourcemap: true }

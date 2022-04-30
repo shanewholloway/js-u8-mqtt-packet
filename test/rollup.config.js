@@ -5,9 +5,10 @@ import rpi_resolve from '@rollup/plugin-node-resolve'
 const _cfg_common = {
   plugins: [ rpi_dgnotify(), rpi_resolve() ]}
 const _cfg_node = { ... _cfg_common,
-  external: id => builtinModules.includes(id) }
+  external: id => /^\w*:/.test(id) || builtinModules.includes(id) }
 const _cfg_web = { ... _cfg_common,
-  external: [], context: 'window' }
+  external: id => /^\w*:/.test(id),
+  context: 'window' }
 
 
 const _out_ = { sourcemap: true }
