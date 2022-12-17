@@ -32,11 +32,11 @@
     "test"
   ],
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.2.1",
-    "qsrv": "^0.2.3",
-    "rollup": "^2.71.1",
-    "rollup-plugin-dgnotify": "^0.1.8",
-    "rollup-plugin-terser": "^7.0.2"
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.2.0",
+    "qsrv": "^0.2.8",
+    "rollup": "^2.79.1",
+    "rollup-plugin-dgnotify": "^0.1.8"
   },
   "scripts": {
     "serve": "qsrv -- *.html esm/",
@@ -52,6 +52,6 @@
     "demo:deno_v5": "U8_MQTT_VER=v5 deno run --allow-env --allow-net ./demo/std/deno.mjs",
     "pretest": "npm -s run build",
     "test": "cd test; npm -s run test",
-    "prepublish": "npm -s run clean && npm -s run test"
+    "prepublishOnly": "npm -s run clean && npm -s run test"
   }
 }
