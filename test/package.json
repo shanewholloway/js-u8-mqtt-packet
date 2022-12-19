@@ -7,10 +7,10 @@
     "u8-mqtt-packet": "file:.."
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^13.0.5",
-    "qsrv": "^0.1.9",
-    "rollup": "^2.57.0",
-    "rollup-plugin-dgnotify": "^0.1.7",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "qsrv": "^0.2.8",
+    "rollup": "^2.79.1",
+    "rollup-plugin-dgnotify": "^0.1.8",
     "u8-utils": "^0.3.9"
   },
   "scripts": {
