@@ -19,8 +19,10 @@ export default configs
 
 add_module('index', {min: true})
 add_module('session', {min: true})
-add_module('codec_v4', {min: true})
-add_module('codec_v5', {min: true})
+add_module('codec_v4_full', {min: true})
+add_module('codec_v4_client', {min: true})
+add_module('codec_v5_full', {min: true})
+add_module('codec_v5_client', {min: true})
 
 add_module('client/core_node', {})
 add_module('client/core_deno', {})

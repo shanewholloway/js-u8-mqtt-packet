@@ -2,7 +2,7 @@ import { _mqtt_raw_pkt_dispatch } from './framing.mjs'
 
 const _pkt_types = ['~', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth']
 
-export function _as_mqtt_session_ctx(opts) {
+export function mqtt_bind_session_ctx(opts) {
   let _pkt_ctx_ = Object.defineProperties(opts._pkt_ctx_ || {}, {
     hdr:  {get() { return this.b0 & 0xf }},
     id:   {get() { return this.b0 >>> 4 }},

@@ -73,7 +73,7 @@ function _u8_join(a, b) {
 
 const _pkt_types = ['~', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth'];
 
-function _as_mqtt_session_ctx(opts) {
+function mqtt_bind_session_ctx(opts) {
   let _pkt_ctx_ = Object.defineProperties(opts._pkt_ctx_ || {}, {
     hdr:  {get() { return this.b0 & 0xf }},
     id:   {get() { return this.b0 >>> 4 }},
@@ -667,6 +667,72 @@ function mqtt_decode_pingxxx(ns) {
   return ns[0xc] = ns[0xd] = pkt => pkt
 }
 
+function mqtt_decode_disconnect(ns, mqtt_reader) {
+  return ns[0xe] = (pkt, u8_body) => {
+    if (u8_body && 5 <= pkt.mqtt_level) {
+      let rdr = new mqtt_reader(u8_body, 0);
+      pkt.reason = rdr.u8_reason(pkt.type);
+      pkt.props = rdr.props();
+    }
+    return pkt }
+}
+
+
+function _disconnect_v5(mqtt_reader) {
+  mqtt_reader.reasons('disconnect',
+    // MQTT 5.0
+    [ 0x00, 'Normal disconnection'],
+    [ 0x04, 'Disconnect with Will Message'],
+    [ 0x80, 'Unspecified error'],
+    [ 0x81, 'Malformed Packet'],
+    [ 0x82, 'Protocol Error'],
+    [ 0x83, 'Implementation specific error'],
+    [ 0x87, 'Not authorized'],
+    [ 0x89, 'Server busy'],
+    [ 0x8B, 'Server shutting down'],
+    [ 0x8D, 'Keep Alive timeout'],
+    [ 0x8E, 'Session taken over'],
+    [ 0x8F, 'Topic Filter invalid'],
+    [ 0x90, 'Topic Name invalid'],
+    [ 0x93, 'Receive Maximum exceeded'],
+    [ 0x94, 'Topic Alias invalid'],
+    [ 0x95, 'Packet too large'],
+    [ 0x96, 'Message rate too high'],
+    [ 0x97, 'Quota exceeded'],
+    [ 0x98, 'Administrative action'],
+    [ 0x99, 'Payload format invalid'],
+    [ 0x9A, 'Retain not supported'],
+    [ 0x9B, 'QoS not supported'],
+    [ 0x9C, 'Use another server'],
+    [ 0x9D, 'Server moved'],
+    [ 0x9E, 'Shared Subscriptions not supported'],
+    [ 0x9F, 'Connection rate exceeded'],
+    [ 0xA0, 'Maximum connect time'],
+    [ 0xA1, 'Subscription Identifiers not supported'],
+    [ 0xA2, 'Wildcard Subscriptions not supported'],
+  );
+}
+
+function mqtt_decode_auth(ns, mqtt_reader) {
+  return ns[0xf] = (pkt, u8_body) => {
+    if ( 5 <= pkt.mqtt_level ) {
+      let rdr = new mqtt_reader(u8_body, 0);
+      pkt.reason = rdr.u8_reason(pkt.type);
+      pkt.props = rdr.props();
+    }
+    return pkt }
+}
+
+
+function _auth_v5(mqtt_reader) {
+  mqtt_reader.reasons('auth',
+    // MQTT 5.0
+    [ 0x00, 'Success' ],
+    [ 0x18, 'Continue authentication' ],
+    [ 0x19, 'Re-authenticate' ],
+  );
+}
+
 const _c_mqtt_proto = new Uint8Array([
   0, 4, 0x4d, 0x51, 0x54, 0x54 ]);
 
@@ -876,72 +942,6 @@ function mqtt_encode_pingxxx(ns, mqtt_writer) {
   ns.pingresp = () => new Uint8Array([ 0xd0, 0 ]);
 }
 
-function mqtt_decode_disconnect(ns, mqtt_reader) {
-  return ns[0xe] = (pkt, u8_body) => {
-    if (u8_body && 5 <= pkt.mqtt_level) {
-      let rdr = new mqtt_reader(u8_body, 0);
-      pkt.reason = rdr.u8_reason(pkt.type);
-      pkt.props = rdr.props();
-    }
-    return pkt }
-}
-
-
-function _disconnect_v5(mqtt_reader) {
-  mqtt_reader.reasons('disconnect',
-    // MQTT 5.0
-    [ 0x00, 'Normal disconnection'],
-    [ 0x04, 'Disconnect with Will Message'],
-    [ 0x80, 'Unspecified error'],
-    [ 0x81, 'Malformed Packet'],
-    [ 0x82, 'Protocol Error'],
-    [ 0x83, 'Implementation specific error'],
-    [ 0x87, 'Not authorized'],
-    [ 0x89, 'Server busy'],
-    [ 0x8B, 'Server shutting down'],
-    [ 0x8D, 'Keep Alive timeout'],
-    [ 0x8E, 'Session taken over'],
-    [ 0x8F, 'Topic Filter invalid'],
-    [ 0x90, 'Topic Name invalid'],
-    [ 0x93, 'Receive Maximum exceeded'],
-    [ 0x94, 'Topic Alias invalid'],
-    [ 0x95, 'Packet too large'],
-    [ 0x96, 'Message rate too high'],
-    [ 0x97, 'Quota exceeded'],
-    [ 0x98, 'Administrative action'],
-    [ 0x99, 'Payload format invalid'],
-    [ 0x9A, 'Retain not supported'],
-    [ 0x9B, 'QoS not supported'],
-    [ 0x9C, 'Use another server'],
-    [ 0x9D, 'Server moved'],
-    [ 0x9E, 'Shared Subscriptions not supported'],
-    [ 0x9F, 'Connection rate exceeded'],
-    [ 0xA0, 'Maximum connect time'],
-    [ 0xA1, 'Subscription Identifiers not supported'],
-    [ 0xA2, 'Wildcard Subscriptions not supported'],
-  );
-}
-
-function mqtt_decode_auth(ns, mqtt_reader) {
-  return ns[0xf] = (pkt, u8_body) => {
-    if ( 5 <= pkt.mqtt_level ) {
-      let rdr = new mqtt_reader(u8_body, 0);
-      pkt.reason = rdr.u8_reason(pkt.type);
-      pkt.props = rdr.props();
-    }
-    return pkt }
-}
-
-
-function _auth_v5(mqtt_reader) {
-  mqtt_reader.reasons('auth',
-    // MQTT 5.0
-    [ 0x00, 'Success' ],
-    [ 0x18, 'Continue authentication' ],
-    [ 0x19, 'Re-authenticate' ],
-  );
-}
-
 function mqtt_encode_disconnect(ns, mqtt_writer) {
   return ns.disconnect = ( mqtt_level, pkt ) => {
     let wrt = new mqtt_writer();
@@ -985,6 +985,7 @@ const mqtt_reader_v5 = /* #__PURE__ */
 const mqtt_writer_v5 = /* #__PURE__ */
   mqtt_type_writer_v5.init();
 
+
 const mqtt_decode_v5 =  [
   mqtt_decode_connect,
   mqtt_decode_connack,
@@ -999,6 +1000,7 @@ const mqtt_decode_v5 =  [
   mqtt_decode_disconnect,
   mqtt_decode_auth,
 ];
+
 
 const mqtt_encode_v5 =  [
   mqtt_encode_connect,
@@ -1018,7 +1020,7 @@ function mqtt_session_ctx(mqtt_level) {
   let {ctx} = mqtt_session_ctx;
   if ( undefined === ctx ) {
     mqtt_session_ctx.ctx = ctx =
-      _as_mqtt_session_ctx({
+      mqtt_bind_session_ctx({
         // mqtt level 5 decoders can also decode level 4 (MQTT version 3.1.1)
 
         decode_fns: mqtt_decode_v5,
