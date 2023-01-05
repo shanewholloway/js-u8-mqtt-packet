@@ -17,8 +17,10 @@ const configs = []
 export default configs
 
 
-add_module('index', {})
+add_module('index', {min: true})
 add_module('session', {min: true})
+add_module('codec_v4', {min: true})
+add_module('codec_v5', {min: true})
 
 add_module('client/core_node', {})
 add_module('client/core_deno', {})
@@ -34,6 +36,7 @@ function add_module(src_name, opt={}) {
   configs.push({ ..._cfg_, input,
     output: [
       { file: `esm/${src_name}.mjs`, format: 'es', sourcemap: true },
+      { file: `esm/${src_name}.js`, format: 'es', sourcemap: true },
       { file: `cjs/${src_name}.cjs`, format: 'cjs', exports: 'named', sourcemap: true },
       opt.name && 
         { file: `umd/${src_name}.js`, format: 'umd', name: opt.name, exports: 'named', sourcemap: true },
@@ -43,6 +46,7 @@ function add_module(src_name, opt={}) {
     configs.push({ ...cfg_web_min, input,
       output: [
         { file: `esm/${src_name}.min.mjs`, format: 'es', sourcemap: false },
+        { file: `esm/${src_name}.min.js`, format: 'es', sourcemap: false },
         opt.name && 
           { file: `umd/${src_name}.min.js`, format: 'umd', name: opt.name, exports: 'named', sourcemap: false },
       ].filter(Boolean)})

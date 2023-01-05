@@ -1,6 +1,5 @@
-import {mqtt_type_reader} from './_utils.mjs'
 
-export function mqtt_decode_subscribe(ns) {
+export function mqtt_decode_subscribe(ns, mqtt_reader) {
   class _subscription_options_ extends Number {
     get qos() { return this & 0x3 }
     get retain() { return this & 0x4 !== 0 }
@@ -8,13 +7,13 @@ export function mqtt_decode_subscribe(ns) {
   }
 
   return ns[0x8] = (pkt, u8_body) => {
-    const rdr = new mqtt_type_reader(u8_body, 0)
+    let rdr = new mqtt_reader(u8_body, 0)
 
     pkt.pkt_id = rdr.u16()
     if (5 <= pkt.mqtt_level)
       pkt.props = rdr.props()
 
-    const topic_list = pkt.topics = []
+    let topic_list = pkt.topics = []
     while (rdr.has_more()) {
       let topic = rdr.utf8()
       let opts = rdr.u8_flags(_subscription_options_)

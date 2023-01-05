@@ -1,8 +1,7 @@
-import {mqtt_type_writer} from './_utils.mjs'
 
-export function mqtt_encode_disconnect(ns) {
+export function mqtt_encode_disconnect(ns, mqtt_writer) {
   return ns.disconnect = ( mqtt_level, pkt ) => {
-    const wrt = new mqtt_type_writer()
+    let wrt = new mqtt_writer()
 
     if (pkt && 5 <= mqtt_level) {
       if (pkt.reason || pkt.props) {

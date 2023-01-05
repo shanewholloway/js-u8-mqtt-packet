@@ -1,13 +1,12 @@
-import {mqtt_type_writer} from './_utils.mjs'
 
-export function mqtt_encode_connack(ns) {
+export function mqtt_encode_connack(ns, mqtt_writer) {
   const _enc_flags_connack = flags =>
     flags.session_present ? 1 : 0
 
   return ns.connack = (mqtt_level, pkt) => {
-    const wrt = new mqtt_type_writer()
+    let wrt = new mqtt_writer()
 
-    const {flags} = pkt
+    let {flags} = pkt
     wrt.u8_flags( pkt.flags, _enc_flags_connack )
 
     if (5 <= mqtt_level) {

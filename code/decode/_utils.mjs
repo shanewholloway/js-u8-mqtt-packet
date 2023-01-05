@@ -1,5 +1,5 @@
-import {decode_varint} from '../mqtt_varint.mjs'
-import {mqtt_props} from '../mqtt_props.mjs'
+import { decode_varint } from '../mqtt_varint.mjs'
+import { mqtt_props } from '../mqtt_props.mjs'
 
 const as_utf8 = u8 =>
   new TextDecoder('utf-8').decode(u8)
@@ -7,58 +7,65 @@ const as_utf8 = u8 =>
 const step_from = idx =>
   (width, r) => ( r = idx, idx += width, r )
 
-export class mqtt_type_reader {
+export class mqtt_type_reader_v4 {
   constructor(buf, idx=0) {
     this.buf = buf
     this.step = step_from(idx)
   }
 
-  _fork(buf, idx) {
-    return { __proto__: this, buf, step: step_from(idx) }
+  static with_info(... info_fn_list) {
+    let mqtt_reader = class extends this {}
+    for (let fn_info of info_fn_list)
+      fn_info(mqtt_reader)
+    return mqtt_reader
   }
 
+  static reasons(pkt_type, ...reason_entries) {
+    let proto = this.prototype
+    proto._reasons_by = {... proto._reasons_by}
+
+    let lut = (proto._reasons_by[pkt_type] ||= new Map())
+    for (let [u8, reason] of reason_entries)
+      lut.set( u8, reason )
+
+    return this
+  }
+
+
   has_more() {
-    const {buf, step} = this
+    let {buf, step} = this
     return buf.byteLength > step(0)
   }
 
   u8() {
-    const {buf, step} = this
+    let {buf, step} = this
     return buf[step(1)]
   }
 
   u16() {
-    const {buf, step} = this
-    const i = step(2)
+    let {buf, step} = this
+    let i = step(2)
     return (buf[i]<<8) | buf[i+1]
   }
 
   u32() {
-    const {buf, step} = this
-    const i = step(4)
+    let {buf, step} = this
+    let i = step(4)
     return (buf[i]<<24) | (buf[i+1]<<16) | (buf[i+2]<<8) | buf[i+3]
   }
 
   vint() {
-    const {buf, step} = this
-    const [n, vi, vi0] = decode_varint(buf, step(0))
+    let {buf, step} = this
+    let [n, vi, vi0] = decode_varint(buf, step(0))
     step(vi - vi0)
     return n
   }
 
-  vbuf() {
-    const {buf, step} = this
-    const [n, vi, vi0] = decode_varint(buf, step(0))
-    step(n + vi - vi0)
-    return 0 === n ? null
-      : buf.subarray(vi, step(0))
-  }
-
   bin() {
-    const {buf, step} = this
-    const i = step(2)
-    const len = (buf[i]<<8) | buf[i+1]
-    const i0 = step(len)
+    let {buf, step} = this
+    let i = step(2)
+    let len = (buf[i]<<8) | buf[i+1]
+    let i0 = step(len)
     return buf.subarray(i0, i0+len)
   }
 
@@ -66,25 +73,45 @@ export class mqtt_type_reader {
   pair() { return [ as_utf8(this.bin()), as_utf8(this.bin()) ] }
 
   u8_flags(FlagsType) {
-    const {buf, step} = this
+    let {buf, step} = this
     return new FlagsType(buf[step(1)])
   }
 
-  u8_reason(fn_reason) {
-    const {buf, step} = this
-    return fn_reason( buf[step(1)] )
+  u8_reason(lut_key) {
+    let {buf, step} = this
+    let v = buf[step(1)]
+    if (null != v) {
+      let r = this._reasons_by[lut_key]?.get(v)
+      return new U8_Reason(v, r || lut_key)
+    }
   }
 
   flush() {
-    const {buf, step} = this
+    let {buf, step} = this
     this.step = this.buf = null
     return buf.subarray(step(0))
   }
+
+}
+
+export class mqtt_type_reader_v5 extends mqtt_type_reader_v4 {
 
   props() {
     let sub = this.vbuf()
     return null === sub ? null
       : this._fork(sub, 0)._read_props([])
+  }
+
+  vbuf() {
+    let {buf, step} = this
+    let [n, vi, vi0] = decode_varint(buf, step(0))
+    step(n + vi - vi0)
+    return 0 === n ? null
+      : buf.subarray(vi, step(0))
+  }
+
+  _fork(buf, idx) {
+    return { __proto__: this, buf, step: step_from(idx) }
   }
 
   _read_props(lst) {
@@ -99,16 +126,7 @@ export class mqtt_type_reader {
 }
 
 
-
 class U8_Reason extends Number {
   constructor(u8, reason) { super(u8); this.reason = reason }
-}
-
-export function bind_reason_lookup(reason_entries) {
-  const reason_map = new Map()
-  for (const [u8, reason] of reason_entries)
-    reason_map.set( u8, new U8_Reason(u8, reason) )
-
-  return reason_map.get.bind(reason_map)
 }
 

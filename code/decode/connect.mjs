@@ -1,6 +1,5 @@
-import {mqtt_type_reader} from './_utils.mjs'
 
-export function mqtt_decode_connect(ns) {
+export function mqtt_decode_connect(ns, mqtt_reader) {
   class _connect_flags_ extends Number {
     get reserved() { return this & 0x01 !== 0 }
     get clean_start() { return this & 0x02 !== 0 }
@@ -13,13 +12,13 @@ export function mqtt_decode_connect(ns) {
 
 
   return ns[0x1] = (pkt, u8_body) => {
-    const rdr = new mqtt_type_reader(u8_body, 0)
+    let rdr = new mqtt_reader(u8_body, 0)
     if ('MQTT' !== rdr.utf8())
       throw new Error('Invalid mqtt_connect packet')
 
     pkt._base_.mqtt_level = pkt.mqtt_level = rdr.u8()
 
-    const flags = pkt.flags =
+    let flags = pkt.flags =
       rdr.u8_flags(_connect_flags_)
 
     pkt.keep_alive = rdr.u16()
@@ -31,7 +30,7 @@ export function mqtt_decode_connect(ns) {
 
     pkt.client_id = rdr.utf8()
     if (flags.will_flag) {
-      const will = pkt.will = {}
+      let will = pkt.will = {}
       if (5 <= pkt.mqtt_level)
         will.props = rdr.props()
 

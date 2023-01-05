@@ -1,11 +1,24 @@
-import {mqtt_type_reader, bind_reason_lookup} from './_utils.mjs'
 
-export function mqtt_decode_connack(ns) {
+export function mqtt_decode_connack(ns, mqtt_reader) {
   class _connack_flags_ extends Number {
     get session_present() { return this & 0x01 !== 0 }
   }
 
-  const _connack_reason_ = bind_reason_lookup([
+  return ns[0x2] = (pkt, u8_body) => {
+    let rdr = new mqtt_reader(u8_body, 0)
+
+    let flags = pkt.flags =
+      rdr.u8_flags(_connack_flags_)
+
+    pkt.reason = rdr.u8_reason(pkt.type)
+    if (5 <= pkt.mqtt_level)
+      pkt.props = rdr.props()
+    return pkt }
+}
+
+
+export function _connack_v4(mqtt_reader) {
+  mqtt_reader.reasons('connack',
     // MQTT 3.1.1
     [ 0x00, 'Success'],
     [ 0x01, 'Connection refused, unacceptable protocol version'],
@@ -13,7 +26,13 @@ export function mqtt_decode_connack(ns) {
     [ 0x03, 'Connection refused, server unavailable'],
     [ 0x04, 'Connection refused, bad user name or password'],
     [ 0x05, 'Connection refused, not authorized'],
+  )
+}
 
+export function _connack_v5(mqtt_reader) {
+  _connack_v4(mqtt_reader)
+
+  mqtt_reader.reasons('connack',
     // MQTT 5.0
     [ 0x81, 'Malformed Packet'],
     [ 0x82, 'Protocol Error'],
@@ -35,18 +54,6 @@ export function mqtt_decode_connack(ns) {
     [ 0x9C, 'Use another server'],
     [ 0x9D, 'Server moved'],
     [ 0x9F, 'Connection rate exceeded'],
-  ])
-
-
-  return ns[0x2] = (pkt, u8_body) => {
-    const rdr = new mqtt_type_reader(u8_body, 0)
-
-    const flags = pkt.flags =
-      rdr.u8_flags(_connack_flags_)
-
-    pkt.reason = rdr.u8_reason(_connack_reason_)
-    if (5 <= pkt.mqtt_level)
-      pkt.props = rdr.props()
-    return pkt }
+  )
 }
 

@@ -1,31 +1,9 @@
 import {
-  mqtt_decode_zero,
-  mqtt_decode_connect,
-  mqtt_decode_connack,
-  mqtt_decode_publish,
-  mqtt_decode_puback,
-  mqtt_decode_pubxxx,
-  mqtt_decode_subscribe,
-  mqtt_decode_suback,
-  mqtt_decode_unsubscribe,
-  mqtt_decode_unsuback,
-  mqtt_decode_pingxxx,
-  mqtt_decode_disconnect,
-  mqtt_decode_auth,
-
-  mqtt_encode_connect,
-  mqtt_encode_connack,
-  mqtt_encode_publish,
-  mqtt_encode_puback,
-  mqtt_encode_pubxxx,
-  mqtt_encode_subscribe,
-  mqtt_encode_xxsuback,
-  mqtt_encode_unsubscribe,
-  mqtt_encode_pingxxx,
-  mqtt_encode_disconnect,
-  mqtt_encode_auth,
-
-  _bind_mqtt_session_ctx,
+  mqtt_reader_v5,
+  mqtt_decode_v5,
+  mqtt_writer_v5,
+  mqtt_encode_v5,
+  _as_mqtt_session_ctx,
 } from './codec.mjs'
 
 
@@ -34,33 +12,15 @@ export function mqtt_session_ctx(mqtt_level) {
   let {ctx} = mqtt_session_ctx
   if ( undefined === ctx ) {
     mqtt_session_ctx.ctx = ctx =
-      _bind_mqtt_session_ctx(
-        [ // lst_decode_ops = [
-          mqtt_decode_zero,
-          mqtt_decode_connect,
-          mqtt_decode_connack,
-          mqtt_decode_publish,
-          mqtt_decode_puback,
-          mqtt_decode_pubxxx,
-          mqtt_decode_subscribe,
-          mqtt_decode_suback,
-          mqtt_decode_unsubscribe,
-          mqtt_decode_unsuback,
-          mqtt_decode_pingxxx,
-          mqtt_decode_disconnect,
-          mqtt_decode_auth, ],
-        [ // lst_encode_ops = [
-          mqtt_encode_connect,
-          mqtt_encode_connack,
-          mqtt_encode_publish,
-          mqtt_encode_puback,
-          mqtt_encode_pubxxx,
-          mqtt_encode_subscribe,
-          mqtt_encode_xxsuback,
-          mqtt_encode_unsubscribe,
-          mqtt_encode_pingxxx,
-          mqtt_encode_disconnect,
-          mqtt_encode_auth, ])
+      _as_mqtt_session_ctx({
+        // mqtt level 5 decoders can also decode level 4 (MQTT version 3.1.1)
+
+        decode_fns: mqtt_decode_v5,
+        mqtt_reader: mqtt_reader_v5,
+
+        encode_fns: mqtt_encode_v5,
+        mqtt_writer: mqtt_writer_v5,
+      })
   }
 
   return ctx(mqtt_level)

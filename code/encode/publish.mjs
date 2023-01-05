@@ -1,9 +1,8 @@
-import {mqtt_type_writer} from './_utils.mjs'
 
-export function mqtt_encode_publish(ns) {
+export function mqtt_encode_publish(ns, mqtt_writer) {
   return ns.publish = ( mqtt_level, pkt ) => {
-    const qos = (pkt.qos & 0x3) << 1
-    const wrt = new mqtt_type_writer()
+    let qos = (pkt.qos & 0x3) << 1
+    let wrt = new mqtt_writer()
 
     wrt.utf8(pkt.topic)
     if (0 !== qos)

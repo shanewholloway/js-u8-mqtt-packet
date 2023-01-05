@@ -1,19 +1,21 @@
-import {mqtt_type_reader, bind_reason_lookup} from './_utils.mjs'
 
-
-export function mqtt_decode_pubxxx(ns) {
-  const _pubxxx_reason_ = bind_reason_lookup([
-    [ 0x00, 'Success' ],
-    [ 0x92, 'Packet Identifier not found' ],
-  ])
-
+export function mqtt_decode_pubxxx(ns, mqtt_reader) {
   return ns[0x5] = ns[0x6] = ns[0x7] = (pkt, u8_body) => {
-    const rdr = new mqtt_type_reader(u8_body, 0)
+    let rdr = new mqtt_reader(u8_body, 0)
 
     pkt.pkt_id = rdr.u16()
-    pkt.reason = rdr.u8_reason(_pubxxx_reason_)
+    pkt.reason = rdr.u8_reason('pubxxx', mqtt_reader)
     if (5 <= pkt.mqtt_level)
       pkt.props = rdr.props()
     return pkt }
 }
 
+export function _pubxxx_v4(mqtt_reader) {
+  mqtt_reader.reasons('pubxxx',
+    // MQTT 3.1.1
+    [ 0x00, 'Success' ],
+    [ 0x92, 'Packet Identifier not found' ],
+  )
+}
+
+export { _pubxxx_v4 as _pubxxx_v5 }

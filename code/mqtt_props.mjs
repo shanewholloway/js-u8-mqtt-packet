@@ -2,7 +2,7 @@
 export const mqtt_props = new Map() 
 
 {
-  const entries = [
+  let entries = [
     [ 0x01, 'u8',   'payload_format_indicator'],
     [ 0x02, 'u32',  'message_expiry_interval'],
     [ 0x03, 'utf8', 'content_type'],
@@ -23,7 +23,7 @@ export const mqtt_props = new Map()
     [ 0x21, 'u16',  'receive_maximum'],
     [ 0x22, 'u16',  'topic_alias_maximum'],
     [ 0x23, 'u16',  'topic_alias'],
-    [ 0x24, 'u8',   'maximum_qo_s'],
+    [ 0x24, 'u8',   'maximum_qos'],
     [ 0x25, 'u8',   'retain_available'],
     [ 0x26, 'pair', 'user_properties', true],
     [ 0x27, 'u32',  'maximum_packet_size'],
@@ -32,8 +32,8 @@ export const mqtt_props = new Map()
     [ 0x2A, 'u8',   'shared_subscription_available'],
   ]
 
-  for (const [id, type, name, plural] of entries) {
-    const prop_obj = {id, type, name}
+  for (let [id, type, name, plural] of entries) {
+    let prop_obj = {id, type, name}
     if (plural) prop_obj.plural = plural
     mqtt_props.set(prop_obj.id, prop_obj)
     mqtt_props.set(prop_obj.name, prop_obj)

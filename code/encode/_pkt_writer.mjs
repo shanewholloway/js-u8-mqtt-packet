@@ -1,7 +1,7 @@
 import {encode_varint} from '../mqtt_varint.mjs'
 
 export function mqtt_pkt_writer_pool() {
-  const _pool_ = []
+  let _pool_ = []
   return host =>
     0 === _pool_.length
       ? mqtt_pkt_writer(host, _pool_)
@@ -27,7 +27,7 @@ export function mqtt_pkt_writer(host, _pool_) {
   function pack(hdr) {
     host = host.push = host.pack = null
 
-    const res = _mqtt_pkt_rope(hdr, n, rope)
+    let res = _mqtt_pkt_rope(hdr, n, rope)
     n=0; rope=[]
     if (undefined !== _pool_)
       _pool_.push(install)
@@ -38,12 +38,12 @@ export function mqtt_pkt_writer(host, _pool_) {
 
 
 export function _mqtt_pkt_rope(hdr, n, rope) {
-  const header = encode_varint(n, hdr)
+  let header = encode_varint(n, hdr)
   let i = header.length
 
-  const pkt = new Uint8Array(n + i)
+  let pkt = new Uint8Array(n + i)
   pkt.set(header, 0)
-  for (const vec of rope) {
+  for (let vec of rope) {
     pkt.set(vec, i)
     i += vec.length
   }
