@@ -6,7 +6,7 @@ export function mqtt_encode_subscribe(ns, mqtt_writer) {
       | ( (opts.retain_handling & 0x3) << 2 )
 
   return ns.subscribe = ( mqtt_level, pkt ) => {
-    let wrt = new mqtt_writer()
+    let wrt = mqtt_writer.of(pkt)
 
     wrt.u16(pkt.pkt_id)
     if (5 <= mqtt_level)
@@ -24,7 +24,7 @@ export function mqtt_encode_subscribe(ns, mqtt_writer) {
 
         wrt.utf8(topic)
         if (undefined === opts) wrt.u8(f0)
-        else wrt.u8_flags(opts, _enc_subscribe_flags)
+        else wrt.flags(opts, _enc_subscribe_flags)
       }
     }
 

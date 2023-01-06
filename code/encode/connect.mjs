@@ -1,8 +1,8 @@
 
-const _c_mqtt_proto = new Uint8Array([
-  0, 4, 0x4d, 0x51, 0x54, 0x54 ])
-
 export function mqtt_encode_connect(ns, mqtt_writer) {
+  const _c_mqtt_proto = new Uint8Array([
+    0, 4, 0x4d, 0x51, 0x54, 0x54 ])
+
   const _enc_flags_connect = flags => 0
       | ( flags.reserved ? 0x01 : 0 )
       | ( (flags.will_qos & 0x3) << 3 )
@@ -17,13 +17,13 @@ export function mqtt_encode_connect(ns, mqtt_writer) {
       | ( will.retain ? 0x20 : 0 )
 
   return ns.connect = ( mqtt_level, pkt ) => {
-    let wrt = new mqtt_writer()
+    let wrt = mqtt_writer.of(pkt)
 
     wrt.push(_c_mqtt_proto)
     wrt.u8( mqtt_level )
 
     let {will, username, password} = pkt
-    let flags = wrt.u8_flags(
+    let flags = wrt.flags(
       pkt.flags,
       _enc_flags_connect,
       0 | (username ? 0x80 : 0)

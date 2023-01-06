@@ -4,9 +4,9 @@ export function mqtt_encode_auth(ns, mqtt_writer) {
     if (5 > mqtt_level)
       throw new Error('Auth packets are only available after MQTT 5.x')
 
-    let wrt = new mqtt_writer()
+    let wrt = mqtt_writer.of(pkt)
 
-    wrt.u8_reason(pkt.reason)
+    wrt.reason(pkt.reason)
     wrt.props(pkt.props)
 
     return wrt.as_pkt(0xf0)

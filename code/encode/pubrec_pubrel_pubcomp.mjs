@@ -7,15 +7,15 @@ export function mqtt_encode_pubxxx(ns, mqtt_writer) {
 
   function _enc_pubxxx(hdr) {
     return ( mqtt_level, pkt ) => {
-      let wrt = new mqtt_writer()
+      let wrt = mqtt_writer.of(pkt)
 
       wrt.u16(pkt.pkt_id)
       if (5 <= mqtt_level) {
         wrt.props(pkt.props)
-        wrt.u8_reason(pkt.reason)
+        wrt.reason(pkt.reason)
 
       } else {
-        wrt.u8_reason( pkt.return_code || pkt.reason )
+        wrt.reason( pkt.return_code || pkt.reason )
       }
 
       return wrt.as_pkt(hdr)

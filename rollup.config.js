@@ -18,13 +18,14 @@ export default configs
 
 
 add_module('index', {min: true})
-add_module('session', {min: true})
-add_module('codec_v4_full', {min: true})
+
 add_module('codec_v5_full', {min: true})
-add_module('codec_v4_client', {min: true})
-add_module('codec_v5_client', {min: true})
-add_module('codec_v4_lean', {min: true})
 add_module('codec_v5_lean', {min: true})
+add_module('codec_v5_client', {min: true})
+
+add_module('codec_v4_full', {min: true})
+add_module('codec_v4_client', {min: true})
+add_module('codec_v4_lean', {min: true})
 
 add_module('client/core_node', {})
 add_module('client/core_deno', {})
@@ -38,20 +39,9 @@ add_module('client/web', {min: true})
 function add_module(src_name, opt={}) {
   const input = `code/${src_name}.mjs`
   configs.push({ ..._cfg_, input,
-    output: [
-      { file: `esm/${src_name}.mjs`, format: 'es', sourcemap: true },
-      { file: `esm/${src_name}.js`, format: 'es', sourcemap: true },
-      { file: `cjs/${src_name}.cjs`, format: 'cjs', exports: 'named', sourcemap: true },
-      opt.name && 
-        { file: `umd/${src_name}.js`, format: 'umd', name: opt.name, exports: 'named', sourcemap: true },
-    ].filter(Boolean)})
+    output: { file: `esm/${src_name}.js`, format: 'es', sourcemap: true } })
 
   if (opt.min && cfg_web_min)
     configs.push({ ...cfg_web_min, input,
-      output: [
-        { file: `esm/${src_name}.min.mjs`, format: 'es', sourcemap: false },
-        { file: `esm/${src_name}.min.js`, format: 'es', sourcemap: false },
-        opt.name && 
-          { file: `umd/${src_name}.min.js`, format: 'umd', name: opt.name, exports: 'named', sourcemap: false },
-      ].filter(Boolean)})
+      output: { file: `esm/${src_name}.min.js`, format: 'es', sourcemap: false }})
 }

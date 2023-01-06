@@ -13,21 +13,15 @@
     "url": "git+ssh://git@github.com/shanewholloway/js-u8-mqtt-packet.git"
   },
   "files": [
-    "cjs/",
     "code/",
     "esm/"
   ],
   "type": "module",
-  "main": "./cjs/index.cjs",
-  "module": "./esm/index.mjs",
-  "browser": "./esm/index.mjs",
+  "module": "./esm/index.js",
+  "browser": "./esm/index.js",
   "exports": {
     "./esm/*": "./esm/*",
-    "./cjs/*": "./cjs/*",
-    ".": {
-      "import": "./esm/index.mjs",
-      "require": "./cjs/index.cjs"
-    }
+    ".": "./esm/index.js"
   },
   "workspaces": [
     "test"

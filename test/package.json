@@ -17,7 +17,7 @@
     "serve": "qsrv -f unittest.html -- __unittest.iife.js",
     "prebuild": "test -d ./node_modules || npm -s ci",
     "build": "rollup --config",
-    "clean": "rm ./__*js",
+    "clean": "rm ./__*",
     "watch": "npm -s run build -- --watch",
     "dkr_deps": "docker stack deploy -c integ/deps-deploy.yml integ_mqtt",
     "preinteg": "npm -s run build",

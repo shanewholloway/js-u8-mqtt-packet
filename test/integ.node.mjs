@@ -1,4 +1,4 @@
-import {MQTTBonesNode_v4, MQTTBonesNode_v5} from 'u8-mqtt-packet/esm/client/node.mjs'
+import {MQTTBonesNode_v4, MQTTBonesNode_v5} from 'u8-mqtt-packet/esm/client/node.js'
 import {integ_suite} from './integtests.mjs'
 
 const integ_configs = [

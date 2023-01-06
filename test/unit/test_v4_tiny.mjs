@@ -1,16 +1,22 @@
 import { hex_to_u8, u8_to_utf8 } from 'u8-utils'
-import { mqtt_session_v4 } from 'u8-mqtt-packet'
+import {mqtt_ctx_v4 as mqtt_ctx_v4_only} from 'u8-mqtt-packet/esm/codec_v4_full.js'
+import {mqtt_ctx_v4 as mqtt_ctx_v4_subset} from 'u8-mqtt-packet/esm/codec_v5_full.js'
 
 const { assert, expect } = require('chai')
 
-function _decode_one_hex(hex_pkt) {
-  const [mqtt_decode] = mqtt_session_v4()
-  const [pkt0, pkt1] = mqtt_decode(hex_to_u8(hex_pkt))
-  expect(pkt1).to.be.undefined
-  return pkt0
-}
+test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4_only, 'mqtt v4 only')
+test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4_subset, 'mqtt v4 with v5 capable decoder')
 
-describe('mqtt v4: small pub/sub capture', () => {
+function test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4, suite_prefix) {
+
+  function _decode_one_hex(hex_pkt) {
+    const [mqtt_decode] = mqtt_ctx_v4()
+    const [pkt0, pkt1] = mqtt_decode(hex_to_u8(hex_pkt))
+    expect(pkt1).to.be.undefined
+    return pkt0
+  }
+
+describe(`${suite_prefix}: small pub/sub capture`, () => {
   it('pingreq', () => {
     const { type, ...tip } = _decode_one_hex('c000')
 
@@ -195,3 +201,4 @@ describe('mqtt v4: small pub/sub capture', () => {
     expect(u8_to_utf8(payload)).to.equal('jello')
   })
 })
+}

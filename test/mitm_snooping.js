@@ -2,7 +2,7 @@ const {u8_to_hex} = require('u8-utils')
 const {createWriteStream} = require('fs')
 const {pipeline} = require('stream')
 const {createServer, connect} = require('net')
-const {mqtt_session, mqtt_raw_packets} = require('u8-mqtt-packet')
+const {mqtt_ctx_v5, mqtt_raw_packets} = require('u8-mqtt-packet')
 //const mqtt_pkt = require('mqtt-packet')
 
 const argv_opt = process.argv.slice(2)
@@ -50,7 +50,7 @@ function _mitm_log(ts_log, tag, arrows) {
   return async function *(stream) {
     const mqtt_decode_raw = mqtt_raw_packets()
     const [mqtt_decode, mqtt_encode, _mqtt_base_] =
-      mqtt_session(wm_ts_log.get(ts_log))
+      mqtt_ctx_v5('?')(wm_ts_log.get(ts_log))
 
     wm_ts_log.set(ts_log, _mqtt_base_)
 

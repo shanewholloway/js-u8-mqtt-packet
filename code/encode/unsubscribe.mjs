@@ -1,7 +1,7 @@
 
 export function mqtt_encode_unsubscribe(ns, mqtt_writer) {
   return ns.unsubscribe = ( mqtt_level, pkt ) => {
-    let wrt = new mqtt_writer()
+    let wrt = mqtt_writer.of(pkt)
 
     wrt.u16(pkt.pkt_id)
     if (5 <= mqtt_level)

@@ -9,7 +9,7 @@ class U8_Reason extends Number {
   }
 }
 
-export class mqtt_type_reader_v4 {
+export class mqtt_reader_v4 {
   static of(buf) { return this.prototype.of(buf) }
   of(buf) {
     let step = (width, k) => (k=0|step.k, step.k=k+width, k)
@@ -67,7 +67,7 @@ export class mqtt_type_reader_v4 {
 
 }
 
-export class mqtt_type_reader_v5 extends mqtt_type_reader_v4 {
+export class mqtt_reader_v5 extends mqtt_reader_v4 {
   props() {
     let {buf, step} = this
     let [n, vi, vi0] = decode_varint(buf, step.k|0)

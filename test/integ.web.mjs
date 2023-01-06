@@ -1,4 +1,4 @@
-import {MQTTBonesWeb_v4, MQTTBonesWeb_v5} from 'u8-mqtt-packet/esm/client/web.mjs'
+import {MQTTBonesWeb_v4, MQTTBonesWeb_v5} from 'u8-mqtt-packet/esm/client/web.js'
 import {integ_suite} from './integtests.mjs'
 
 const integ_configs = [

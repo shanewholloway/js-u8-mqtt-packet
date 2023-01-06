@@ -1,30 +1,12 @@
-### Simple API
-
-* `function mqtt_session_4()` and `function mqtt_session_5()`
-
-  returns `[mqtt_decode(pkt, u8_body), mqtt_encode(type, pkt)]` bound for `mqtt_level` suitable for use in MQTT clients.
-
-
-  ```javascript
-  const mqtt_session_v4 = mqtt_session_ctx(4)
-  const [mqtt_decode, mqtt_encode] = mqtt_session_v4()
-
-  const mqtt_session_v5 = mqtt_session_ctx(5)
-  const [mqtt_decode, mqtt_encode] = mqtt_session_v5()
-  ```
-
-  See `mqtt_session_ctx`.
-
-
 ### MQTT Packets
 
 #### Decoders
 
-MQTT decoders are of the form `(pkt, u8_body) => pkt` where `pkt` is a prototype object created by `{__proto__: _pkt_ctx_, b0}`, the `u8_body` is a `Uint8Array` that encodes the MQTT packet body. See `_bind_mqtt_decode` and `_bind_pkt_ctx` for `_pkt_ctx_` details.
+MQTT decoders are of the form `(pkt, u8_body) => pkt` where `pkt` is a prototype object created by `{__proto__: _pkt_ctx_, b0}`, the `u8_body` is a `Uint8Array` that encodes the MQTT packet body.
 
 Each decoder will round-trip a `Uint8Array` raw packet buffer created by the corresponding `mqtt_encode_xxx(mqtt_level, pkt)` encoder.
 
-To facilitate simple and correct use, each `mqtt_decode_xxx(ns)` function accepts a namespace array where the decoder is assigned by MQTT command id (`b0 >>> 4`). See `_bind_mqtt_decode` for details.
+To facilitate simple and correct use, each `mqtt_decode_xxx(ns)` function accepts a namespace array where the decoder is assigned by MQTT command id (`b0 >>> 4`).
 
 
 #### Encoders
@@ -33,7 +15,7 @@ MQTT encoders are of the form `(mqtt_level, pkt) => u8_pkt` where `pkt` is an ob
 
 Each encoder will round-trip a `pkt` object created by the corresponding `mqtt_decode_xxx({b0}, u8_body)` decoder.
 
-To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts a namespace object where the encoder is installed by MQTT command name. See `_bind_mqtt_encode` for details.
+To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts a namespace object where the encoder is installed by MQTT command name.
 
 
 #### Specific Packets
@@ -63,34 +45,12 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts
 
   returns a lazily bound session context able to decode and encode all MQTT packets. As the complete codec is included, the composite JavaScript source size is ~50% larger than required for most MQTT clients. (13kb vs 8.5kb)
 
-  See `_bind_mqtt_session_ctx` and [`demo/tiny/tiny_session.mjs`](../demo/tiny/tiny_session.mjs) for customization.
+  See `mqtt_bind_session_ctx` and [`demo/tiny/tiny_session.mjs`](../demo/tiny/tiny_session.mjs) for customization.
 
 
-* `function _bind_mqtt_session_ctx(sess_decode, sess_encode, _pkt_ctx_)`
+* `function mqtt_bind_session_ctx({decode_fns, mqtt_reader, encode_fns, mqtt_writer, _pkt_ctx_})`
 
-    combines `_bind_mqtt_decode(sess_decode)` with `_bind_mqtt_encode(sess_encode)` and `_bind_pkt_ctx(_pkt_ctx_)` to
     return a closure `mqtt_level => function mqtt_session()`. Calling `mqtt_session()` returns a new bound `function mqtt_decode(pkt, u8_body)` and `function mqtt_encode(type, pkt)` suitable for use in MQTT clients.
-
-  See `_bind_mqtt_decode`, `_bind_mqtt_encode`, and `_bind_pkt_ctx`. `mqtt_session_ctx` uses this function.
-
-
-* `function _bind_mqtt_decode(lst_decode_ops)`
-
-  returns an `mqtt_session_decode` closure `_pkt_ctx_ => (b0, u8_body) => pkt` that transforms raw packet bytes into packet objects by dispatching to operations from `lst_decode_ops`.
-
-  See `mqtt_decode_*` operations.
-
-
-* `function _bind_mqtt_encode(lst_encode_ops)`
-
-  returns an `mqtt_session_encode` closure `({mqtt_level}) => (type, pkt) => u8_pkt` that transforms packet objects into raw Uint8Array packet buffers by dispatching to operations from `lst_encode_ops`.
-
-  See `mqtt_encode_*` operations.
-
-
-* `function _bind_pkt_ctx(_pkt_ctx_={})`
-
-  defines `hdr`, `id`, and `type` getters on `_pkt_ctx_` based on `pkt.b0` value.
 
 
 

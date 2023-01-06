@@ -2,7 +2,7 @@
 export function mqtt_encode_publish(ns, mqtt_writer) {
   return ns.publish = ( mqtt_level, pkt ) => {
     let qos = (pkt.qos & 0x3) << 1
-    let wrt = new mqtt_writer()
+    let wrt = mqtt_writer.of(pkt)
 
     wrt.utf8(pkt.topic)
     if (0 !== qos)
