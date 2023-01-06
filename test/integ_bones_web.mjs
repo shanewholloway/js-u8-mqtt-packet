@@ -1,7 +1,7 @@
-import {MQTTBonesClient} from './bones.mjs'
-export * from './bones.mjs'
+import { MQTTBones } from './integ_bones_core.mjs'
 
-export class MQTTBonesWebClient extends MQTTBonesClient {
+
+export class MQTTWebBones extends MQTTBones {
   with_websock(websock) {
     if (null == websock)
       websock = 'ws://127.0.0.1:9001'

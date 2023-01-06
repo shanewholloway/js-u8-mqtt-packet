@@ -1,9 +1,8 @@
-import {connect as tcp_connect} from 'net'
-import {MQTTBonesClient} from './bones.mjs'
-export * from './bones.mjs'
+import { connect as tcp_connect } from 'node:net'
+import { MQTTBones } from './integ_bones_core.mjs'
 
 
-export class MQTTBonesNodeClient extends MQTTBonesClient {
+export class MQTTNodejsBones extends MQTTBones {
   with_tcp(...args) {
     let sock = args.length
       ? tcp_connect(...args)
@@ -20,4 +19,3 @@ export class MQTTBonesNodeClient extends MQTTBonesClient {
       u8_pkt => write_stream.write(u8_pkt))
   }
 }
-

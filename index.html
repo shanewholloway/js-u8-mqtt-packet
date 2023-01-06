@@ -3,7 +3,8 @@
 <head>
   <meta charset='utf-8' />
   <meta name='viewport' content='width=device-width, initial-scale=1'>
-  <title>Mini MQTT over websocket</title>
+  <meta http-equiv=refresh content="0; url=./test/unittest.html" />
+  <title>u8-mqtt-packet</title>
 
   <link rel='icon' href='data:image/png;base64,' />
   <link rel='stylesheet' crossorigin='anonymous' href='https://cdn.jsdelivr.net/npm/shoelace-css@1.0.0-beta24/dist/shoelace.css' />
@@ -15,30 +16,5 @@
 <main>
   <h1>u8-mqtt-packet</h1>
 
-  <a href='./demo/std/index.html'><h3>Demo MQTT Bare-bones Web Client</h3></a>
-  <a href='./demo/tiny/index.html'><h3>Demo Tiny MQTT Bare-bones Web Client</h3></a>
-
-  <p><i>Look in the developer console</i></p>
+  <p><a href='./test/unittest.html'>See ./test/unittest.html</a></p>
 </main>
-
-<script type=module>
-  import MQTTClient from './esm/client/web.min.mjs'
-  import {on_mqtt, somewhere_in_your_code} from './demo/_demo_common.mjs'
-
-  window.on_mqtt = on_mqtt
-
-  // allow playing with on_mqtt from developer console
-  const _playground_mqtt = (...args) =>
-    window.on_mqtt(...args)
-
-  const my_mqtt = window.my_mqtt =
-    new MQTTClient(_playground_mqtt)
-      //.with_websock('ws://127.0.0.1:9001')
-      .with_websock('wss://test.mosquitto.org:8081')
-
-  my_mqtt.on_live = somewhere_in_your_code
-
-  // allow playing with my_mqtt from developer console
-  window.my_mqtt = my_mqtt
-</script>
-

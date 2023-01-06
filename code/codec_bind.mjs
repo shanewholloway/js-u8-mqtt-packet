@@ -15,7 +15,7 @@ export function mqtt_bind_session_ctx(mqtt_level, opts) {
   for (op of opts.decode_fns)
     op(_decode_by_id, opts.mqtt_reader)
 
-  let session_encode = ({mqtt_level}) => (type, pkt) =>
+  let session_encode = (type, pkt) =>
     _encode_by_type[type]( mqtt_level, pkt )
 
   let session_decode = _pkt_ctx_ =>
@@ -26,6 +26,6 @@ export function mqtt_bind_session_ctx(mqtt_level, opts) {
 
   return _base_ => (
     _base_ = _base_ || {__proto__: _pkt_ctx_, mqtt_level, get _base_() { return _base_ }},
-    [ session_decode(_base_), session_encode(_base_), _base_ ])
+    [ session_decode(_base_), session_encode, _base_ ])
 }
 
