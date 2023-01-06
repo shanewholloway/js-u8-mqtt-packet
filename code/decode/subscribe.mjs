@@ -7,16 +7,16 @@ export function mqtt_decode_subscribe(ns, mqtt_reader) {
   }
 
   return ns[0x8] = (pkt, u8_body) => {
-    let rdr = new mqtt_reader(u8_body, 0)
+    let rdr = mqtt_reader.of(u8_body)
 
     pkt.pkt_id = rdr.u16()
     if (5 <= pkt.mqtt_level)
       pkt.props = rdr.props()
 
-    let topic_list = pkt.topics = []
+    let topic, opts, topic_list = pkt.topics = []
     while (rdr.has_more()) {
-      let topic = rdr.utf8()
-      let opts = rdr.u8_flags(_subscription_options_)
+      topic = rdr.utf8()
+      opts = rdr.flags(_subscription_options_)
       topic_list.push({topic, opts})
     }
 

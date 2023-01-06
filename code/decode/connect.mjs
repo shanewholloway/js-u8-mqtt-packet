@@ -10,16 +10,15 @@ export function mqtt_decode_connect(ns, mqtt_reader) {
     get username() { return this & 0x80 !== 0 }
   }
 
-
   return ns[0x1] = (pkt, u8_body) => {
-    let rdr = new mqtt_reader(u8_body, 0)
+    let rdr = mqtt_reader.of(u8_body)
     if ('MQTT' !== rdr.utf8())
       throw new Error('Invalid mqtt_connect packet')
 
     pkt._base_.mqtt_level = pkt.mqtt_level = rdr.u8()
 
     let flags = pkt.flags =
-      rdr.u8_flags(_connect_flags_)
+      rdr.flags(_connect_flags_)
 
     pkt.keep_alive = rdr.u16()
 

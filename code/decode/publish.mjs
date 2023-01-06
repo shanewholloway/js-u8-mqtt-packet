@@ -6,7 +6,7 @@ export function mqtt_decode_publish(ns, mqtt_reader) {
     pkt.retain = Boolean(hdr & 0x1)
     let qos = pkt.qos = (hdr>>1) & 0x3
 
-    let rdr = new mqtt_reader(u8_body, 0)
+    let rdr = mqtt_reader.of(u8_body)
     pkt.topic = rdr.utf8()
     if (0 !== qos)
       pkt.pkt_id = rdr.u16()

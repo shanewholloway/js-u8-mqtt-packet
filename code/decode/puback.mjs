@@ -1,11 +1,11 @@
 
 export function mqtt_decode_puback(ns, mqtt_reader) {
   return ns[0x4] = (pkt, u8_body) => {
-    let rdr = new mqtt_reader(u8_body, 0)
+    let rdr = mqtt_reader.of(u8_body)
 
     pkt.pkt_id = rdr.u16()
     if (5 <= pkt.mqtt_level) {
-      pkt.reason = rdr.u8_reason(pkt.type)
+      pkt.reason = rdr.reason(pkt.type)
       pkt.props = rdr.props()
     }
 

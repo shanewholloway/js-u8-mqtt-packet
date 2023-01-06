@@ -1,4 +1,4 @@
-import { mqtt_type_reader_v4 } from './decode/_utils.mjs'
+import { mqtt_type_reader_v4, mqtt_reader_info } from './decode/_utils.mjs'
 import { mqtt_type_writer_v4 } from './encode/_utils.mjs'
 
 // redundant for client: import { mqtt_decode_connect } from './decode/connect.mjs'
@@ -28,7 +28,8 @@ import { mqtt_encode_pingxxx } from './encode/pingreq_pingresp.mjs'
 // not a v4 packet: import { mqtt_encode_auth } from './encode/auth.mjs'
 
 const mqtt_reader_v4 = /* #__PURE__ */
-  mqtt_type_reader_v4.with_info(
+  mqtt_reader_info(
+    mqtt_type_reader_v4,
     _connack_v4,
     _suback_v4,
     _unsuback_v4,

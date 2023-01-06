@@ -5,12 +5,12 @@ export function mqtt_decode_connack(ns, mqtt_reader) {
   }
 
   return ns[0x2] = (pkt, u8_body) => {
-    let rdr = new mqtt_reader(u8_body, 0)
+    let rdr = mqtt_reader.of(u8_body)
 
     let flags = pkt.flags =
-      rdr.u8_flags(_connack_flags_)
+      rdr.flags(_connack_flags_)
 
-    pkt.reason = rdr.u8_reason(pkt.type)
+    pkt.reason = rdr.reason(pkt.type)
     if (5 <= pkt.mqtt_level)
       pkt.props = rdr.props()
     return pkt }

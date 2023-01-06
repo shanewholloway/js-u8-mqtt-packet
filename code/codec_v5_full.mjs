@@ -1,4 +1,4 @@
-import { mqtt_type_reader_v5 } from './decode/_utils.mjs'
+import { mqtt_type_reader_v5, mqtt_reader_info } from './decode/_utils.mjs'
 import { mqtt_type_writer_v5 } from './encode/_utils.mjs'
 
 import { mqtt_decode_connect } from './decode/connect.mjs'
@@ -28,7 +28,8 @@ import { mqtt_encode_disconnect } from './encode/disconnect.mjs'
 import { mqtt_encode_auth } from './encode/auth.mjs'
 
 const mqtt_reader_v5 = /* #__PURE__ */
-  mqtt_type_reader_v5.with_info(
+  mqtt_reader_info(
+    mqtt_type_reader_v5,
     _connack_v4,
     _puback_v5,
     _pubxxx_v5,

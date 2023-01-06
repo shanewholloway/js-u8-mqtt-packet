@@ -2,8 +2,8 @@
 export function mqtt_decode_disconnect(ns, mqtt_reader) {
   return ns[0xe] = (pkt, u8_body) => {
     if (u8_body && 5 <= pkt.mqtt_level) {
-      let rdr = new mqtt_reader(u8_body, 0)
-      pkt.reason = rdr.u8_reason(pkt.type)
+      let rdr = mqtt_reader.of(u8_body)
+      pkt.reason = rdr.reason(pkt.type)
       pkt.props = rdr.props()
     }
     return pkt }

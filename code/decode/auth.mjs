@@ -2,8 +2,8 @@
 export function mqtt_decode_auth(ns, mqtt_reader) {
   return ns[0xf] = (pkt, u8_body) => {
     if ( 5 <= pkt.mqtt_level ) {
-      let rdr = new mqtt_reader(u8_body, 0)
-      pkt.reason = rdr.u8_reason(pkt.type)
+      let rdr = mqtt_reader.of(u8_body)
+      pkt.reason = rdr.reason(pkt.type)
       pkt.props = rdr.props()
     }
     return pkt }
