@@ -84,8 +84,14 @@ export class mqtt_reader_v5 extends mqtt_reader_v4 {
     return res
   }
 
-  kv_obj(obj={}, [k,v]) { obj[k] = v; return obj }
-  u8_vec(vec=[], u8) { vec.push(u8); return vec }
+  kv_obj(obj=Object.create(null), [k,v]) {
+    obj[k] = v
+    return obj
+  }
+  u8_vec(vec=[], u8) {
+    vec.push(u8)
+    return vec
+  }
 
   /*
   vbuf() {

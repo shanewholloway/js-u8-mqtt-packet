@@ -6,7 +6,7 @@ MQTT decoders are of the form `(pkt, u8_body) => pkt` where `pkt` is a prototype
 
 Each decoder will round-trip a `Uint8Array` raw packet buffer created by the corresponding `mqtt_encode_xxx(mqtt_level, pkt)` encoder.
 
-To facilitate simple and correct use, each `mqtt_decode_xxx(ns)` function accepts a namespace array where the decoder is assigned by MQTT command id (`b0 >>> 4`).
+To facilitate simple and correct use, each `mqtt_decode_xxx(ns, mqtt_reader)` function accepts a namespace array where the decoder is assigned by MQTT command id (`b0 >>> 4`).
 
 
 #### Encoders
@@ -15,7 +15,23 @@ MQTT encoders are of the form `(mqtt_level, pkt) => u8_pkt` where `pkt` is an ob
 
 Each encoder will round-trip a `pkt` object created by the corresponding `mqtt_decode_xxx({b0}, u8_body)` decoder.
 
-To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts a namespace object where the encoder is installed by MQTT command name.
+To facilitate simple and correct use, the `mqtt_encode_xxx(ns, mqtt_writer)` function accepts a namespace object where the encoder is installed by MQTT command name.
+
+
+#### Version 5 Properties
+
+[MQTT Version 5 properties](./mqtt_props.md)
+
+
+#### Bundles
+
+- `u8-mqtt-packet/esm/codex_v5_lean.js`
+- `u8-mqtt-packet/esm/codex_v5_client.js`
+- `u8-mqtt-packet/esm/codex_v5_full.js`
+
+- `u8-mqtt-packet/esm/codex_v4_lean.js`
+- `u8-mqtt-packet/esm/codex_v4_client.js`
+- `u8-mqtt-packet/esm/codex_v4_full.js`
 
 
 #### Specific Packets
@@ -29,9 +45,9 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts
 * [`pubrel [0x6]: mqtt_decode_pubxxx / mqtt_encode_pubxxx`](./mqtt_codec_pubrec_pubrel_pubcomp.md)
 * [`pubcomp [0x7]: mqtt_decode_pubxxx / mqtt_encode_pubxxx`](./mqtt_codec_pubrec_pubrel_pubcomp.md)
 * [`subscribe [0x8]: mqtt_decode_subscribe / mqtt_encode_subscribe`](./mqtt_codec_subscribe.md)
-* [`suback [0x9]: mqtt_decode_suback / mqtt_encode_xxsuback`](./mqtt_codec_suback_unsuback.md)
+* [`suback [0x9]: mqtt_decode_suback / mqtt_encode_xxsuback`](./mqtt_codec_suback.md)
 * [`unsubscribe [0xa]: mqtt_decode_unsubscribe / mqtt_encode_unsubscribe`](./mqtt_codec_unsubscribe.md)
-* [`unsuback [0xb]: mqtt_decode_unsuback / mqtt_encode_xxsuback`](./mqtt_codec_suback_unsuback.md)
+* [`unsuback [0xb]: mqtt_decode_unsuback / mqtt_encode_xxsuback`](./mqtt_codec_unsuback.md)
 * [`pingreq [0xc]: mqtt_decode_pingxxx / mqtt_encode_pingxxx`](./mqtt_codec_pingreq_pingresp.md)
 * [`pingresp [0xd]: mqtt_decode_pingxxx / mqtt_encode_pingxxx`](./mqtt_codec_pingreq_pingresp.md)
 * [`disconnect [0xe]: mqtt_decode_disconnect / mqtt_encode_disconnect`](./mqtt_codec_disconnect.md)
@@ -41,16 +57,12 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns)` function accepts
 
 ### Advanced API
 
-* `function mqtt_session_ctx(mqtt_level)`
+* `mqtt_ctx_v4` is an instance returned by `mqtt_bind_session_ctx(4, mqtt_opts)`
+* `mqtt_ctx_v5` is an instance returned by `mqtt_bind_session_ctx(5, mqtt_opts)`
 
-  returns a lazily bound session context able to decode and encode all MQTT packets. As the complete codec is included, the composite JavaScript source size is ~50% larger than required for most MQTT clients. (13kb vs 8.5kb)
+* `function mqtt_bind_session_ctx(mqtt_level, {decode_fns, mqtt_reader, encode_fns, mqtt_writer, _pkt_ctx_})`
 
-  See `mqtt_bind_session_ctx` and [`demo/tiny/tiny_session.mjs`](../demo/tiny/tiny_session.mjs) for customization.
-
-
-* `function mqtt_bind_session_ctx({decode_fns, mqtt_reader, encode_fns, mqtt_writer, _pkt_ctx_})`
-
-    return a closure `mqtt_level => function mqtt_session()`. Calling `mqtt_session()` returns a new bound `function mqtt_decode(pkt, u8_body)` and `function mqtt_encode(type, pkt)` suitable for use in MQTT clients.
+  Returns a closure to create new bound `function mqtt_decode(pkt, u8_body)` and `function mqtt_encode(type, pkt)` suitable for use in MQTT clients.
 
 
 

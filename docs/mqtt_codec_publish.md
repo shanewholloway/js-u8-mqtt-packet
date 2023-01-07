@@ -9,6 +9,7 @@
 
 - [3.3 PUBLISH – Publish message](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901100)
 
+Includes MQTT [props](./mqtt_props.md)
 
 #### Codec
 
