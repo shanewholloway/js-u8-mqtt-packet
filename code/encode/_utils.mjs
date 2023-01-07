@@ -29,7 +29,7 @@ export class mqtt_writer_v4 {
   }
 
   u8(v) { this.push([ v & 0xff ]) }
-  u16(v, ...z) { this.push([ (v>>>8) & 0xff, v & 0xff ], ...z) }
+  u16(v) { this.push([ (v>>>8) & 0xff, v & 0xff ]) }
   u32(v) { this.push([ (v>>>24) & 0xff, (v>>>16) & 0xff, (v>>>8) & 0xff, v & 0xff ]) }
   vint(v) { this.push( encode_varint(v) )}
 
@@ -41,12 +41,14 @@ export class mqtt_writer_v4 {
     if (u8_buf.length !== u8_buf.byteLength)
       u8_buf = new Uint8Array(u8_buf)
 
-    this.u16(u8_buf.byteLength, u8_buf)
+    this.u16(u8_buf.byteLength)
+    this.push(u8_buf)
   }
 
   utf8(v) {
     let u8_buf = new TextEncoder('utf-8').encode(v)
-    this.u16(u8_buf.byteLength, u8_buf)
+    this.u16(u8_buf.byteLength)
+    this.push(u8_buf)
   }
   pair(k,v) { this.utf8(k); this.utf8(v) }
 
@@ -86,13 +88,28 @@ export class mqtt_writer_v5 extends mqtt_writer_v4 {
     if (0 === props.length)
       return this.u8(0)
 
-    let wrt = this.of()
+    let fork = this.of()
     for (let [name, value] of props) {
-      let {id, type} = mqtt_props.get(name)
-      wrt.u8(id)
-      wrt[type](value)
+      let pt = mqtt_props.get(name)
+      fork[pt.op || 'one'](value, pt)
     }
+    this.push(fork.pack())
+  }
 
-    this.push(wrt.pack())
+  one(value, pt) {
+    this.u8(pt.id)
+    this[pt.type](value)
+  }
+  kv_obj(obj, pt) {
+    for (let kv of Object.entries(obj)) {
+      this.u8(pt.id)
+      this.pair(kv)
+    }
+  }
+  u8_vec(vec, pt) {
+    for (let v of vec) {
+      this.u8(pt.id)
+      this.u8(v)
+    }
   }
 }

@@ -62,10 +62,10 @@ describe('mqtt v5: small pub/sub capture', () => {
     expect(tip)
     .to.deep.equal({
       b0: 0x20,
-      props: [
-        [ 'topic_alias_maximum', 10 ],
-        [ 'assigned_client_identifier', '578FA9E7-C482-9DD1-8F23-C88A0B82E40F' ],
-      ]})
+      props: {
+        topic_alias_maximum: 10,
+        assigned_client_identifier: '578FA9E7-C482-9DD1-8F23-C88A0B82E40F',
+      }})
 
     expect(+flags).to.equal(0)
     expect(0 == flags).to.be.true
@@ -84,9 +84,9 @@ describe('mqtt v5: small pub/sub capture', () => {
     expect(tip)
     .to.deep.equal({
       b0: 0x20,
-      props: [
-        [ 'topic_alias_maximum', 10 ],
-      ]})
+      props: {
+        topic_alias_maximum: 10,
+      }})
 
     expect(+flags).to.equal(0)
     expect(0 == flags).to.be.true
@@ -105,12 +105,12 @@ describe('mqtt v5: small pub/sub capture', () => {
     expect(tip)
     .to.deep.equal({
       b0: 0x20,
-      props: [
-        [ 'topic_alias_maximum', 100 ],
-        [ 'shared_subscription_available', 0 ],
-        [ 'session_expiry_interval', 0 ],
-        [ 'server_keep_alive', 60 ],
-      ]})
+      props: {
+        topic_alias_maximum: 100,
+        shared_subscription_available: 0,
+        session_expiry_interval: 0,
+        server_keep_alive: 60,
+      }})
 
     expect(+flags).to.equal(0)
     expect(0 == flags).to.be.true
@@ -220,7 +220,7 @@ describe('mqtt v5: small pub/sub capture', () => {
       expect(tip).to.deep.equal({
         b0: 0x10,
         mqtt_level: 5, keep_alive: 60,
-        props: [['receive_maximum', 20 ]] })
+        props: {receive_maximum: 20} })
 
       expect(+flags).to.equal(2)
       expect(2 == flags).to.be.true

@@ -74,13 +74,18 @@ export class mqtt_reader_v5 extends mqtt_reader_v4 {
     step(n + vi - vi0)
     if (0 === n) return null
 
-    let prop, res = [], fork = this.of(buf.subarray(vi, step.k|0))
+    let res={}, fork = this.of(buf.subarray(vi, step.k|0))
     while (fork.has_more()) {
-      prop = mqtt_props.get( fork.u8() )
-      res.push([prop.name, fork[prop.type]()])
+      let pt = mqtt_props.get( fork.u8() )
+        , value = fork[pt.type]()
+      res[pt.name] = ! pt.op ? value
+        : fork[pt.op](res[pt.name], value)
     }
     return res
   }
+
+  kv_obj(obj={}, [k,v]) { obj[k] = v; return obj }
+  u8_vec(vec=[], u8) { vec.push(u8); return vec }
 
   /*
   vbuf() {

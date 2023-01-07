@@ -1,7 +1,10 @@
 
-export const mqtt_props = new Map() 
+export const mqtt_props = /* #__PURE__ */
+  init_mqtt_props();
 
-{
+export function init_mqtt_props() {
+  let mqtt_props = new Map()
+
   let entries = [
     [ 0x01, 'u8',   'payload_format_indicator'],
     [ 0x02, 'u32',  'message_expiry_interval'],
@@ -25,18 +28,19 @@ export const mqtt_props = new Map()
     [ 0x23, 'u16',  'topic_alias'],
     [ 0x24, 'u8',   'maximum_qos'],
     [ 0x25, 'u8',   'retain_available'],
-    [ 0x26, 'pair', 'user_properties', true],
+    [ 0x26, 'pair', 'user_properties', {op: 'kv_obj'}],
     [ 0x27, 'u32',  'maximum_packet_size'],
     [ 0x28, 'u8',   'wildcard_subscription_available'],
-    [ 0x29, 'u8',   'subscription_identifiers_available', true],
+    [ 0x29, 'u8',   'subscription_identifiers_available', {op: 'u8_vec'}],
     [ 0x2A, 'u8',   'shared_subscription_available'],
   ]
 
-  for (let [id, type, name, plural] of entries) {
-    let prop_obj = {id, type, name}
-    if (plural) prop_obj.plural = plural
+  for (let [id, type, name, extra] of entries) {
+    let prop_obj = {id, type, name, ...extra}
     mqtt_props.set(prop_obj.id, prop_obj)
     mqtt_props.set(prop_obj.name, prop_obj)
   }
+
+  return mqtt_props
 }
 
