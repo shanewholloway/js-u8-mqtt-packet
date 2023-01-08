@@ -94,7 +94,7 @@ const mqtt_opts_v4 = /* #__PURE__ */
     mqtt_writer: mqtt_writer_v4, }
 
 
-export { version } from '../package.json'
+export * from './version.mjs'
 export {
   mqtt_reader_v4,
   mqtt_writer_v4,

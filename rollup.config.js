@@ -1,12 +1,17 @@
 import rpi_dgnotify from 'rollup-plugin-dgnotify'
 import rpi_resolve from '@rollup/plugin-node-resolve'
 import rpi_terser from '@rollup/plugin-terser'
-import rpi_json from '@rollup/plugin-json'
-import {builtinModules} from 'module'
+import rpi_virtual from '@rollup/plugin-virtual'
+import pkg from './package.json' assert {type: 'json'}
 
 let _cfg_ = {
-  external: id => /^\w*:/.test(id) || builtinModules.includes(id),
-  plugins: [ rpi_dgnotify(), rpi_json(), rpi_resolve() ] }
+  external: id => /^\w*:/.test(id),
+  plugins: [
+    rpi_virtual({
+      'code/version.mjs': `export const version = '${pkg.version}'`,
+    }),
+    rpi_dgnotify(),
+    rpi_resolve() ] }
 
 
 let is_watch = process.argv.includes('--watch')

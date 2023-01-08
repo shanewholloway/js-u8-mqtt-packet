@@ -36,5 +36,5 @@ export function mqtt_pkt_ctx(mqtt_level, opts, pkt_ctx) {
   }
 }
 
-export { version } from '../package.json'
+export * from './version.mjs'
 export { mqtt_pkt_ctx as default }

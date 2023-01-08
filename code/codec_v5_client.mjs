@@ -28,7 +28,7 @@ const mqtt_opts_v5 = /* #__PURE__ */
     mqtt_writer: mqtt_writer_v5, }
 
 
-export { version } from '../package.json'
+export * from './version.mjs'
 export {
   mqtt_reader_v5,
   mqtt_writer_v5,
