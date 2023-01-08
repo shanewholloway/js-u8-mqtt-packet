@@ -100,6 +100,7 @@ const mqtt_opts_v5 = /* #__PURE__ */
     encode_fns: mqtt_encode_v5,
     mqtt_writer: mqtt_writer_v5, }
 
+export { version } from '../package.json'
 export {
   mqtt_reader_v5,
   mqtt_writer_v5,
