@@ -1,8 +1,11 @@
 import { hex_to_u8, u8_to_utf8 } from 'u8-utils'
-import {mqtt_ctx_v4 as mqtt_ctx_v4_only} from 'u8-mqtt-packet/esm/codec_v4_full.js'
-import {mqtt_ctx_v4 as mqtt_ctx_v4_subset} from 'u8-mqtt-packet/esm/codec_v5_full.js'
+import { mqtt_pkt_ctx } from 'u8-mqtt-packet'
+import { mqtt_opts_v4 } from 'u8-mqtt-packet/esm/codec_v4_full.js'
+import { mqtt_opts_v5 } from 'u8-mqtt-packet/esm/codec_v5_full.js'
 
 const { assert, expect } = require('chai')
+const mqtt_ctx_v4_only = mqtt_pkt_ctx(4, mqtt_opts_v4)
+const mqtt_ctx_v4_subset = mqtt_pkt_ctx(4, mqtt_opts_v5)
 
 test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4_only, 'mqtt v4 only')
 test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4_subset, 'mqtt v4 with v5 capable decoder')
@@ -10,8 +13,8 @@ test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4_subset, 'mqtt v4 with v5 capable decoder')
 function test_mqtt_suite_mqtt_ctx(mqtt_ctx_v4, suite_prefix) {
 
   function _decode_one_hex(hex_pkt) {
-    const [mqtt_decode] = mqtt_ctx_v4()
-    const [pkt0, pkt1] = mqtt_decode(hex_to_u8(hex_pkt))
+    const mqtt_ctx = mqtt_ctx_v4.mqtt_stream()
+    const [pkt0, pkt1] = mqtt_ctx.decode(hex_to_u8(hex_pkt))
     expect(pkt1).to.be.undefined
     return pkt0
   }

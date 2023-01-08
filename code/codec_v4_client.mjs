@@ -1,4 +1,3 @@
-import { mqtt_bind_session_ctx } from './codec_bind.mjs'
 import { mqtt_reader_v4 as base_reader, mqtt_reader_info } from './decode/_utils.mjs'
 import { mqtt_writer_v4 } from './encode/_utils.mjs'
 import { mqtt_decode_v4, mqtt_encode_v4 } from './codec_v4_lean.mjs'
@@ -21,17 +20,11 @@ const mqtt_opts_v4 = /* #__PURE__ */
     encode_fns: mqtt_encode_v4,
     mqtt_writer: mqtt_writer_v4, }
 
-const mqtt_ctx_v4 = /* #__PURE__ */
-  mqtt_bind_session_ctx(4, mqtt_opts_v4)
-
-
 export {
   mqtt_reader_v4,
   mqtt_writer_v4,
   mqtt_decode_v4,
   mqtt_encode_v4,
-
   mqtt_opts_v4,
-  mqtt_ctx_v4,
-  mqtt_ctx_v4 as default,
+  mqtt_opts_v4 as default,
 }

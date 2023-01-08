@@ -16,6 +16,8 @@ let cfg_web_min = is_watch ? null : { ... _cfg_,
 export default [
   ... add_module('index', {min: true}),
 
+  ... add_module('codec_bind', {min: true}),
+
   ... add_module('codec_v5_full', {min: true}),
   ... add_module('codec_v5_lean', {min: true}),
   ... add_module('codec_v5_client', {min: true}),

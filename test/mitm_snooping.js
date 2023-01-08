@@ -2,12 +2,18 @@ const {u8_to_hex} = require('u8-utils')
 const {createWriteStream} = require('fs')
 const {pipeline} = require('stream')
 const {createServer, connect} = require('net')
-const {mqtt_ctx_v5, mqtt_raw_packets} = require('u8-mqtt-packet')
+const {mqtt_opts_v5, mqtt_pkt_ctx, mqtt_raw_dispatch} = require('u8-mqtt-packet')
+const mqtt_ctx_v5 = mqtt_pkt_ctx('?', mqtt_opts_v5)
 //const mqtt_pkt = require('mqtt-packet')
 
 const argv_opt = process.argv.slice(2)
 const tgt_port = parseInt(argv_opt.shift() || 1883)
 const mitm_port = parseInt(argv_opt.shift() || 1884)
+
+const mqtt_raw_packets = () =>
+  mqtt_raw_dispatch({
+    decode_pkt: (b0, u8_body) => ({b0, u8_body}),
+  })
 
 
 createServer()
@@ -49,10 +55,10 @@ let wm_ts_log = new WeakMap()
 function _mitm_log(ts_log, tag, arrows) {
   return async function *(stream) {
     const mqtt_decode_raw = mqtt_raw_packets()
-    const [mqtt_decode, mqtt_encode, _mqtt_base_] =
-      mqtt_ctx_v5('?')(wm_ts_log.get(ts_log))
+    const mqtt_ctx = mqtt_ctx_v5.session()
+    const mqtt_decode = mqtt_ctx.mqtt_stream()
 
-    wm_ts_log.set(ts_log, _mqtt_base_)
+    wm_ts_log.set(ts_log, mqtt_ctx)
 
     for await (let chunk of stream) {
       chunk = new Uint8Array(chunk) // force Buffer to a Uint8Array
@@ -80,7 +86,7 @@ function _mitm_log(ts_log, tag, arrows) {
 
     function rt_pkt(pkt, u8_raw) {
       try {
-        let rt_pkt = mqtt_encode(pkt.type, pkt)
+        let rt_pkt = mqtt_ctx.encode_pkt(pkt.type, pkt)
         if (undefined === rt_pkt) {
           console.log('No RT', pkt.type, pkt)
           return

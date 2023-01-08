@@ -25,13 +25,16 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns, mqtt_writer)` fun
 
 #### Bundles
 
-- `u8-mqtt-packet/esm/codex_v5_lean.js`
-- `u8-mqtt-packet/esm/codex_v5_client.js`
-- `u8-mqtt-packet/esm/codex_v5_full.js`
+- MQTT v5 packet encoding/decoding including v4 (3.1.1) support
+  - Default: `import 'u8-mqtt-packet'` exports everything from `codex_v5_full.js`
+  - Everything for server and client: `import 'u8-mqtt-packet/esm/codex_v5_full.js'`
+  - Only client support: `import 'u8-mqtt-packet/esm/codex_v5_lean.js'`
+  - Only client support with debug strings: `import 'u8-mqtt-packet/esm/codex_v5_client.js'`
 
-- `u8-mqtt-packet/esm/codex_v4_lean.js`
-- `u8-mqtt-packet/esm/codex_v4_client.js`
-- `u8-mqtt-packet/esm/codex_v4_full.js`
+- MQTT v4 (3.1.1) packet encoding/decoding, **excluding** v5 support
+  - Everything for server and client: `import 'u8-mqtt-packet/esm/codex_v4_full.js'`
+  - Only client support: `import 'u8-mqtt-packet/esm/codex_v4_lean.js'`
+  - Only client support with debug strings: `import 'u8-mqtt-packet/esm/codex_v4_client.js'`
 
 
 #### Specific Packets
@@ -57,24 +60,53 @@ To facilitate simple and correct use, the `mqtt_encode_xxx(ns, mqtt_writer)` fun
 
 ### Advanced API
 
-* `mqtt_ctx_v4` is an instance returned by `mqtt_bind_session_ctx(4, mqtt_opts)`
-* `mqtt_ctx_v5` is an instance returned by `mqtt_bind_session_ctx(5, mqtt_opts)`
+* `function mqtt_pkt_ctx(mqtt_level, {decode_fns, mqtt_reader, encode_fns, mqtt_writer}, pkt_ctx)`
 
-* `function mqtt_bind_session_ctx(mqtt_level, {decode_fns, mqtt_reader, encode_fns, mqtt_writer, _pkt_ctx_})`
+  Returns a bound `mqtt_ctx` with bound `decode_pkt`, `encode_pkt`, `mqtt_stream`, and subclass of `pkt_ctx` suitable for use in MQTT clients.
+  For an MQTT stream connection, use `mqtt_stream()` to invoke `mqtt_raw_dispatch` with the extended `pkt_ctx`.
 
-  Returns a closure to create new bound `function mqtt_decode(pkt, u8_body)` and `function mqtt_encode(type, pkt)` suitable for use in MQTT clients.
+  ```javascript
+  // @flow
+
+  type mqtt_ctx = {
+    pkt_ctx : pkt_ctx_type,
+    decode_pkt(b0, u8_body) : pkt,
+    encode_pkt(type, pkt) : Uint8Array,
+    mqtt_stream() : mqtt_ctx,
+    decode(u8) => Array<pkt>, // set upon invoking mqtt_stream()
+  }
+
+  type pkt_ctx_type = {
+    mqtt_level: u8,
+    hdr : u8, // lower 4 bits of b0 masked
+    id : u8,  // high 4 bits of b0 shfited
+    type : string, // id mapped to string for the packet type
+    b0 : u8, // raw first byte of mqtt packet
+  }
+  ```
+
+  For example, provide JSON utilities for payloads:
+
+  ```javascript
+  import { mqtt_pkt_ctx, mqtt_opts_v5 } from 'u8-mqtt-packet/esm/codec_v5_client.js'
+
+  const custom_pkt_api = {
+    utf8(u8) { return new TextDecoder('utf-8').decode(u8 || this.payload ) },
+    json(u8) { return JSON.parse( this.utf8(u8) || null ) },
+    text(u8) { return this.utf8(u8) },
+  }
+
+  mqtt_pkt_ctx(5, mqtt_opts_v5, custom_pkt_api)
+  ```
 
 
 
 ### Internal API
 
-* `function mqtt_raw_packets() : closure`
-
-  manages raw packets split across incrementally recieved partial buffers. The returned closure `function(u8_buf) : [mqtt_packets]` accepts a `Uint8Array` buffer that encodes 0 or more MQTT packets and returns a list of `{u8_raw, b0, u8_body}` MQTT packets.
-
-* `function _mqtt_raw_pkt_dispatch(decode_raw_pkt) : closure`
+* `function mqtt_raw_dispatch(opt) : closure`
 
   manages packets split across incrementally recieved partial buffers. The returned closure `function(u8_buf) : [mqtt_packets]` accepts a `Uint8Array` buffer that encodes 0 or more MQTT packets and returns a list of decoded MQTT packets as processed by `decode_raw_pkt(b0, u8_body) : pkt | null`.
+  Invokes `opt.decode_pkt(b0, u8_body, opt)` for each decoded MQTT packet.
 
 * `encode_varint(n, a=[])`
 

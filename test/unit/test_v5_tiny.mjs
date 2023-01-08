@@ -1,11 +1,12 @@
 import { hex_to_u8, u8_to_utf8 } from 'u8-utils'
-import { mqtt_ctx_v5 } from 'u8-mqtt-packet/esm/codec_v5_full.js'
+import { mqtt_opts_v5, mqtt_pkt_ctx } from 'u8-mqtt-packet'
+const mqtt_ctx_v5 = mqtt_pkt_ctx(5, mqtt_opts_v5)
 
 const { assert, expect } = require('chai')
 
 function _decode_one_hex(hex_pkt) {
-  const [mqtt_decode] = mqtt_ctx_v5()
-  const [pkt0, pkt1] = mqtt_decode(hex_to_u8(hex_pkt))
+  const mqtt_ctx = mqtt_ctx_v5.mqtt_stream()
+  const [pkt0, pkt1] = mqtt_ctx.decode(hex_to_u8(hex_pkt))
   expect(pkt1).to.be.undefined
   return pkt0
 }

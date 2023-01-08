@@ -1,4 +1,3 @@
-import { mqtt_bind_session_ctx } from './codec_bind.mjs'
 import { mqtt_reader_v5 } from './decode/_utils.mjs'
 import { mqtt_writer_v5 } from './encode/_utils.mjs'
 
@@ -59,20 +58,11 @@ const mqtt_opts_v5 = /* #__PURE__ */
     encode_fns: mqtt_encode_v5,
     mqtt_writer: mqtt_writer_v5, }
 
-const mqtt_ctx_v4 = /* #__PURE__ */
-  mqtt_bind_session_ctx(4, mqtt_opts_v5)
-const mqtt_ctx_v5 = /* #__PURE__ */
-  mqtt_bind_session_ctx(5, mqtt_opts_v5)
-
-
 export {
   mqtt_reader_v5,
   mqtt_writer_v5,
   mqtt_decode_v5,
   mqtt_encode_v5,
-
   mqtt_opts_v5,
-  mqtt_ctx_v4,
-  mqtt_ctx_v5,
-  mqtt_ctx_v5 as default,
+  mqtt_opts_v5 as default,
 }

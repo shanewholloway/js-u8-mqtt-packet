@@ -1,8 +1,11 @@
-import { mqtt_ctx_v4, mqtt_ctx_v5 } from 'u8-mqtt-packet'
+import { mqtt_opts_v5, mqtt_pkt_ctx } from 'u8-mqtt-packet'
+const mqtt_ctx_v4 = mqtt_pkt_ctx(4, mqtt_opts_v5)
+const mqtt_ctx_v5 = mqtt_pkt_ctx(5, mqtt_opts_v5)
+
 
 export class MQTTBones {
-  static v4() { return class extends this { _mqtt_session = mqtt_ctx_v4 } }
-  static v5() { return class extends this { _mqtt_session = mqtt_ctx_v5 } }
+  static v4() { return class extends this { mqtt_ctx = mqtt_ctx_v4 } }
+  static v5() { return class extends this { mqtt_ctx = mqtt_ctx_v5 } }
 
   constructor(opt={}) {
     Object.assign(this, opt)
@@ -29,7 +32,7 @@ export class MQTTBones {
   with_async_iter(async_iter, write_u8_pkt) {
     let {_conn_} = this
     let on_mqtt_chunk = _conn_.set(
-      this._mqtt_session(),
+      this.mqtt_ctx,
       write_u8_pkt)
 
     this._msg_loop = (async ()=>{
@@ -71,17 +74,17 @@ function _client_conn(client) {
       return res
     },
 
-    set(mqtt_session, send_u8_pkt) {
-      let [mqtt_decode, mqtt_encode] = mqtt_session
+    set(mqtt_ctx, send_u8_pkt) {
+      mqtt_ctx = mqtt_ctx.mqtt_stream()
 
       let on_mqtt_chunk = u8_buf =>
         client.on_mqtt(
-          mqtt_decode(u8_buf),
+          mqtt_ctx.decode(u8_buf),
           {mqtt: client})
 
       _send = async (type, pkt) =>
         send_u8_pkt(
-          mqtt_encode(type, pkt) )
+          mqtt_ctx.encode_pkt(type, pkt) )
 
 
       q0.notify(_send)
