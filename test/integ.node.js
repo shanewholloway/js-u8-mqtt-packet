@@ -1,5 +1,5 @@
-import { MQTTNodejsBones } from './integ_bones_nodejs.mjs'
-import { integ_suite } from './integtests.mjs'
+import { MQTTNodejsBones } from './integ_bones_nodejs.js'
+import { integ_suite } from './integtests.js'
 
 const integ_configs = [
   //{test_name: 'v4 with localhost:1883', port: 1883, host: '127.0.0.1', MQTTClient: MQTTNodejsBones.v4()},

@@ -1,5 +1,5 @@
-import { MQTTWebBones } from './integ_bones_web.mjs'
-import { integ_suite } from './integtests.mjs'
+import { MQTTWebBones } from './integ_bones_web.js'
+import { integ_suite } from './integtests.js'
 
 const integ_configs = [
   //{test_name: 'v4 with localhost', url: 'ws://127.0.0.1:9001', MQTTClient: MQTTWebBones.v4(), ms_delay: 20},

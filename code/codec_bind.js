@@ -1,4 +1,4 @@
-import { mqtt_raw_dispatch } from './framing.mjs'
+import { mqtt_raw_dispatch } from './framing.js'
 
 const _pkt_types = ['~', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth']
 
@@ -36,5 +36,5 @@ export function mqtt_pkt_ctx(mqtt_level, opts, pkt_ctx) {
   }
 }
 
-export * from './version.mjs'
+export * from './version.js'
 export { mqtt_pkt_ctx as default }

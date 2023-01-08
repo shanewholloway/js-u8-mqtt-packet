@@ -1,5 +1,5 @@
 import { connect as tcp_connect } from 'node:net'
-import { MQTTBones } from './integ_bones_core.mjs'
+import { MQTTBones } from './integ_bones_core.js'
 
 
 export class MQTTNodejsBones extends MQTTBones {

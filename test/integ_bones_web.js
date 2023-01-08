@@ -1,4 +1,4 @@
-import { MQTTBones } from './integ_bones_core.mjs'
+import { MQTTBones } from './integ_bones_core.js'
 
 
 export class MQTTWebBones extends MQTTBones {

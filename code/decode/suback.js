@@ -1,4 +1,4 @@
-import {_mqtt_decode_suback} from './suback_unsuback.mjs'
+import {_mqtt_decode_suback} from './suback_unsuback.js'
 
 
 export function mqtt_decode_suback(ns, mqtt_reader) {

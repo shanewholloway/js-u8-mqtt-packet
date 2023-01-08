@@ -8,7 +8,7 @@ let _cfg_ = {
   external: id => /^\w*:/.test(id),
   plugins: [
     rpi_virtual({
-      'code/version.mjs': `export const version = '${pkg.version}'`,
+      'code/version.js': `export const version = '${pkg.version}'`,
     }),
     rpi_dgnotify(),
     rpi_resolve() ] }
@@ -36,7 +36,7 @@ export default [
 
 
 function * add_module(src_name, opt={}) {
-  let input = `code/${src_name}.mjs`
+  let input = `code/${src_name}.js`
 
   yield ({ ..._cfg_, input,
     output: { file: `esm/${src_name}.js`, format: 'es', sourcemap: true } })

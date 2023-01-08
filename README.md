@@ -12,7 +12,7 @@ Consider [u8-mqtt][] for QOS-0 and QOS-1 MQTT client communications.
 ## Docs
 
 - [API docs](./docs/api.md)
-- [Bare-bones Client docs](./docs/client.md) -- `import 'esm/client/web.min.mjs'` for 14 KB 
+- [Bare-bones Client docs](./docs/client.md) -- `import 'esm/client/web.min.js'` for 14 KB 
 - See [u8-mqtt][] for a more friendly MQTT client using this library. (for 16 KB)
 
 
@@ -75,8 +75,8 @@ console.log(mqtt_decode(u8_pkt))
 |---------:|-----:|----------------|-------------|
 |  187.0KB |  12x | [MQTT.js][]    | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js \| wc -c`
 |   32.3KB |   2x | [paho][]       | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js \| wc -c`
-|   19.9KB | 1.3x | [u8-mqtt][] v5 | `cat ./u8-mqtt/esm/web/v5.min.mjs \| wc -c`
-|   15.5KB |   1x | [u8-mqtt][] v4 | `cat ./u8-mqtt/esm/web/v4.min.mjs \| wc -c`
+|   19.9KB | 1.3x | [u8-mqtt][] v5 | `cat ./u8-mqtt/esm/web/v5.min.js \| wc -c`
+|   15.5KB |   1x | [u8-mqtt][] v4 | `cat ./u8-mqtt/esm/web/v4.min.js \| wc -c`
 
  [MQTT.js]: https://github.com/mqttjs/MQTT.js/
  [paho]: https://github.com/eclipse/paho.mqtt.javascript/

@@ -1,4 +1,4 @@
-import {decode_varint} from './mqtt_varint.mjs'
+import {decode_varint} from './mqtt_varint.js'
 
 
 export function mqtt_raw_dispatch(opt) {
