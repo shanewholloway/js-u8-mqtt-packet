@@ -58,14 +58,30 @@ console.log(mqtt_decode(u8_pkt))
 ```
 
 
-## Sizes
+## Module size
 
-| Size  | (x) | Measurement
-|-------|-----|------------
-| 187KB | 13x | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js  \| wc -c`
-|  32KB |  2x | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js \| wc -c`
-|  13KB |  1x | `cat ./u8-mqtt-packet/esm/client/web.min.mjs \| wc -c`
-|  17KB |  1x | `cat ./u8-mqtt/esm/web/v4.min.mjs \| wc -c`
+| module                                    |   brotli | minified |
+|:------------------------------------------|---------:|---------:|
+| `u8-mqtt-packet/esm/codec_v4_lean.min.js` |   1700 B |   4886 B |
+| `u8-mqtt-packet/esm/codec_v5_lean.min.js` |   2388 B |   7010 B |
+| `u8-mqtt-packet/esm/index.min.js`         |   4144 B |  14053 B |
+
+[automated sizing report](./docs/compressed.md)
+
+
+#### MQTT Client sizes
+
+| minifeid | (x)  | Project        | Measurement |
+|---------:|-----:|----------------|-------------|
+|  187.0KB |  12x | [MQTT.js][]    | `curl -sL https://cdn.jsdelivr.net/npm/mqtt@4.0.1/dist/mqtt.min.js \| wc -c`
+|   32.3KB |   2x | [paho][]       | `curl -sL https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.min.js \| wc -c`
+|   19.9KB | 1.3x | [u8-mqtt][] v5 | `cat ./u8-mqtt/esm/web/v5.min.mjs \| wc -c`
+|   15.5KB |   1x | [u8-mqtt][] v4 | `cat ./u8-mqtt/esm/web/v4.min.mjs \| wc -c`
+
+ [MQTT.js]: https://github.com/mqttjs/MQTT.js/
+ [paho]: https://github.com/eclipse/paho.mqtt.javascript/
+ [u8-mqtt]: https://github.com/shanewholloway/js-u8-mqtt/
+
 
 
 ## Prior Art
