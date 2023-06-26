@@ -40,6 +40,7 @@ type pkt_connect_v5 = {
   mqtt_level : u8,
   flags : connect_flags,
   keep_alive : u16,
+  client_id: string,
   will : {
     topic : string,
     payload : Uint8Array,
