@@ -24,6 +24,9 @@ export function mqtt_pkt_ctx(mqtt_level, opts, pkt_ctx) {
       return _encode_by_type[type]( mqtt_level, pkt ) },
 
     decode_pkt(b0, u8_body) {
+      if (b0.map) // Uint8Array in first arg
+        return mqtt_raw_dispatch(this)(b0)[0]
+
       let fn_decode = _decode_by_id[b0>>>4] || _decode_by_id[0]
       return fn_decode?.({__proto__: this.pkt_ctx, b0}, u8_body) },
 

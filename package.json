@@ -1,7 +1,7 @@
 {
   "name": "u8-mqtt-packet",
   "description": "MQTT packet codec using Uint8Array -- suitable for use in the Browser, NodeJS, and Deno.land.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
   "homepage": "https://github.com/shanewholloway/js-u8-mqtt-packet#readme",
@@ -31,7 +31,7 @@
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-virtual": "^3.0.1",
     "qsrv": "^0.2.8",
-    "rollup": "^3.26.2",
+    "rollup": "^3.27.0",
     "rollup-plugin-dgnotify": "^0.1.8"
   },
   "scripts": {
