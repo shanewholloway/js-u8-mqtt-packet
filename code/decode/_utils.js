@@ -76,10 +76,18 @@ export class mqtt_reader_v5 extends mqtt_reader_v4 {
 
     let res={}, fork = this.of(buf.subarray(vi, step.k|0))
     while (fork.has_more()) {
-      let pt = mqtt_props.get( fork.u8() )
-        , value = fork[pt.type]()
-      res[pt.name] = ! pt.op ? value
-        : fork[pt.op](res[pt.name], value)
+      let v, pk = fork.u8(), pt = mqtt_props.get( pk )
+
+      if (!pt) {
+        res.error = `Unknown mqtt_prop enum ${pk}`
+        return res
+      }
+
+      v = fork[pt.type]()
+      if (pt.op) // accumulate operation
+        v = fork[pt.op](res[pt.name], v)
+
+      res[pt.name] = v
     }
     return res
   }

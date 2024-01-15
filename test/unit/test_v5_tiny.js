@@ -326,4 +326,65 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(u8_to_utf8(payload)).to.equal('jello')
   })
+
+  describe('connack with invalid properties', () => {
+
+    it('connack with single invalid property enum=0', () => {
+      const { type, reason, flags, ...tip } =
+        _decode_one_hex('200600000300000a')
+
+      expect(type).to.equal('connack')
+      expect(tip).to.deep.equal({
+        b0: 0x20, props: {
+          error: "Unknown mqtt_prop enum 0"
+        }})
+    })
+
+    it('connack with single invalid property enum=0xff', () => {
+      const { type, reason, flags, ...tip } =
+        _decode_one_hex('2006000003fa000a')
+
+      expect(type).to.equal('connack')
+      expect(tip).to.deep.equal({
+        b0: 0x20, props: {
+          error: "Unknown mqtt_prop enum 250"
+        }})
+    })
+
+    it('connack with invalid first of three properties', () => {
+      const { type, reason, flags, ...tip } =
+        _decode_one_hex('2009000006ffbb17cc25dd')
+
+      expect(type).to.equal('connack')
+      expect(tip).to.deep.equal({
+        b0: 0x20, props: {
+          error: "Unknown mqtt_prop enum 255"
+        }})
+    })
+
+    it('connack with invalid second of three properties', () => {
+      const { type, reason, flags, ...tip } =
+        _decode_one_hex('200900000601bbfffc25dd')
+
+      expect(type).to.equal('connack')
+      expect(tip).to.deep.equal({
+        b0: 0x20, props: {
+          payload_format_indicator: 0xbb,
+          error: "Unknown mqtt_prop enum 255"
+        }})
+    })
+
+    it('connack with invalid third of three properties', () => {
+      const { type, reason, flags, ...tip } =
+        _decode_one_hex('200900000601bb17ccfffd')
+
+      expect(type).to.equal('connack')
+      expect(tip).to.deep.equal({
+        b0: 0x20, props: {
+          payload_format_indicator: 0xbb,
+          request_problem_information: 0xcc,
+          error: "Unknown mqtt_prop enum 255"
+        }})
+    })
+  })
 })
