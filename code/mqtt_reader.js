@@ -1,5 +1,5 @@
-import { decode_varint } from '../mqtt_varint.js'
-import { mqtt_props } from '../mqtt_props.js'
+import { decode_varint } from './mqtt_varint.js'
+import { mqtt_props } from './mqtt_props.js'
 
 class U8_Reason extends Number {
   static of(v, pkt_kind, by_kind) {

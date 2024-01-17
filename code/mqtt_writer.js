@@ -1,5 +1,5 @@
-import { encode_varint } from '../mqtt_varint.js'
-import { mqtt_props } from '../mqtt_props.js'
+import { encode_varint } from './mqtt_varint.js'
+import { mqtt_props } from './mqtt_props.js'
 
 
 export class mqtt_writer_v4 {

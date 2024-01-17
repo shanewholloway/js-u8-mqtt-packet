@@ -1,55 +1,29 @@
-import { mqtt_reader_v5 as base_reader, mqtt_reader_info } from './decode/_utils.js'
-import { mqtt_writer_v5 } from './encode/_utils.js'
+import { mqtt_reader_v5 as base_reader, mqtt_reader_info } from './mqtt_reader.js'
+import { mqtt_writer_v5 } from './mqtt_writer.js'
 export * from './mqtt_props.js'
 
-import { mqtt_decode_connect } from './decode/connect.js'
-export * from './decode/connect.js'
-import { mqtt_decode_connack, _connack_v5 } from './decode/connack.js'
-export * from './decode/connack.js'
-import { mqtt_decode_publish } from './decode/publish.js'
-export * from './decode/publish.js'
-import { mqtt_decode_puback, _puback_v5 } from './decode/puback.js'
-export * from './decode/puback.js'
-import { mqtt_decode_pubxxx, _pubxxx_v5 } from './decode/pubrec_pubrel_pubcomp.js'
-export * from './decode/pubrec_pubrel_pubcomp.js'
-import { mqtt_decode_subscribe } from './decode/subscribe.js'
-export * from './decode/subscribe.js'
-import { mqtt_decode_suback, _suback_v5 } from './decode/suback.js'
-export * from './decode/suback.js'
-import { mqtt_decode_unsubscribe } from './decode/unsubscribe.js'
-export * from './decode/unsubscribe.js'
-import { mqtt_decode_unsuback, _unsuback_v5 } from './decode/unsuback.js'
-export * from './decode/unsuback.js'
-import { mqtt_decode_pingxxx } from './decode/pingreq_pingresp.js'
-export * from './decode/pingreq_pingresp.js'
-import { mqtt_decode_disconnect, _disconnect_v5 } from './decode/disconnect.js'
-export * from './decode/disconnect.js'
-import { mqtt_decode_auth, _auth_v5 } from './decode/auth.js'
-export * from './decode/auth.js'
-
-
-import { mqtt_encode_connect } from './encode/connect.js'
-export * from './encode/connect.js'
-import { mqtt_encode_connack } from './encode/connack.js'
-export * from './encode/connack.js'
-import { mqtt_encode_publish } from './encode/publish.js'
-export * from './encode/publish.js'
-import { mqtt_encode_puback } from './encode/puback.js'
-export * from './encode/puback.js'
-import { mqtt_encode_pubxxx } from './encode/pubrec_pubrel_pubcomp.js'
-export * from './encode/pubrec_pubrel_pubcomp.js'
-import { mqtt_encode_subscribe } from './encode/subscribe.js'
-export * from './encode/subscribe.js'
-import { mqtt_encode_xxsuback } from './encode/suback_unsuback.js'
-export * from './encode/suback_unsuback.js'
-import { mqtt_encode_unsubscribe } from './encode/unsubscribe.js'
-export * from './encode/unsubscribe.js'
-import { mqtt_encode_pingxxx } from './encode/pingreq_pingresp.js'
-export * from './encode/pingreq_pingresp.js'
-import { mqtt_encode_disconnect } from './encode/disconnect.js'
-export * from './encode/disconnect.js'
-import { mqtt_encode_auth } from './encode/auth.js'
-export * from './encode/auth.js'
+import { mqtt_encode_connect, mqtt_decode_connect } from './pkt/connect.js'
+export * from './pkt/connect.js'
+import { mqtt_encode_connack, mqtt_decode_connack, _connack_v5 } from './pkt/connack.js'
+export * from './pkt/connack.js'
+import { mqtt_encode_publish, mqtt_decode_publish } from './pkt/publish.js'
+export * from './pkt/publish.js'
+import { mqtt_encode_puback, mqtt_decode_puback, _puback_v5 } from './pkt/puback.js'
+export * from './pkt/puback.js'
+import { mqtt_encode_pubxxx, mqtt_decode_pubxxx, _pubxxx_v5 } from './pkt/pubrec_pubrel_pubcomp.js'
+export * from './pkt/pubrec_pubrel_pubcomp.js'
+import { mqtt_encode_subscribe, mqtt_decode_subscribe } from './pkt/subscribe.js'
+export * from './pkt/subscribe.js'
+import { mqtt_encode_xxsuback, mqtt_decode_xxsuback, _suback_v5, _unsuback_v5 } from './pkt/suback_unsuback.js'
+export * from './pkt/suback_unsuback.js'
+import { mqtt_encode_unsubscribe, mqtt_decode_unsubscribe } from './pkt/unsubscribe.js'
+export * from './pkt/unsubscribe.js'
+import { mqtt_encode_pingxxx, mqtt_decode_pingxxx } from './pkt/pingreq_pingresp.js'
+export * from './pkt/pingreq_pingresp.js'
+import { mqtt_encode_disconnect, mqtt_decode_disconnect, _disconnect_v5 } from './pkt/disconnect.js'
+export * from './pkt/disconnect.js'
+import { mqtt_encode_auth, mqtt_decode_auth, _auth_v5 } from './pkt/auth.js'
+export * from './pkt/auth.js'
 
 
 const mqtt_reader_v5 = /* #__PURE__ */
@@ -71,9 +45,8 @@ const mqtt_decode_v5 = /* #__PURE__ */ [
   mqtt_decode_puback,
   mqtt_decode_pubxxx,
   mqtt_decode_subscribe,
-  mqtt_decode_suback,
+  mqtt_decode_xxsuback,
   mqtt_decode_unsubscribe,
-  mqtt_decode_unsuback,
   mqtt_decode_pingxxx,
   mqtt_decode_disconnect,
   mqtt_decode_auth,
