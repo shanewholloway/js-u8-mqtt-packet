@@ -1,6 +1,7 @@
 import { mqtt_reader_v5 as base_reader, mqtt_reader_info } from './decode/_utils.js'
 import { mqtt_writer_v5 } from './encode/_utils.js'
 import { mqtt_decode_v5, mqtt_encode_v5 } from './codec_v5_lean.js'
+export * from './mqtt_props.js'
 
 import { _connack_v5 } from './decode/connack.js'
 import { _puback_v5 } from './decode/puback.js'

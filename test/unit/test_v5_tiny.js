@@ -335,9 +335,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
-        b0: 0x20, props: {
-          error: "Unknown mqtt_prop enum 0"
-        }})
+        b0: 0x20, props: { _unknown_: 0 }})
     })
 
     it('connack with single invalid property enum=0xff', () => {
@@ -346,9 +344,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
-        b0: 0x20, props: {
-          error: "Unknown mqtt_prop enum 250"
-        }})
+        b0: 0x20, props: { _unknown_: 250 }})
     })
 
     it('connack with invalid first of three properties', () => {
@@ -357,9 +353,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
-        b0: 0x20, props: {
-          error: "Unknown mqtt_prop enum 255"
-        }})
+        b0: 0x20, props: { _unknown_: 255 }})
     })
 
     it('connack with invalid second of three properties', () => {
@@ -370,7 +364,7 @@ describe('mqtt v5: small pub/sub capture', () => {
       expect(tip).to.deep.equal({
         b0: 0x20, props: {
           payload_format_indicator: 0xbb,
-          error: "Unknown mqtt_prop enum 255"
+          _unknown_: 255
         }})
     })
 
@@ -383,7 +377,7 @@ describe('mqtt v5: small pub/sub capture', () => {
         b0: 0x20, props: {
           payload_format_indicator: 0xbb,
           request_problem_information: 0xcc,
-          error: "Unknown mqtt_prop enum 255"
+          _unknown_: 255
         }})
     })
   })

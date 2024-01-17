@@ -1,5 +1,6 @@
 import { mqtt_reader_v5 } from './decode/_utils.js'
 import { mqtt_writer_v5 } from './encode/_utils.js'
+export * from './mqtt_props.js'
 
 // redundant for client: import { mqtt_decode_connect } from './decode/connect.js'
 import { mqtt_decode_connack } from './decode/connack.js'

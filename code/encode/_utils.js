@@ -92,7 +92,8 @@ export class mqtt_writer_v5 extends mqtt_writer_v4 {
     for (let [name, value] of props) {
       let pt = mqtt_props.get(name)
       if (!pt)
-        throw new Error(`Unknown mqtt_prop "${name}"`)
+        throw new Error(`MQTT unknown property "${name}"`)
+
       fork[pt.op || 'one'](value, pt)
     }
     this.push(fork.pack())
