@@ -61,7 +61,8 @@ describe(`${suite_prefix}: small pub/sub capture`, () => {
 
     expect(0 == reason).to.be.true
     expect(+reason).to.equal(0)
-    expect(reason.reason).to.equal('Success')
+    expect(reason.ok).to.be.true
+    expect(reason.reason).to.equal(':ok:')
   })
 
   it('publish c2s', () => {

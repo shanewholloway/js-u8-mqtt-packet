@@ -1,11 +1,10 @@
 import { decode_varint } from './mqtt_varint.js'
 import { mqtt_props } from './mqtt_props.js'
 
-class U8_Reason extends Number {
-  static of(v, pkt_kind, by_kind) {
-    let self = new this(v)
-    self.reason = by_kind?.[pkt_kind]?.get(v) || pkt_kind
-    return self
+export class mqtt_reason extends Number {
+  constructor(v, reason) {
+    super(v)
+    this.reason = `:${(this.ok = v<0x80) ? 'ok' : 'fail'}:${reason}`
   }
 }
 
@@ -56,7 +55,7 @@ export class mqtt_reader_v4 {
   reason(pkt_kind) {
     let v = this.buf[this.step(1)]
     if (null != v)
-      return U8_Reason.of(v, pkt_kind, this._reasons_by)
+      return new mqtt_reason(v, this._reason_for?.(v, pkt_kind))
   }
 
   flush() {
@@ -110,25 +109,5 @@ export class mqtt_reader_v5 extends mqtt_reader_v4 {
       : buf.subarray(vi, step.k|0)
   }
   */
-}
-
-export function mqtt_reader_info(mqtt_reader, ... info_fn_list) {
-  mqtt_reader = class extends mqtt_reader {
-    static reasons(pkt_type, ...reason_entries) {
-      let proto = this.prototype
-      proto._reasons_by = {... proto._reasons_by}
-
-      let lut = (proto._reasons_by[pkt_type] ||= new Map())
-      for (let [u8, reason] of reason_entries)
-        lut.set( u8, reason )
-
-      return this
-    }
-  }
-
-  for (let fn_info of info_fn_list)
-    fn_info(mqtt_reader)
-
-  return mqtt_reader
 }
 

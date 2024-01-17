@@ -34,12 +34,3 @@ export function mqtt_decode_pubxxx(ns, mqtt_reader) {
     return pkt }
 }
 
-export function _pubxxx_v4(mqtt_reader) {
-  mqtt_reader.reasons('pubxxx',
-    // MQTT 3.1.1
-    [ 0x00, 'Success' ],
-    [ 0x92, 'Packet Identifier not found' ],
-  )
-}
-
-export { _pubxxx_v4 as _pubxxx_v5 }

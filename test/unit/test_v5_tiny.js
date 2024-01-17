@@ -46,7 +46,8 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(4 == reason).to.be.true
     expect(+reason).to.equal(4)
-    expect(reason.reason).to.equal('Disconnect with Will Message')
+    expect(reason.ok).to.be.true
+    expect(reason.reason).to.equal(':ok:disconnect with will message')
 
     expect(tip)
     .to.deep.equal({
@@ -73,7 +74,8 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(0 == reason).to.be.true
     expect(+reason).to.equal(0)
-    expect(reason.reason).to.equal('Success')
+    expect(reason.ok).to.be.true
+    expect(reason.reason).to.equal(':ok:')
   })
 
   it('connack with ident (mosquitto)', () => {
@@ -94,7 +96,8 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(0 == reason).to.be.true
     expect(+reason).to.equal(0)
-    expect(reason.reason).to.equal('Success')
+    expect(reason.ok).to.be.true
+    expect(reason.reason).to.equal(':ok:')
   })
 
   it('connack with ident (ejabberd)', () => {
@@ -118,7 +121,8 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(0 == reason).to.be.true
     expect(+reason).to.equal(0)
-    expect(reason.reason).to.equal('Success')
+    expect(reason.ok).to.be.true
+    expect(reason.reason).to.equal(':ok:')
   })
 
   it('publish c2s', () => {
@@ -281,7 +285,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(answers).to.have.length(1)
     expect(+answers[0]).to.equal(0)
-    expect(answers[0].reason).to.equal('Granted QoS 0')
+    expect(answers[0].reason).to.equal(':ok:qos=0')
   })
 
   it('suback qos: 1', () => {
@@ -293,7 +297,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     expect(answers).to.have.length(1)
     expect(+answers[0]).to.equal(1)
-    expect(answers[0].reason).to.equal('Granted QoS 1')
+    expect(answers[0].reason).to.equal(':ok:qos=1')
   })
 
   it('publish s2c (mosquitto)', () => {

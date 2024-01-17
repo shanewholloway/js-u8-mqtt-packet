@@ -1,4 +1,4 @@
-import { mqtt_reader_v4 } from './mqtt_reader.js'
+import { mqtt_reader_v4 } from './mqtt_reader_lean.js'
 import { mqtt_writer_v4 } from './mqtt_writer.js'
 import { mqtt_decode_v4, mqtt_encode_v4 } from './codec_v4_client.js'
 
