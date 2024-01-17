@@ -4,7 +4,7 @@ export function mqtt_encode_connack(ns, mqtt_writer) {
     flags.session_present ? 1 : 0
 
   return ns.connack = (mqtt_level, pkt) => {
-    let wrt = mqtt_writer.of(pkt)
+    let wrt = mqtt_writer.for(pkt)
 
     wrt.flags( pkt.flags, _enc_flags_connack )
 
@@ -27,7 +27,7 @@ export function mqtt_decode_connack(ns, mqtt_reader) {
   }
 
   return ns[0x2] = (pkt, u8_body) => {
-    let rdr = mqtt_reader.of(u8_body)
+    let rdr = mqtt_reader.for(pkt, u8_body)
 
     let flags = pkt.flags =
       rdr.flags(_connack_flags_)

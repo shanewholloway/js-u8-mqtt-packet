@@ -9,6 +9,11 @@ export function with_reasons(mqtt_reader, by_kind) {
     _reason_for(v, pkt_kind) {
       return by_kind[pkt_kind]?.get(v) || by_kind.all.get(v)
     }
+    warn(msg) {
+      let pkt = this.pkt
+      pkt.warn ? pkt.warn(msg, pkt)
+        : console.warn('[u8-mqtt-packet] '+msg)
+    }
   }
 }
 

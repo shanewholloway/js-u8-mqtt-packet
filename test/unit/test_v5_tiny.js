@@ -5,7 +5,12 @@ const mqtt_ctx_v5 = mqtt_pkt_ctx(5, mqtt_opts_v5)
 const { assert, expect } = require('chai')
 
 function _decode_one_hex(hex_pkt) {
-  const mqtt_ctx = mqtt_ctx_v5.mqtt_stream()
+  const mqtt_ctx = mqtt_ctx_v5.mqtt_stream({
+    warn(msg) {
+      // mock the default console.warn into var
+      this._test_warn_ = msg
+    }
+  })
   const [pkt0, pkt1] = mqtt_ctx.decode(hex_to_u8(hex_pkt))
   expect(pkt1).to.be.undefined
   return pkt0
@@ -214,13 +219,12 @@ describe('mqtt v5: small pub/sub capture', () => {
 
     const client_id_list = []
     for (const each of log) {
-      const { _base_, type, client_id, flags, ...tip } =
-        _decode_one_hex(each)
+      const pkt = _decode_one_hex(each)
+      const { type, client_id, flags, ...tip } = pkt
 
       expect(type).to.deep.equal('connect')
 
-      expect(_base_.mqtt_level).to.equal(5)
-      expect(_base_._base_).to.equal(_base_)
+      expect(pkt.__proto__.mqtt_level).to.equal(5)
 
       expect(tip).to.deep.equal({
         b0: 0x10,
@@ -339,6 +343,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
+        _test_warn_: "unknown property: 0",
         b0: 0x20, props: { _unknown_: 0 }})
     })
 
@@ -348,6 +353,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
+        _test_warn_: "unknown property: 250",
         b0: 0x20, props: { _unknown_: 250 }})
     })
 
@@ -357,6 +363,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
+        _test_warn_: "unknown property: 255",
         b0: 0x20, props: { _unknown_: 255 }})
     })
 
@@ -366,6 +373,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
+        _test_warn_: "unknown property: 255",
         b0: 0x20, props: {
           payload_format_indicator: 0xbb,
           _unknown_: 255
@@ -378,6 +386,7 @@ describe('mqtt v5: small pub/sub capture', () => {
 
       expect(type).to.equal('connack')
       expect(tip).to.deep.equal({
+        _test_warn_: "unknown property: 255",
         b0: 0x20, props: {
           payload_format_indicator: 0xbb,
           request_problem_information: 0xcc,

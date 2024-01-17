@@ -9,10 +9,10 @@ export class mqtt_reason extends Number {
 }
 
 export class mqtt_reader_v4 {
-  static of(buf) { return this.prototype.of(buf) }
-  of(buf) {
+  static for(pkt, u8_body) { return new this().of(u8_body, {pkt}) }
+  of(buf, opt) {
     let step = (width, k) => (k=0|step.k, step.k=k+width, k)
-    return {__proto__: this, buf, step}
+    return {__proto__: this, buf, step, ...opt}
   }
 
   has_more() {
@@ -78,7 +78,7 @@ export class mqtt_reader_v5 extends mqtt_reader_v4 {
       let v, pk = fork.u8(), pt = mqtt_props.get( pk )
       if (!pt) {
         res._unknown_ = pk
-        this.warn(`unknown property: ${pk}`)
+        this.warn?.(`unknown property: ${pk}`)
         break
       }
 
@@ -97,8 +97,6 @@ export class mqtt_reader_v5 extends mqtt_reader_v4 {
     vec.push(u8)
     return vec
   }
-
-  warn(msg) { console.warn('[u8-mqtt-packet] '+msg) }
 
   /*
   vbuf() {

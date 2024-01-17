@@ -17,7 +17,7 @@ export function mqtt_encode_connect(ns, mqtt_writer) {
       | ( will.retain ? 0x20 : 0 )
 
   return ns.connect = ( mqtt_level, pkt ) => {
-    let wrt = mqtt_writer.of(pkt)
+    let wrt = mqtt_writer.for(pkt)
 
     wrt.push(_c_mqtt_proto)
     wrt.u8( mqtt_level )
@@ -67,11 +67,12 @@ export function mqtt_decode_connect(ns, mqtt_reader) {
   }
 
   return ns[0x1] = (pkt, u8_body) => {
-    let rdr = mqtt_reader.of(u8_body)
+    let rdr = mqtt_reader.for(pkt, u8_body)
     if ('MQTT' !== rdr.utf8())
       throw new Error('Invalid mqtt_connect packet')
 
-    pkt._base_.mqtt_level = pkt.mqtt_level = rdr.u8()
+    pkt.__proto__.mqtt_level =
+      pkt.mqtt_level = rdr.u8()
 
     let flags = pkt.flags =
       rdr.flags(_connect_flags_)

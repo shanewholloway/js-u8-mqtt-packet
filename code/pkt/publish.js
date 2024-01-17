@@ -2,7 +2,7 @@
 export function mqtt_encode_publish(ns, mqtt_writer) {
   return ns.publish = ( mqtt_level, pkt ) => {
     let qos = (pkt.qos & 0x3) << 1
-    let wrt = mqtt_writer.of(pkt)
+    let wrt = mqtt_writer.for(pkt)
 
     wrt.utf8(pkt.topic)
     if (0 !== qos)
@@ -27,7 +27,7 @@ export function mqtt_decode_publish(ns, mqtt_reader) {
     pkt.retain = Boolean(hdr & 0x1)
     let qos = pkt.qos = (hdr>>1) & 0x3
 
-    let rdr = mqtt_reader.of(u8_body)
+    let rdr = mqtt_reader.for(pkt, u8_body)
     pkt.topic = rdr.utf8()
     if (0 !== qos)
       pkt.pkt_id = rdr.u16()

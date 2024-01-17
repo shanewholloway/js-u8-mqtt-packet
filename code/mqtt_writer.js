@@ -3,7 +3,7 @@ import { mqtt_props } from './mqtt_props.js'
 
 
 export class mqtt_writer_v4 {
-  static of() { return this.prototype.of() }
+  static for(pkt) { return new this().of() }
   of() { return {__proto__: this, $:[]} }
 
   static init() { return this }

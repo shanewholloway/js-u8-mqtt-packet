@@ -115,7 +115,6 @@ describe('mqtt_pkt_ctx api', () => {
       expect(mqtt_ctx.decode).to.be.a('function')
       expect(mqtt_ctx.pkt_ctx).to.exist
         .and.to.not.equal(mqtt_raw_ctx.pkt_ctx)
-      expect(mqtt_ctx.pkt_ctx).to.not.have.own.property('mqtt_level')
     }
 
     if (1) {

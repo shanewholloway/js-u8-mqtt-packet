@@ -2,13 +2,13 @@
 
 | module                         |   brotli | minified |   source |
 |:-------------------------------|---------:|---------:|---------:|
-| `codec_bind`                   |    590 B |   1243 B |   2613 B |
-| `codec_v4_client`              |   1963 B |   5569 B |  11338 B |
-| `codec_v4_full`                |   3065 B |   9696 B |  18263 B |
-| `codec_v4_lean`                |   1699 B |   4871 B |   9990 B |
-| `codec_v5_client`              |   3032 B |   8900 B |  17154 B |
-| `codec_v5_full`                |   3651 B |  11572 B |  21725 B |
-| `codec_v5_lean`                |   2494 B |   7208 B |  16756 B |
-| `index`                        |   4051 B |  12664 B |  23709 B |
+| `codec_bind`                   |    600 B |   1267 B |   2685 B |
+| `codec_v4_client`              |   2018 B |   5676 B |  11532 B |
+| `codec_v4_full`                |   3129 B |   9821 B |  18493 B |
+| `codec_v4_lean`                |   1717 B |   4902 B |  10056 B |
+| `codec_v5_client`              |   3071 B |   8965 B |  17294 B |
+| `codec_v5_full`                |   3695 B |  11655 B |  21901 B |
+| `codec_v5_lean`                |   2494 B |   7197 B |  16768 B |
+| `index`                        |   4090 B |  12771 B |  23957 B |
 
 

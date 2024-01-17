@@ -6,7 +6,7 @@ export function mqtt_encode_xxsuback(ns, mqtt_writer) {
 
   function _enc_xxsuback(hdr) {
     return ( mqtt_level, pkt ) => {
-      let wrt = mqtt_writer.of(pkt)
+      let wrt = mqtt_writer.for(pkt)
 
       wrt.u16(pkt.pkt_id)
       if (5 <= mqtt_level)
@@ -23,7 +23,7 @@ export function mqtt_encode_xxsuback(ns, mqtt_writer) {
 
 export function mqtt_decode_xxsuback(ns, mqtt_reader) {
   return ns[0x9] = ns[0xb] = (pkt, u8_body) => {
-    let rdr = mqtt_reader.of(u8_body)
+    let rdr = mqtt_reader.for(pkt, u8_body)
 
     pkt.pkt_id = rdr.u16()
     if (5 <= pkt.mqtt_level)

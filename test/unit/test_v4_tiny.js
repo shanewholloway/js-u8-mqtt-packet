@@ -112,13 +112,12 @@ describe(`${suite_prefix}: small pub/sub capture`, () => {
 
     const client_id_list = []
     for (const each of log) {
-      const { _base_, type, client_id, flags, ...tip } =
-        _decode_one_hex(each)
+      const pkt = _decode_one_hex(each)
+      const { type, client_id, flags, ...tip } = pkt
 
       expect(type).to.deep.equal('connect')
 
-      expect(_base_.mqtt_level).to.equal(4)
-      expect(_base_._base_).to.equal(_base_)
+      expect(pkt.__proto__.mqtt_level).to.equal(4)
 
       expect(tip).to.deep.equal({
         b0: 0x10,
