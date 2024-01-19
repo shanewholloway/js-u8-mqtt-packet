@@ -28,11 +28,10 @@ describe('mqtt_varint', ()=>{
 
   it('Value 68435455', ()=> _test_varint(68435455, {expected_length: 4}))
 
-  it('Value 268435455', ()=> _test_varint(268435455, {expected_length: 4}))
-  it('Value 268435456', ()=> _test_varint(268435456, {expected_length: 5}))
-
-  it('Value 1073741824', ()=> _test_varint(1073741824, {expected_length: 5}))
-  it('Value 0x7fffffff', ()=> _test_varint(0x7fffffff, {expected_length: 5}))
+  it('Value 0x0fff_ffff', ()=> _test_varint(0x0fffffff, {expected_length: 4}))
+  it('Error for encode value 0x10000000', ()=> expect(()=>encode_varint(0x10000000)).to.throw())
+  it('Error for decode value 0x10000000', ()=> expect(()=>decode_varint([128,128,128,128,1])).to.throw())
+  it('Error for encode value 0x7fffffff', ()=> expect(()=>encode_varint(0x7fffffff)).to.throw())
 
 
   it('Values [0..127]', ()=>{
@@ -53,7 +52,6 @@ describe('mqtt_varint', ()=>{
     expect(decode_varint([...pad, 128], pad.length)[0]).is.undefined
     expect(decode_varint([...pad, 128, 128], pad.length)[0]).is.undefined
     expect(decode_varint([...pad, 128, 128, 128], pad.length)[0]).is.undefined
-    expect(decode_varint([...pad, 128, 128, 128, 128], pad.length)[0]).is.undefined
   })
 
   it('Value partial is NaN', ()=> {
@@ -62,7 +60,6 @@ describe('mqtt_varint', ()=>{
     expect(decode_varint([...pad, 128], pad.length, NaN)[0]).is.NaN
     expect(decode_varint([...pad, 128, 128], pad.length, NaN)[0]).is.NaN
     expect(decode_varint([...pad, 128, 128, 128], pad.length, NaN)[0]).is.NaN
-    expect(decode_varint([...pad, 128, 128, 128, 128], pad.length, NaN)[0]).is.NaN
   })
 })
 
