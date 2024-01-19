@@ -69,7 +69,7 @@ export class mqtt_reader_v4 {
 export class mqtt_reader_v5 extends mqtt_reader_v4 {
   props() {
     let {buf, step} = this
-    let [n, vi, vi0] = decode_varint(buf, step.k|0)
+    let [n, vi, vi0] = decode_varint(buf, step.k|0, 0)
     step(n + vi - vi0)
     if (0 === n) return null
 

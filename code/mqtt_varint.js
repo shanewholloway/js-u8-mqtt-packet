@@ -1,38 +1,17 @@
 export function encode_varint(n, a=[]) {
-  do {
-    const ni = n & 0x7f
-    n >>>= 7
-    a.push( ni | (0===n ? 0 : 0x80) )
-  } while (n > 0)
+  a.push((n<0x80 ? 0 : 0x80) | (n & 0x7f))
+  for(; ( n>>>=7 ) > 0 ;)
+    a.push((n<0x80 ? 0 : 0x80) | (n & 0x7f))
   return a
 }
 
+export function decode_varint(u8, i0=0, invalid) {
+  let shift=0, i=i0, b=u8[i++], n=(b & 0x7f)
+  for(; b & 0x80;)
+    n |= ((b=u8[i++]) & 0x7f) << (shift += 7)
 
-/*
-export function decode_varint_loop(u8, i=0) {
-  let i0 = i
-  let shift = 0, n = (u8[i] & 0x7f)
-  while ( 0x80 & u8[i++] )
-    n |= (u8[i] & 0x7f) << (shift += 7)
-
-  return [n, i, i0]
-}
-*/
-
-
-export function decode_varint(u8, i=0) {
-  let i0 = i
-  // unrolled for a max of 4 chains
-  let n = (u8[i] & 0x7f) <<  0
-  if ( 0x80 & u8[i++] ) {
-    n |= (u8[i] & 0x7f) <<  7
-    if ( 0x80 & u8[i++] ) {
-      n |= (u8[i] & 0x7f) << 14
-      if ( 0x80 & u8[i++] ) {
-        n |= (u8[i++] & 0x7f) << 21
-      }
-    }
-  }
-  return [n, i, i0]
+  return (u8.length < i)
+    ? [invalid, i0, i0] // fail: insuffecient u8 bytes to decode
+    : [n, i, i0] // successful value
 }
 
