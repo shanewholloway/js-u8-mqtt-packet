@@ -29,7 +29,7 @@ export function decode_varint(u8, i=0) {
     if ( 0x80 & u8[i++] ) {
       n |= (u8[i] & 0x7f) << 14
       if ( 0x80 & u8[i++] ) {
-        n |= (u8[i] & 0x7f) << 21
+        n |= (u8[i++] & 0x7f) << 21
       }
     }
   }
