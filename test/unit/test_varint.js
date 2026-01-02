@@ -1,6 +1,7 @@
 import { encode_varint, decode_varint } from 'u8-mqtt-packet'
 
-const { assert, expect } = require('chai')
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
 
 describe('mqtt_varint', ()=>{
   function _test_varint(v, {expected_length}) {

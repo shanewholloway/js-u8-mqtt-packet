@@ -23,6 +23,12 @@
     "./esm/*": "./esm/*",
     ".": "./esm/index.js"
   },
+  "imports": {
+    "#test_bdd": {
+      "node": "./test/node_bdd.js",
+      "web": "./test/web_bdd_mocha.js"
+    }
+  },
   "workspaces": [
     "test"
   ],
@@ -30,11 +36,14 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-virtual": "^3.0.2",
-    "qsrv": "^0.2.8",
-    "rollup": "^4.54.0"
+    "chai": "^6.2.2",
+    "rollup": "^4.54.0",
+    "u8-utils": "^0.4.2",
+    "vite": "^7.3.0"
   },
   "scripts": {
-    "serve": "qsrv -- *.html esm/",
+    "vite": "vite",
+    "serve": "vite",
     "clean": "rm -rf ./cjs/* ./esm/*",
     "prebuild": "test -d ./node_modules || npm -s ci",
     "build": "rollup --config",
@@ -48,8 +57,23 @@
     "demo:deno": "deno run --allow-env --allow-net ./demo/std/deno.js",
     "demo:deno_v4": "U8_MQTT_VER=v4 deno run --allow-env --allow-net ./demo/std/deno.js",
     "demo:deno_v5": "U8_MQTT_VER=v5 deno run --allow-env --allow-net ./demo/std/deno.js",
-    "pretest": "npm -s run build",
-    "test": "cd test; npm -s run test",
-    "prepublishOnly": "npm -s run clean && npm -s run test"
+
+    "dkr_deps": "docker stack deploy --detach=true -c test/integ/deps-deploy.yml integ_mqtt",
+    "pretest": "test -f esm/index.js || npm -s run build",
+    "test": "npm -s run unit && npm -s run integ",
+
+    "preunit": "npm -s run pretest",
+    "unit": "npm -s run unit:one",
+    "unit:one": "cd test && node --test unittest.js",
+    "unit:watch": "cd test && node --test --watch unittest.js",
+    "unit:only": "cd test && node --test --test-only --watch unittest.js",
+
+    "preinteg": "npm -s run dkr_deps ; npm -s run pretest",
+    "integ": "npm -s run integ:one",
+    "integ:one": "cd test && node --test integ.node.js",
+    "integ:watch": "cd test && node --test --watch integ.node.js",
+    "integ:only": "cd test && node --test --test-only --watch integ.node.js",
+
+    "prepublishOnly": "npm -s run clean && npm -s run unit"
   }
 }

@@ -2,7 +2,8 @@ import { hex_to_u8, u8_to_utf8 } from 'u8-utils'
 import { mqtt_opts_v5, mqtt_pkt_ctx } from 'u8-mqtt-packet'
 const mqtt_ctx_v5 = mqtt_pkt_ctx(5, mqtt_opts_v5)
 
-const { assert, expect } = require('chai')
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
 
 function _decode_one_hex(hex_pkt) {
   const mqtt_ctx = mqtt_ctx_v5.mqtt_stream({

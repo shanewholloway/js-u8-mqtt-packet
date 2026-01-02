@@ -23,7 +23,7 @@ export class MQTTWebBones extends MQTTBones {
 
     const {_conn_} = this
     const on_mqtt_chunk = _conn_.set(
-      this._mqtt_session(),
+      this.mqtt_ctx,
       async u8_pkt => (
         await ready,
         websock.send(u8_pkt)) )

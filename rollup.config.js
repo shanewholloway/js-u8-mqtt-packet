@@ -13,8 +13,7 @@ let _cfg_ = {
 
 
 let is_watch = process.argv.includes('--watch')
-let cfg_web_min = is_watch ? null : { ... _cfg_,
-  plugins: [ ... _cfg_.plugins, rpi_terser() ]}
+let rpi_web_min = is_watch ? null : [ rpi_terser() ]
 
 
 export default [
@@ -36,10 +35,12 @@ export default [
 function * add_module(src_name, opt={}) {
   let input = `code/${src_name}.js`
 
-  yield ({ ..._cfg_, input,
-    output: { file: `esm/${src_name}.js`, format: 'es', sourcemap: true } })
+  yield { ..._cfg_, input,
+    output: [
+      { file: `esm/${src_name}.js`, format: 'es', sourcemap: true },
 
-  if (opt.min && cfg_web_min)
-    yield ({ ...cfg_web_min, input,
-      output: { file: `esm/${src_name}.min.js`, format: 'es', sourcemap: false }})
+      rpi_web_min &&
+        { plugins: rpi_web_min, file: `esm/${src_name}.min.js`, format: 'es', sourcemap: false },
+
+    ].filter(Boolean)}
 }

@@ -3,7 +3,9 @@ import { mqtt_pkt_ctx } from 'u8-mqtt-packet'
 import { mqtt_opts_v4 } from 'u8-mqtt-packet/esm/codec_v4_full.js'
 import { mqtt_opts_v5 } from 'u8-mqtt-packet/esm/codec_v5_full.js'
 
-const { assert, expect } = require('chai')
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
+
 const mqtt_ctx_v4_only = mqtt_pkt_ctx(4, mqtt_opts_v4)
 const mqtt_ctx_v4_subset = mqtt_pkt_ctx(4, mqtt_opts_v5)
 

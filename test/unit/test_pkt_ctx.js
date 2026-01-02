@@ -1,7 +1,8 @@
 import { hex_to_u8, u8_to_utf8 } from 'u8-utils'
 import { mqtt_opts_v5, mqtt_pkt_ctx } from 'u8-mqtt-packet'
 
-const { assert, expect } = require('chai')
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
 
 describe('mqtt_pkt_ctx api', () => {
   let hex_connect = '101b00044d5154540402003c000f6d7174746a735f3535393263333833'

@@ -1,6 +1,10 @@
 import { MQTTWebBones } from './integ_bones_web.js'
 import { integ_suite } from './integtests.js'
 
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
+
+
 const integ_configs = [
   //{test_name: 'v4 with localhost', url: 'ws://127.0.0.1:9001', MQTTClient: MQTTWebBones.v4(), ms_delay: 20},
   //{test_name: 'v5 with localhost', url: 'ws://127.0.0.1:9001', MQTTClient: MQTTWebBones.v5(), ms_delay: 20},

@@ -1,4 +1,5 @@
-const { assert } = require('chai')
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
 
 let sym_integ_log = Symbol('u8-mqtt::integ test log')
 

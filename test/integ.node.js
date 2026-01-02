@@ -1,6 +1,10 @@
 import { MQTTNodejsBones } from './integ_bones_nodejs.js'
 import { integ_suite } from './integtests.js'
 
+import {describe, it} from '#test_bdd'
+import {assert, expect} from 'chai'
+
+
 const integ_configs = [
   //{test_name: 'v4 with localhost:1883', port: 1883, host: '127.0.0.1', MQTTClient: MQTTNodejsBones.v4()},
   //{test_name: 'v5 with localhost:1883', port: 1883, host: '127.0.0.1', MQTTClient: MQTTNodejsBones.v5()},
