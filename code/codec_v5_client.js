@@ -20,7 +20,7 @@ import { mqtt_encode_disconnect, mqtt_decode_disconnect } from './pkt/disconnect
 import { mqtt_encode_auth, mqtt_decode_auth } from './pkt/auth.js'
 
 
-const mqtt_decode_v5 = /* #__PURE__ */ [
+const mqtt_decode_v5 = [
   mqtt_decode_connack,
   mqtt_decode_publish,
   mqtt_decode_puback,
@@ -31,7 +31,7 @@ const mqtt_decode_v5 = /* #__PURE__ */ [
 ]
 
 
-const mqtt_encode_v5 = /* #__PURE__ */ [
+const mqtt_encode_v5 = [
   mqtt_encode_connect,
   mqtt_encode_puback,
   mqtt_encode_publish,
@@ -42,7 +42,7 @@ const mqtt_encode_v5 = /* #__PURE__ */ [
   mqtt_encode_auth,
 ]
 
-const mqtt_opts_v5 = /* #__PURE__ */
+const mqtt_opts_v5 =
   { decode_fns: mqtt_decode_v5,
     mqtt_reader: mqtt_reader_v5,
     encode_fns: mqtt_encode_v5,

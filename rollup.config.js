@@ -1,8 +1,7 @@
-import rpi_dgnotify from 'rollup-plugin-dgnotify'
 import rpi_resolve from '@rollup/plugin-node-resolve'
 import rpi_terser from '@rollup/plugin-terser'
 import rpi_virtual from '@rollup/plugin-virtual'
-import pkg from './package.json' assert {type: 'json'}
+import pkg from './package.json' with {type: 'json'}
 
 let _cfg_ = {
   external: id => /^\w*:/.test(id),
@@ -10,7 +9,6 @@ let _cfg_ = {
     rpi_virtual({
       'code/version.js': `export const version = '${pkg.version}'`,
     }),
-    rpi_dgnotify(),
     rpi_resolve() ] }
 
 

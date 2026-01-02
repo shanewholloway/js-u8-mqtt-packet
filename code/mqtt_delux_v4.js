@@ -18,7 +18,7 @@ export function with_reasons(mqtt_reader, by_kind) {
 }
 
 
-export const reasons_v4 = /* #__PURE__ */ {
+export const reasons_v4 = {
   connack: [
     [ 0x01, 'conn refused: unacceptable protocol version'],
     [ 0x02, 'conn refused: identifier rejected'],

@@ -4,7 +4,7 @@ import { mqtt_decode_v5, mqtt_encode_v5 } from './codec_v5_client.js'
 export * from './mqtt_props.js'
 
 
-const mqtt_opts_v5 = /* #__PURE__ */
+const mqtt_opts_v5 =
   { decode_fns: mqtt_decode_v5,
     mqtt_reader: mqtt_reader_v5,
     encode_fns: mqtt_encode_v5,

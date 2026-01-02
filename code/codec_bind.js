@@ -1,6 +1,6 @@
 import { mqtt_raw_dispatch } from './framing.js'
 
-const _pkt_types = /* #__PURE__ */ ['~', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth']
+const _pkt_types = ['~', 'connect', 'connack', 'publish', 'puback', 'pubrec', 'pubrel', 'pubcomp', 'subscribe', 'suback', 'unsubscribe', 'unsuback', 'pingreq', 'pingresp', 'disconnect', 'auth']
 
 
 export function mqtt_pkt_ctx(mqtt_level, opts, pkt_api=opts.pkt_ctx) {

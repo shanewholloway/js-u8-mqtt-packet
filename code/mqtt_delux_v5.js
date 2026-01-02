@@ -3,7 +3,7 @@ import { with_reasons, reasons_v4 } from './mqtt_delux_v4.js'
 
 export { with_reasons, reasons_v4 }
 
-export const reasons_v5 = /* #__PURE__ */ {
+export const reasons_v5 = {
   ... reasons_v4,
   auth: [
     [ 0x18, 'continue authentication' ],
